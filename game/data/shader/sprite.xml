@@ -1,0 +1,55 @@
+<?xml version="1.0" ?>
+<shader>
+  <name>Sprite Shader</name>
+
+  <uniforms>
+    <uniform name="Texture" init="0" />
+    <uniform name="ProjectionMatrix" constant="ProjectionMatrix"/>
+    <uniform name="ModelViewMatrix" constant="ModelViewMatrix"/>
+  </uniforms>
+
+  <attributes>
+    <attribute name="Position" binding="position" />
+    <attribute name="Tex0" binding="texcoord0" />
+    <attribute name="ColorIn" binding="color" />
+    <attribute name="Unfolding" binding="unfolding" />
+  </attributes>
+
+  <vertexshader>
+    <source>
+uniform mat4 ProjectionMatrix;
+uniform mat4 ModelViewMatrix;
+
+varying vec2 TexCoords;
+varying vec4 Color;
+
+attribute vec3 Position;
+attribute vec2 Tex0;
+attribute vec4 ColorIn;
+attribute vec2 Unfolding;
+
+void main(void){
+  Color = ColorIn;
+  TexCoords = Tex0;
+
+  vec4 pos = ModelViewMatrix * vec4(Position,1.0);
+  pos.xy += Unfolding;
+  gl_Position = ProjectionMatrix * pos;
+}
+    </source>
+  </vertexshader>
+
+  <fragmentshader>
+    <source>
+uniform sampler2D Texture;
+
+varying vec2 TexCoords;
+varying vec4 Color;
+
+void main(void){
+  gl_FragColor = Color * texture2D(Texture,TexCoords);
+  //gl_FragColor = vec4(0.25f,0.0f,0.0f,1.0f);
+}
+    </source>
+  </fragmentshader>
+</shader>

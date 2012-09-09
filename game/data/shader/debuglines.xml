@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<shader>
+  <name>Debug Lines Shader</name>
+
+  <uniforms>
+    <uniform name="ProjectionMatrix" constant="ProjectionMatrix"/>
+    <uniform name="ModelViewMatrix" constant="ModelViewMatrix"/>
+  </uniforms>
+
+  <attributes>
+    <attribute name="PosIn" binding="position"/>
+    <attribute name="ColorIn" binding="color"/>
+  </attributes>
+
+  <vertexshader>
+    <source>
+uniform mat4 ProjectionMatrix;
+uniform mat4 ModelViewMatrix;
+
+attribute vec3 PosIn;
+attribute vec4 ColorIn;
+
+varying vec4 Color;
+
+void main(){
+  Color = ColorIn;
+  vec4 pos = ModelViewMatrix * vec4(PosIn,1.0);
+  gl_Position = ProjectionMatrix * pos;
+}
+    </source>
+  </vertexshader>
+
+  <fragmentshader>
+    <source>
+varying vec4 Color;
+
+void main(){
+  gl_FragColor = Color;
+}
+    </source>
+  </fragmentshader>
+</shader>

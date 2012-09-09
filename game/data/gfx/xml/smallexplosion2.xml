@@ -1,0 +1,18 @@
+<?xml version="1.0"encoding="UTF-8"?>
+<Params>
+    <sprites size="10">
+        <SpriteParams x="512" y="0" width="128" height="128" />
+        <SpriteParams x="640" y="0" width="128" height="128" />
+        <SpriteParams x="768" y="0" width="128" height="128" />
+        <SpriteParams x="896" y="0" width="128" height="128" />
+        <SpriteParams x="512" y="128" width="128" height="128" />
+        <SpriteParams x="640" y="128" width="128" height="128" />
+        <SpriteParams x="768" y="128" width="128" height="128" />
+        <SpriteParams x="896" y="128" width="128" height="128" />
+        <SpriteParams x="768" y="256" width="128" height="128" />
+        <SpriteParams x="896" y="256" width="128" height="128" />
+    </sprites>
+    <color x="1.0" y="1.0" z="1.0" w="1.0" />
+    <size value="20" />
+    <playbackSpeed value="30" />
+</Params>

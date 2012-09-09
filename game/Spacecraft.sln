@@ -1,0 +1,41 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 10.00
+# Visual Studio 2008
+Project("{002A2DE9-8BB6-484D-9802-7E4AD4084715}") = "Spacecraft", "sources\Spacecraft.visualdproj", "{6BAFFA1B-7C40-4E03-AC73-20CDE989AE2C}"
+EndProject
+Project("{002A2DE9-8BB6-484D-9802-7E4AD4084715}") = "thBase", "..\..\thBase\src\common.visualdproj", "{AC6B556F-2AE2-4C7A-9FA0-5E09DEBEE5B6}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Debug-Client|Win32 = Debug-Client|Win32
+		Release|Win32 = Release|Win32
+		Release-debug|Win32 = Release-debug|Win32
+		Unittest|Win32 = Unittest|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{6BAFFA1B-7C40-4E03-AC73-20CDE989AE2C}.Debug|Win32.ActiveCfg = Debug|Win32
+		{6BAFFA1B-7C40-4E03-AC73-20CDE989AE2C}.Debug|Win32.Build.0 = Debug|Win32
+		{6BAFFA1B-7C40-4E03-AC73-20CDE989AE2C}.Debug-Client|Win32.ActiveCfg = Debug-Client|Win32
+		{6BAFFA1B-7C40-4E03-AC73-20CDE989AE2C}.Debug-Client|Win32.Build.0 = Debug-Client|Win32
+		{6BAFFA1B-7C40-4E03-AC73-20CDE989AE2C}.Release|Win32.ActiveCfg = Release|Win32
+		{6BAFFA1B-7C40-4E03-AC73-20CDE989AE2C}.Release|Win32.Build.0 = Release|Win32
+		{6BAFFA1B-7C40-4E03-AC73-20CDE989AE2C}.Release-debug|Win32.ActiveCfg = Release-debug|Win32
+		{6BAFFA1B-7C40-4E03-AC73-20CDE989AE2C}.Release-debug|Win32.Build.0 = Release-debug|Win32
+		{6BAFFA1B-7C40-4E03-AC73-20CDE989AE2C}.Unittest|Win32.ActiveCfg = Unittest|Win32
+		{6BAFFA1B-7C40-4E03-AC73-20CDE989AE2C}.Unittest|Win32.Build.0 = Unittest|Win32
+		{AC6B556F-2AE2-4C7A-9FA0-5E09DEBEE5B6}.Debug|Win32.ActiveCfg = Debug Lib|Win32
+		{AC6B556F-2AE2-4C7A-9FA0-5E09DEBEE5B6}.Debug|Win32.Build.0 = Debug Lib|Win32
+		{AC6B556F-2AE2-4C7A-9FA0-5E09DEBEE5B6}.Debug-Client|Win32.ActiveCfg = Debug|Win32
+		{AC6B556F-2AE2-4C7A-9FA0-5E09DEBEE5B6}.Debug-Client|Win32.Build.0 = Debug|Win32
+		{AC6B556F-2AE2-4C7A-9FA0-5E09DEBEE5B6}.Release|Win32.ActiveCfg = Release Lib|Win32
+		{AC6B556F-2AE2-4C7A-9FA0-5E09DEBEE5B6}.Release|Win32.Build.0 = Release Lib|Win32
+		{AC6B556F-2AE2-4C7A-9FA0-5E09DEBEE5B6}.Release-debug|Win32.ActiveCfg = Release|Win32
+		{AC6B556F-2AE2-4C7A-9FA0-5E09DEBEE5B6}.Release-debug|Win32.Build.0 = Release|Win32
+		{AC6B556F-2AE2-4C7A-9FA0-5E09DEBEE5B6}.Unittest|Win32.ActiveCfg = Release|Win32
+		{AC6B556F-2AE2-4C7A-9FA0-5E09DEBEE5B6}.Unittest|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

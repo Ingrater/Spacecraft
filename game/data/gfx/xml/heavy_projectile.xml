@@ -1,0 +1,9 @@
+<?xml version="1.0"encoding="UTF-8"?>
+<ParticleParams>
+    <x value="384" />
+    <y value="0" />
+    <width value="128" />
+    <height value="128" />
+    <color r="1.0" g="1.0" b="1.0" a="1.0" />
+    <size value="10.0" />
+</ParticleParams>

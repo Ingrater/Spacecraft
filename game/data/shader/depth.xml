@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<shader>
+  <name>Depth-Shader</name>
+
+  <uniforms>
+    <uniform name="ProjectionMatrix" constant="ProjectionMatrix"/>
+    <uniform name="ModelViewMatrix" constant="ModelViewMatrix"/>
+  </uniforms>
+
+  <attributes>
+    <attribute name="PosIn" binding="position"/>
+  </attributes>
+
+  <vertexshader>
+    <source>
+uniform mat4 ProjectionMatrix;
+uniform mat4 ModelViewMatrix;
+
+attribute vec3 PosIn;
+
+void main(){
+  vec4 pos = ModelViewMatrix * vec4(PosIn,1.0);
+  gl_Position = ProjectionMatrix * pos;
+}
+    </source>
+  </vertexshader>
+
+  <fragmentshader>
+    <source>
+void main(){
+  gl_FragColor = vec4(1.0,1.0,1.0,1.0);
+}
+    </source>
+  </fragmentshader>
+</shader>

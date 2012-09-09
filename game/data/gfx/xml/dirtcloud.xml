@@ -1,0 +1,14 @@
+<?xml version="1.0"encoding="UTF-8"?>
+<Params>
+    <count value="4096" />
+    <size value="1" />
+    <sizeVariation value="0.5" />
+    <maxDistance value="512" />
+    <sprites size="4">
+        <SpriteParams x="160" y="0" width="32" height="32" />
+        <SpriteParams x="160" y="32" width="32" height="32" />
+        <SpriteParams x="160" y="64" width="32" height="32" />
+        <SpriteParams x="160" y="96" width="32" height="32" />
+    </sprites>
+    <color x="1.0" y="1.0" z="1.0" w="1.0" />
+</Params>

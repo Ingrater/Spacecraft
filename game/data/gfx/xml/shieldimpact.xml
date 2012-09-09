@@ -1,0 +1,11 @@
+<?xml version="1.0"encoding="UTF-8"?>
+<Params>
+    <sprite x="0" y="160" width="128" height="128" />
+    <color x="0.5" y="0.5" z="0.8" w="0.5" />
+    <count value="3" />
+    <timeToLive value="300" />
+    <size value="10" />
+    <sizeChange value="-2" />
+    <startOffset value="8" />
+    <offset value="0.5" />
+</Params>

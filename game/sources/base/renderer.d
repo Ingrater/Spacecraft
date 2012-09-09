@@ -1,0 +1,189 @@
+module base.renderer;
+
+public import base.eventlistener;
+public import base.game;
+public import base.renderproxy;
+import base.messages;
+
+alias void delegate() destroyFunc;
+
+interface IRenderer : IEventListener{
+	void Init(shared(IGame) game);
+	void RegisterCVars(ConfigVarsBinding* CVarStorage) shared;
+	void Deinit();
+	void Work();
+	shared int GetWidth() const;
+	shared int GetHeight() const;
+	int GetWidth() const;
+	int GetHeight() const;
+	shared(IAssetLoader) assetLoader() shared;
+
+  /// Returns: the renderer extractor
+  IRendererExtractor GetExtractor() shared;
+	
+	/// Returns: a sub model render proxy
+	IRenderProxy CreateRenderProxy(shared(ISubModel) subModel) shared;
+	/// Returns: a camera render proxy
+	IRenderProxy CreateRenderProxy() shared;
+	/**
+	 * Returns: a skymap render proxy
+	 * Params: 
+     *	texture = the cube map texture to use (make shure it is a cube map texture)
+	 */
+	IRenderProxy CreateRenderProxySkyBox(shared(ITexture) texture) shared;
+	/**
+	 * Returns: a 3d hud render proxy
+	 * Params:
+	 *  model = the model to use for the 3d hud, has to contain only 1 material
+	 */
+	IRenderProxy CreateRenderProxy3DHud(shared(IModel) model) shared;
+	
+	version(direct_draw){
+		protected void startDirectDrawBatch() shared;
+		protected void stopDirectDrawBatch() shared;
+	}
+	
+	void camera(IGameObject obj);
+	void camera(IGameObject obj) shared;
+	
+	void DrawText(uint pFont, vec2 pPos, vec4 pColor, const(char)[] fmt, ...);
+	void DrawText(uint pFont, vec2 pPos, vec4 pColor, const(char)[] fmt, ...) shared;
+	void DrawText(uint pFont, vec2 pPos, const(char)[] fmt, ...);
+	void DrawText(uint pFont, vec2 pPos, const(char)[] fmt, ...) shared;
+
+  void DrawRect(vec2 pos, float width, float height, vec4 color);
+	
+	vec2 GetTextSize(uint font, const(char)[] text) shared;
+	vec2 GetTextSize(uint font, const(char)[] text);
+	int GetFontHeight(uint font) shared;
+	
+	/// Sets the simulations per second value (for displaying only)
+	void setSPS(float sps) shared;
+	
+	///Debug drawing functions
+	void drawBox(ref const(AlignedBox) box, ref const(vec4) color);
+	void drawBox(AlignedBox box, vec4 color = vec4(1.0f,0.0f,0.0f,1.0f)) shared;
+	
+	void drawLine(ref const Position start, ref const Position end, ref const vec4 color);
+	void drawLine(Position start, Position end, vec4 color = vec4(1.0f,0.0f,0.0f,1.0f)) shared;
+	
+	void freezeCamera();
+	void loadAmbientSettings(rcstring path) shared;
+}
+
+version(direct_draw){
+	struct RendererDirectDrawBatch {
+		private shared(IRenderer) m_Renderer;
+		
+		this(shared(IRenderer) renderer){
+			assert(renderer !is null);
+			m_Renderer = renderer;
+			m_Renderer.startDirectDrawBatch();
+		}
+		
+		~this(){
+			assert(m_Renderer !is null);
+			m_Renderer.stopDirectDrawBatch();
+		}
+	}
+}
+
+interface IRendererFactory {
+	void Init(int screenWidth, int screenHeight, bool fullScreen, bool vsync, bool noBorder, bool grabInput, int antialiasing);
+	IRenderer GetRenderer();
+}
+
+interface ISubModel {
+	/**
+	 * Searches for the minimum and maximum coordinates of the model
+	 * Params:
+	 *		pMin = result minimum
+	 *		pMax = result maximum
+	 *		pApplyModelMatrix = if the model matrix should be applied to the result or not
+	 */
+	void FindMinMax(ref vec3 pMin, ref vec3 pMax) shared;
+	
+	///ditto
+	void FindMinMax(ref vec3 pMin, ref vec3 pMax);
+}
+
+interface IModel : ISubModel {	
+	/**
+	 * Prints the node tree
+	 */
+	void PrintNodes() shared;
+		
+	///ditto
+	void PrintNodes();
+	
+	/**
+	 * Gets a sub model of this model
+	 * Params:
+	 *  depth = -1 for any depth, otherwise depth in tree to traverse
+	 *  path = path to the new root node for the sub model
+	 */
+	shared(ISubModel) GetSubModel(int depth, string[] path) shared;
+	
+	///ditto
+	ISubModel GetSubModel(int depth, string[] path);
+}
+
+
+interface ITexture {
+}
+
+struct Sprite {
+	vec2 offset;
+	vec2 size;
+	uint atlas;
+}
+
+interface ISpriteAtlas {
+	/**
+	 * Gets a single sprite from the sprite atlas
+	 * Params:
+	 *  x = x coordinates in pixels on the sprite atlas (left top is origin)
+	 *  y = y coordinates in pixels on the sprite atlas
+	 *  width = width in pixels
+	 *  params = height in pixels
+	 * Returns: a sprite handle
+	 */
+	Sprite GetSprite(int x, int y, int width, int height);
+	
+	///ditto
+	Sprite GetSprite(int x, int y, int width, int height) shared;
+}
+
+shared interface IAssetLoader {
+	/**
+	 * this tells the resource loader, to load a model, the call blocks until the model was loaded
+	 * Params:
+	 *  path = path to the model file
+	 */
+	shared(IModel) LoadModel(rcstring path);
+	
+	/**
+	 * this tells the resource loader, to load a cube map, the call blocks until the model was loaded
+	 * Params:
+	 *  positive_x_path = path to the image for the positive x cube face
+	 *  negative_x_path = path to the image for the negative x cube face
+	 *  positive_y_path = path to the image for the positive y cube face
+	 *  negative_y_path = path to the image for the negative y cube face
+	 *  positive_z_path = path to the image for the positive z cube face
+	 *  negative_z_path = path to the image for the negative z cube face
+	 */
+	shared(ITexture) LoadCubeMap(rcstring positive_x_path, rcstring negative_x_path,
+								 rcstring positive_y_path, rcstring negative_y_path,
+								 rcstring positive_z_path, rcstring negative_z_path);
+	
+	/**
+	 * this loads a sprite atlas (a image containing multiple sprites)
+	 * Params:
+	 *  path = the path to the image file
+	 * Returns: A sprite atlas interface
+	 */
+	shared(ISpriteAtlas) LoadSpriteAtlas(rcstring path);
+}
+
+
+//extern(D) IRendererFactory GetRendererFactory();

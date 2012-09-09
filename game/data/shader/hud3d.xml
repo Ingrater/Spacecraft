@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<shader>
+  <name>Hud 3D Shader</name>
+
+  <uniforms>
+    <uniform name="ProjectionMatrix" constant="ProjectionMatrix"/>
+    <uniform name="ModelViewMatrix" constant="ModelViewMatrix"/>
+    <uniform name="Diffuse" init="0" />
+  </uniforms>
+
+  <attributes>
+    <attribute name="PosIn" binding="position"/>
+    <attribute name="TexCoordIn" binding="texcoord0"/>
+  </attributes>
+
+  <vertexshader>
+    <source>
+uniform mat4 ProjectionMatrix;
+uniform mat4 ModelViewMatrix;
+
+attribute vec3 PosIn;
+attribute vec2 TexCoordIn;
+
+varying vec2 TexCoord;
+
+void main(){
+  vec4 pos = ModelViewMatrix * vec4(PosIn,1.0);
+
+  TexCoord.x = TexCoordIn.x;
+  TexCoord.y = 1.0 - TexCoordIn.y;
+
+  gl_Position = ProjectionMatrix * pos;
+}
+    </source>
+  </vertexshader>
+
+  <fragmentshader>
+    <source>
+uniform sampler2D Diffuse;
+
+varying vec2 TexCoord;
+
+void main(){
+  gl_FragColor = texture2D(Diffuse,TexCoord);
+}
+    </source>
+  </fragmentshader>
+</shader>

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Params>
+	<sprite x="768" y="384" width="192" height="128" />
+	<color x="0.5" y="0.5" z="0.5" w="1.0" />
+	<timeToLive value="100" />
+</Params>

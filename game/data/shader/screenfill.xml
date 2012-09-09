@@ -1,0 +1,41 @@
+<?xml version="1.0" ?>
+<shader>
+  <name>Screenfill Shader</name>
+
+  <uniforms>
+    <uniform name="RT" init="0" />
+  </uniforms>
+
+  <attributes>
+    <attribute name="PosIn" binding="position" />
+  </attributes>
+
+  <vertexshader>
+    <source>
+attribute vec3 PosIn;
+varying vec2 TexCoord;
+
+void main(void)
+{
+  // Clean up inaccuracies
+  vec2 Pos = sign(PosIn.xy);
+
+  gl_Position = vec4(Pos.xy, 0.0, 1.0);
+  TexCoord.x = 0.5 * (1.0 + Pos.x);
+  TexCoord.y = 0.5 * (1.0 + Pos.y);
+}
+    </source>
+  </vertexshader>
+
+  <fragmentshader>
+    <source>
+uniform sampler2D RT;
+varying vec2 TexCoord;
+
+void main(void)
+{
+   gl_FragColor = texture2D(RT, TexCoord);
+}
+    </source>
+  </fragmentshader>
+</shader>

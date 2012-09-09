@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<shader>
+  <name>Textures-Shader</name>
+
+  <uniforms>
+    <uniform name="ProjectionMatrix" constant="ProjectionMatrix"/>
+    <uniform name="ModelViewMatrix" constant="ModelViewMatrix"/>
+    <uniform name="NormalMatrix" constant="NormalMatrix"/>
+    <uniform name="LightDirIn" constant="LightDir"/>
+    <uniform name="Diffuse" init="0" />
+    <uniform name="NormalMap" init="1" />
+    <uniform name="SpecularMap" init="2" />
+    <uniform name="SelfIlluMap" init="3" />
+    <uniform name="ShadowMap" init="4" />
+    <uniform name="LightColor" constant="LightColor" />
+    <uniform name="AmbientColor" constant="AmbientColor" />
+    <uniform name="SpecularPower" constant="SpecularPower"/>
+    <uniform name="LightMatrix" constant="LightMatrix"/>
+    <uniform name="ShadowOffset" constant="ShadowOffset"/>
+    <uniform name="ShadowMaxDistance" constant="ShadowMaxDistance" />
+  </uniforms>
+
+  <attributes>
+    <attribute name="PosIn" binding="position"/>
+    <attribute name="NormalIn" binding="normal"/>
+    <attribute name="TexCoordIn" binding="texcoord0"/>
+    <attribute name="BinormalIn" binding="binormal"/>
+    <attribute name="TangentIn" binding="tangent"/>
+  </attributes>
+
+  <vertexshader>
+    <source>
+uniform mat4 ProjectionMatrix;
+uniform mat4 ModelViewMatrix;
+uniform mat3 NormalMatrix;
+uniform vec3 LightDirIn;
+uniform mat4 LightMatrix;
+
+attribute vec3 PosIn;
+attribute vec3 NormalIn;
+attribute vec3 TangentIn;
+attribute vec3 BinormalIn;
+attribute vec2 TexCoordIn;
+uniform float ShadowMaxDistance;
+
+varying vec3 LightDir;
+varying vec3 ViewDir;
+varying vec2 TexCoord;
+varying vec4 LightCoord;
+varying float inside;
+
+void main(){
+  mat3 TBN_Matrix;
+  TBN_Matrix[2] = NormalMatrix * normalize(NormalIn);
+  TBN_Matrix[1] = NormalMatrix * normalize(BinormalIn);
+  TBN_Matrix[0] = NormalMatrix * normalize(TangentIn);
+
+  vec4 pos = ModelViewMatrix * vec4(PosIn,1.0);
+  LightDir = LightDirIn * TBN_Matrix;
+  ViewDir = normalize(-pos.xyz) * TBN_Matrix;
+
+  LightCoord = LightMatrix * pos;
+
+  inside = clamp(ShadowMaxDistance-length(pos),0.0,100.0)/100.0;
+
+  TexCoord = TexCoordIn;
+
+  gl_Position = ProjectionMatrix * pos;
+}
+    </source>
+  </vertexshader>
+
+  <fragmentshader>
+    <source>
+#ifdef DIFFUSE_MAP
+uniform sampler2D Diffuse;
+#endif
+#ifdef NORMAL_MAP
+uniform sampler2D NormalMap;
+#endif
+#ifdef SPECULAR_MAP
+uniform sampler2D SpecularMap;
+#endif
+#ifdef SELF_ILLU_MAP
+uniform sampler2D SelfIlluMap;
+#endif
+uniform sampler2D ShadowMap;
+uniform vec4 LightColor;
+uniform vec4 AmbientColor;
+uniform float SpecularPower;
+uniform vec2 ShadowOffset;
+
+varying vec3 LightDir;
+varying vec3 ViewDir;
+varying vec2 TexCoord;
+varying vec4 LightCoord;
+varying float inside;
+
+void main(){
+  #ifdef NORMAL_MAP
+  vec3 Normal = normalize(texture2D(NormalMap,TexCoord).xyz * 2.0 - 1.0);
+  #else
+  vec3 Normal = vec3(0.0,0.0,1.0);
+  #endif
+  #ifdef SPECULAR_MAP
+  float specStrength = texture2D(SpecularMap,TexCoord).x;
+  #else
+  float specStrength = 1.0;
+  #endif
+
+  float NdotL = clamp(dot(Normal,normalize(LightDir)),0.0,1.0);
+
+  //Compute Pong
+  vec3 Reflection = normalize( ( ( 2.0 * normalize(Normal) ) * NdotL ) - normalize(LightDir) );
+  float RDotV = max( 0.0, dot(Reflection, normalize(ViewDir)));
+  float Specular = pow(RDotV, SpecularPower) * specStrength * NdotL;
+
+  #ifdef DIFFUSE_MAP
+  vec4 diffuseColor = texture2D(Diffuse,TexCoord);
+  #else
+  vec4 diffuseColor = vec4(0.6,0.6,0.6,1.0);
+  #endif
+
+  #ifdef SELF_ILLU_MAP
+  vec4 selfIllu = texture2D(SelfIlluMap,TexCoord);
+  #else
+  vec4 selfIllu = vec4(0.0,0.0,0.0,0.0);
+  #endif
+
+  #ifdef NO_SHADOW
+  float shadow = 1.0;
+  #else
+  //Shadow mapping
+  vec4 LightCoord2 = LightCoord / LightCoord.w;
+
+  float rotationAmount = LightCoord2.x * 314.15 + LightCoord2.y * 314.15 * 314.15;
+  mat2 rotation;
+  rotation[0] = vec2(cos(rotationAmount), sin(rotationAmount));
+  rotation[1] = vec2(-sin(rotationAmount), cos(rotationAmount));
+
+  vec4 samples1;
+  samples1.x = texture2D(ShadowMap,LightCoord2.xy + ShadowOffset * (rotation * vec2( 0.0, 1.0)) ).r;
+  samples1.y = texture2D(ShadowMap,LightCoord2.xy + ShadowOffset * (rotation * vec2( 1.0, 0.0)) ).r;
+  samples1.z = texture2D(ShadowMap,LightCoord2.xy + ShadowOffset * (rotation * vec2( 0.0,-1.0)) ).r;
+  samples1.w = texture2D(ShadowMap,LightCoord2.xy + ShadowOffset * (rotation * vec2(-1.0, 1.0)) ).r;
+
+  vec4 samples2;
+  samples2.x = texture2D(ShadowMap,LightCoord2.xy + ShadowOffset * (rotation * vec2(-1.0, 2.0)) ).r;
+  samples2.y = texture2D(ShadowMap,LightCoord2.xy + ShadowOffset * (rotation * vec2( 2.0, 1.0)) ).r;
+  samples2.z = texture2D(ShadowMap,LightCoord2.xy + ShadowOffset * (rotation * vec2( 1.0,-2.0)) ).r;
+  samples2.w = texture2D(ShadowMap,LightCoord2.xy + ShadowOffset * (rotation * vec2(-2.0,-1.0)) ).r;
+
+  float shadow = dot(step(LightCoord2.z - 0.005,samples1),vec4(0.125,0.125,0.125,0.125))
+               + dot(step(LightCoord2.z - 0.005,samples2),vec4(0.125,0.125,0.125,0.125));
+  shadow = mix(1.0,shadow,inside);
+  shadow = shadow * 0.9 + 0.1;
+  #endif
+
+  gl_FragColor = (NdotL * LightColor * diffuseColor + LightColor * Specular) * shadow + diffuseColor * AmbientColor + selfIllu;
+}
+    </source>
+  </fragmentshader>
+</shader>

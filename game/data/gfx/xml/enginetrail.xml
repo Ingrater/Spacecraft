@@ -1,0 +1,13 @@
+<?xml version="1.0"encoding="UTF-8"?>
+<Params>
+    <maxCount value="1024" />
+    <emitDir x="0" y="0" z="1" />
+    <leftDir x="1" y="0" z="0" />
+    <upDir x="0" y="1" z="0" />
+    <fire velocity="0.04" spawnInterval="1.25" size="3.5" sizeChange="-0.015" maxAge="300" influence="0.0005">
+        <sprite x="0" y="0" width="128" height="128" />
+        <offset x="0" y="1" z="8.5" />
+	<randomOffset x="0.25" y="0.25" z="0" />
+	<color x="0.5" y="0.5" z="0.5" w="1.0" />
+    </fire>
+</Params>

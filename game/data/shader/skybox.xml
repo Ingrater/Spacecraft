@@ -1,0 +1,49 @@
+<?xml version="1.0" ?>
+<shader>
+  <name>Skybox Shader</name>
+
+  <uniforms>
+    <uniform name="SkyBox" init="0" />
+    <uniform name="InvViewMatrix" constant="InverseViewMatrix" />
+    <uniform name="InvProjMatrix" constant="InverseProjectionMatrix" />
+  </uniforms>
+
+  <attributes>
+    <attribute name="PosIn" binding="position" />
+  </attributes>
+
+  <vertexshader>
+    <source>
+uniform mat4 InvViewMatrix;
+uniform mat4 InvProjMatrix;
+
+attribute vec3 PosIn;
+varying vec3 CamDir;
+
+void main(void)
+{
+  // Clean up inaccuracies
+  vec2 Pos = sign(PosIn.xy);
+
+  vec4 dir = InvProjMatrix * vec4(Pos.xy,1.0,1.0);
+  dir.w = 0.0;
+
+  gl_Position = vec4(Pos.xy, 0.99999, 1.0);
+  CamDir = (InvViewMatrix * dir).xyz;
+
+}
+    </source>
+  </vertexshader>
+
+  <fragmentshader>
+    <source>
+uniform samplerCube SkyBox;
+varying vec3 CamDir;
+
+void main(void)
+{
+   gl_FragColor = textureCube(SkyBox, CamDir);
+}
+    </source>
+  </fragmentshader>
+</shader>

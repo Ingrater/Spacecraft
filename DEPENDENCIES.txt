@@ -1,0 +1,16 @@
+Spacecraft has the following dependencies:
+
+- Assimp http://assimp.sourceforge.net/
+- libogg, libvorbis, libvorbisfile https://xiph.org/vorbis/
+- freetype2 http://www.freetype.org/freetype2/index.html
+- SDL http://www.libsdl.org/
+- SDL Image http://www.libsdl.org/projects/SDL_image/
+- Zlib http://www.zlib.net/
+- libpng http://www.libpng.org/pub/png/libpng.html
+- libjpeg http://libjpeg.sourceforge.net/
+- libtiff http://www.libtiff.org/
+- alut http://connect.creativelabs.com/openal/Documentation/The%20OpenAL%20Utility%20Toolkit.htm
+- OpenAL http://connect.creativelabs.com/openal/default.aspx
+- Lua 5.1 http://www.lua.org/
+
+Under Windows precompiled binaries are provided for everything but OpenAL. Make sure to install OpenAL on your machine.

@@ -1,0 +1,47 @@
+<?xml version="1.0" ?>
+<shader>
+  <name>Font Shader</name>
+
+  <uniforms>
+    <uniform name="WindowWidth" constant="Width" />
+    <uniform name="WindowHeight" constant="Height" />
+  </uniforms>
+
+  <attributes>
+    <attribute name="Position" binding="position" />
+    <attribute name="ColorIn" binding="color" />
+  </attributes>
+
+  <vertexshader>
+    <source>
+uniform float WindowWidth;
+uniform float WindowHeight;
+
+attribute vec2 Position;
+attribute vec4 ColorIn;
+
+varying vec4 Color;
+
+void main(void){
+  vec4 pos;
+  pos.x = (Position.x / WindowWidth) * 2.0 - 1.0;
+  pos.y = (1.0 - (Position.y / WindowHeight)) * 2.0 - 1.0;
+  pos.z = 0.5;
+  pos.w = 1.0;
+  gl_Position = pos;
+  Color = ColorIn;
+  gl_ClipVertex = vec4(Position.x,Position.y,0.0,1.0);
+}
+    </source>
+  </vertexshader>
+
+  <fragmentshader>
+    <source>
+varying vec4 Color;
+
+void main(void){
+  gl_FragColor = Color;
+}
+    </source>
+  </fragmentshader>
+</shader>

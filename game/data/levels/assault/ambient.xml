@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-" ?>
+<Params>
+    <lightDir x="2" y="1" z="3" />
+    <ambientColor x="0.133" y="0.145" z="0.205" w="0.0" />
+    <lightColor x="0.8" y="0.872" z="0.994" w="1.0" />
+    <specularPower value="16.0" />
+    <shadowOffset x="0.0002" y="0.0002" />
+    <shadowMaxDistance value="1500" />
+</Params>
