@@ -87,7 +87,7 @@
   <deffile />
   <resfile />
   <exefile>..\data\$(ProjectName).exe</exefile>
-  <additionalOptions>-defaultlib=phobosnogcd -debuglib=phobosnogcd gcstub.obj</additionalOptions>
+  <additionalOptions>-defaultlib=phobosnogcd -debuglib=phobosnogcd $(SolutionDir)\..\..\druntime\lib\gcstub.obj</additionalOptions>
   <preBuildCommand />
   <postBuildCommand />
   <filesToClean>*.obj;*.cmd;*.build;*.json;*.dep</filesToClean>

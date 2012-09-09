@@ -307,7 +307,7 @@ public:
 	 */
 	void AddIndexBuffer(){
 		m_IndexBuffers.resize(m_IndexBuffers.size() + 1);
-		m_IndexBuffers[m_IndexBuffers.size() - 1].data = new Vector!(uint)();
+		m_IndexBuffers[m_IndexBuffers.size() - 1].data = New!(Vector!uint)();
 		m_IndexBuffers[m_IndexBuffers.size() - 1].size = 0;
 		m_IndexBuffers[m_IndexBuffers.size() - 1].dataStart = null;
 	}
