@@ -50,6 +50,7 @@ interface IGame {
 	IScriptSystem scriptSystem();
   void PreInit();
   void RunExtractor();
+  void StopExtractor();
 
 	// Called from the server netcode when it accepted a new player and everything
 	// is setup properly. Never called on clients.

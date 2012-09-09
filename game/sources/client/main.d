@@ -157,9 +157,14 @@ public:
 		base.logger.info("game thread started");
     scope(exit)
     {
-      connection.close();
-      Delete(connection);
-      connection = null;
+      if(connection !is null)
+      {
+        connection.close();
+        Delete(connection);
+        connection = null;
+      }
+      game.StopExtractor();
+      base.logger.info("game thread ended");
     }
 		try {
       {
@@ -300,7 +305,6 @@ public:
 			base.logger.error("unexpected error %s", e.toString()[]);
       Delete(e);
 		}
-		base.logger.info("game thread ended");
 	}
 	
 	void stop(){

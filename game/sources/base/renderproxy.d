@@ -42,6 +42,11 @@ interface IRendererExtractor {
    * starts object extraction
    */
   void extractObjects(IGame game);
+
+  /**
+   * Tells the extractor to stop
+   */
+  void stop();
 }
 
 abstract class IRenderProxy : RefCounted {

@@ -163,7 +163,7 @@ public:
     m_FontsById = New!(typeof(m_FontsById))();
   }
 
-  shared static ~this()
+  static void DeleteFonts()
   {
     if(m_Fonts !is null && m_Fonts.count > 0)
     {
@@ -180,8 +180,8 @@ public:
       }
     }
 
-    Delete(m_Fonts);
-    Delete(m_FontsById);
+    Delete(m_Fonts); m_Fonts = null;
+    Delete(m_FontsById); m_FontsById = null;
   }
 	
 	/**

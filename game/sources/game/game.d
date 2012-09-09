@@ -778,6 +778,11 @@ class GameSimulation : IGameThread, IGame {
       m_Extractor.WaitForBuffer();
       m_Extractor.extractObjects(this);
     }
+
+    override void StopExtractor()
+    {
+      m_Extractor.stop();
+    }
 		
 		
 		//

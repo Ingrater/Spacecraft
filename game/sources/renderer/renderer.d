@@ -1122,6 +1122,8 @@ public:
       Delete(tex);
     }
     m_DownloadTextures.resize(0);
+
+    Font.DeleteFonts();
 	}
 
   override IRendererExtractor GetExtractor() shared
