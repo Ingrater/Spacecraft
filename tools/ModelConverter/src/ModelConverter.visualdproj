@@ -46,7 +46,7 @@
   <compiler>0</compiler>
   <otherDMD>0</otherDMD>
   <program>$(DMDInstallDir)windows\bin\dmd.exe</program>
-  <imppath>C:\Users\Benjamin\Documents\d-projects\druntime\import;C:\Users\Benjamin\Documents\d-projects\phobos;$(SolutionDir)\..\thBase\src</imppath>
+  <imppath>$(ProjectDir)\..\..\..\..\druntime\import;$(ProjectDir)\..\..\..\..\phobos;$(ProjectDir)\..\..\..\..\thBase\src</imppath>
   <fileImppath />
   <outdir>..\$(ConfigurationName)</outdir>
   <objdir>$(OutDir)</objdir>
@@ -83,7 +83,7 @@
   <objfiles />
   <linkswitches />
   <libfiles>thBased.lib</libfiles>
-  <libpaths>$(SolutionDir)\..\thBase\lib</libpaths>
+  <libpaths>$(ProjectDir)\..\..\..\..\phobos;$(ProjectDir)\..\..\..\..\thBase\lib</libpaths>
   <deffile />
   <resfile />
   <exefile>$(SolutionDir)\bin\ModelConverterD.exe</exefile>
@@ -202,5 +202,6 @@
    <File path="assimp\versionInfo.d" />
   </Folder>
   <File path="main.d" />
+  <File path="modeltypes.d" />
  </Folder>
 </DProject>
