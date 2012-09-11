@@ -16,7 +16,7 @@ enum TextureType : ubyte {
   REFLECTION, /// reflection map
   SHININESS, /// shininess texture
   SPECULAR, /// specular texture
-  UNKOWN /// unkown texture type
+  UNKNOWN /// unkown texture type
 }
 
 enum ModelFormatVersion : uint
