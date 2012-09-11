@@ -1,11 +1,9 @@
 module modeltypes;
 
-import thBase.chunkfile;
-
 /**
 * exisiting texture types
 */
-enum TextureType {
+enum TextureType : ubyte {
   DIFFUSE, /// diffuse texture
   AMBIENT, /// ambient texture
   DISPLACEMENT, /// displacement texture
@@ -19,30 +17,6 @@ enum TextureType {
   SHININESS, /// shininess texture
   SPECULAR, /// specular texture
   UNKOWN /// unkown texture type
-}
-
-struct TextureInfo
-{
-  uint textureIndex;
-  rcstring textureName;
-
-  void ChunkfileSerialize(Chunkfile file)
-  {
-    if(file.operation == Chunkfile.Operation.Read)
-    {
-      file.write(textureIndex);
-      file.writeArray(textureName);
-    }
-    else if(file.operation == ChunkFile.Operation.Write)
-    {
-      file.read(textureIndex);
-      file.readAndAllocateArray(textureName);
-    }
-    else
-    {
-      assert(0, "Operation not implemented");
-    }
-  }
 }
 
 enum ModelFormatVersion : uint
