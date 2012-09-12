@@ -646,22 +646,6 @@
  </Config>
  <Folder name="Spacecraft">
   <Folder name="base">
-   <Folder name="assimp">
-    <File path="base\assimp\animation.d" />
-    <File path="base\assimp\assimp.d" />
-    <File path="base\assimp\camera.d" />
-    <File path="base\assimp\config.d" />
-    <File path="base\assimp\fileIO.d" />
-    <File path="base\assimp\light.d" />
-    <File path="base\assimp\material.d" />
-    <File path="base\assimp\math.d" />
-    <File path="base\assimp\mesh.d" />
-    <File path="base\assimp\postprocess.d" />
-    <File path="base\assimp\scene.d" />
-    <File path="base\assimp\texture.d" />
-    <File path="base\assimp\types.d" />
-    <File path="base\assimp\versionInfo.d" />
-   </Folder>
    <File path="base\all.d" />
    <File path="base\c_types.d" />
    <File path="base\debughelper.d" />

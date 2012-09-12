@@ -9,6 +9,7 @@ import thBase.file;
 import thBase.chunkfile;
 import thBase.format;
 import thBase.math;
+import thBase.math3d.mats;
 import assimp.assimp;
 import modeltypes;
 
@@ -75,6 +76,18 @@ short CompressFloat(float f)
   if(f < -1.0f || f > 1.0f)
     Error("out of range compression");
   return cast(short)(cast(float)short.max * f);
+}
+
+mat4 Convert(ref const(aiMatrix4x4) pData){
+  mat4 result;
+  with(result){
+    f[ 0] = pData.a1; f[ 1] = pData.a2; f[ 2] = pData.a3; f[ 3] = pData.a4;
+    f[ 4] = pData.b1; f[ 5] = pData.b2; f[ 6] = pData.b3; f[ 7] = pData.b4;
+    f[ 8] = pData.c1; f[ 9] = pData.c2; f[10] = pData.c3; f[11] = pData.c4;
+    f[12] = pData.d1; f[13] = pData.d2; f[14] = pData.d3; f[15] = pData.d4;
+  }
+  result = result.Transpose();
+  return result;
 }
 
 
@@ -166,6 +179,46 @@ void ProgressModel(string path)
         {
           outFile.writeArray(filename);
         }
+      }
+    }
+
+    //Size information
+    {
+      outFile.startWriteChunk("sizeinfo");
+      scope(exit) outFile.endWriteChunk();
+
+      outFile.write(scene.mNumMeshes);
+      for(size_t i=0; i<scene.mNumMeshes; i++)
+      {
+        const(aiMesh*) aimesh = scene.mMeshes[i];
+        outFile.write(aimesh.mNumVertices);
+        uint PerVertexFlags = PerVertexData.Position;
+        if(aimesh.mNormals !is null)
+          PerVertexFlags |= PerVertexData.Normal;
+        if(aimesh.mTangents !is null)
+          PerVertexFlags |= PerVertexData.Tangent;
+        if(aimesh.mTangents !is null)
+          PerVertexFlags |= PerVertexData.Bitangent;
+        if(aimesh.mTextureCoords[0] !is null)
+          PerVertexFlags |= PerVertexData.TexCoord0;
+        if(aimesh.mTextureCoords[1] !is null)
+          PerVertexFlags |= PerVertexData.TexCoord1;
+        if(aimesh.mTextureCoords[2] !is null)
+          PerVertexFlags |= PerVertexData.TexCoord2;
+        if(aimesh.mTextureCoords[3] !is null)
+          PerVertexFlags |= PerVertexData.TexCoord3;
+        outFile.write(PerVertexFlags);
+        for(int j=0; j<4; j++)
+        {
+          if(aimesh.mTextureCoords[i] !is null)
+          {
+            ubyte numUVComponents = cast(ubyte)aimesh.mNumUVComponents[j];
+            if(numUVComponents == 0)
+              numUVComponents = 2;
+            outFile.write(numUVComponents);
+          }
+        }
+        outFile.write(aimesh.mNumFaces);
       }
     }
 
@@ -308,7 +361,8 @@ void ProgressModel(string path)
           }
 
           ubyte numTexCoords = 0;
-          while(numTexCoords < AI_MAX_NUMBER_OF_TEXTURECOORDS && aimesh.mTextureCoords[numTexCoords] !is null)
+          static assert(AI_MAX_NUMBER_OF_TEXTURECOORDS >= 4);
+          while(numTexCoords < 4 && aimesh.mTextureCoords[numTexCoords] !is null)
             numTexCoords++;
 
           outFile.write(numTexCoords);
@@ -399,7 +453,8 @@ void ProgressModel(string path)
           return;
 
         outFile.writeArray(node.mName.data[0..node.mName.length]);
-        outFile.write((cast(const(float*))&node.mTransformation)[0..16]);
+        auto transform = Convert(node.mTransformation);
+        outFile.write(transform.f[]);
         if(node.mParent is null)
           outFile.write(uint.max);
         else

@@ -23,3 +23,15 @@ enum ModelFormatVersion : uint
 {
   Version1 = 1 //Initial version
 }
+
+enum PerVertexData : uint
+{
+  Position   = 0x0001,
+  Normal     = 0x0002,
+  Tangent    = 0x0004,
+  Bitangent  = 0x0008,
+  TexCoord0  = 0x0010,
+  TexCoord1  = 0x0020,
+  TexCoord2  = 0x0040,
+  TexCoord3  = 0x0080
+}

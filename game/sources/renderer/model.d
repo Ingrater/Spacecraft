@@ -8,7 +8,6 @@ import renderer.shader;
 import renderer.vertexbuffer;
 import renderer.stateobject;
 import thBase.math3d.all;
-import base.assimp.assimp;
 import renderer.vertexbuffermanager;
 import renderer.rendergroup;
 import renderer.rendercall;
