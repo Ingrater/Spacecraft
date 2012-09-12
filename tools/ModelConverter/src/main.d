@@ -8,8 +8,16 @@ import thBase.scoped;
 import thBase.file;
 import thBase.chunkfile;
 import thBase.format;
+import thBase.math;
 import assimp.assimp;
 import modeltypes;
+
+rcstring g_workDir;
+
+static ~this()
+{
+  g_workDir = rcstring();
+}
 
 struct MaterialTextureInfo
 {
@@ -62,6 +70,12 @@ TextureType MapTextureType(aiTextureType type)
   }
 }
 
+short CompressFloat(float f)
+{
+  if(f < -1.0f || f > 1.0f)
+    Error("out of range compression");
+  return cast(short)(cast(float)short.max * f);
+}
 
 
 void ProgressModel(string path)
@@ -99,7 +113,10 @@ void ProgressModel(string path)
     // Textures
     {
       outFile.startWriteChunk("textures");
-      scope(exit) outFile.endWriteChunk();
+      scope(exit){
+        size_t size = outFile.endWriteChunk();
+        writefln("textures %d kb", size/1024);
+      }
 
       auto textures = scopedRef!(Vector!(const(char)[]))(New!(Vector!(const(char)[]))());
       uint nextTextureId = 0;
@@ -117,11 +134,17 @@ void ProgressModel(string path)
             if(prop.mKey.data[0..prop.mKey.length] == "$tex.file")
             {
               const(char)[] textureFilename = prop.mData[4..prop.mDataLength-1];
+              rcstring texturePath;
+              if(textureFilename[0..2] == ".\\" || textureFilename[0..2] == "./")
+                texturePath = textureFilename[2..$];
+              else
+                texturePath = textureFilename;
+              texturePath = g_workDir ~ texturePath;
               if(textureFilename != "$texture.png")
               {
-                if(!textureFiles.exists(textureFilename))
+                if(!thBase.file.exists(texturePath[]))
                 {
-                  Warning("Couldn't find file '%s' ignoring...", textureFilename);
+                  Warning("Couldn't find file '%s' at '%s' ignoring...", textureFilename, texturePath[]);
                 }
                 else if(MapTextureType(cast(aiTextureType)prop.mSemantic) == TextureType.UNKNOWN)
                 {
@@ -150,7 +173,10 @@ void ProgressModel(string path)
     //Materials
     {
       outFile.startWriteChunk("materials");
-      scope(exit) outFile.endWriteChunk();
+      scope(exit) {
+        size_t size = outFile.endWriteChunk();
+        writefln("materials %d kb", size/1024);
+      }
 
       if(scene.mMaterials !is null)
       {
@@ -197,12 +223,19 @@ void ProgressModel(string path)
     //Meshes
     {
       outFile.startWriteChunk("meshes");
-      scope(exit) outFile.endWriteChunk();
+      scope(exit){
+        size_t size = outFile.endWriteChunk();
+        writefln("meshes %d kb", size/1024);
+      }
 
       for(size_t i=0; i<scene.mNumMeshes; i++)
       {
         outFile.startWriteChunk("mesh");
-        scope(exit) outFile.endWriteChunk();
+        scope(exit) 
+        {
+          size_t size = outFile.endWriteChunk();
+          writefln("mesh %d size %d kb", i, size / 1024);
+        }
 
         const(aiMesh*) aimesh = scene.mMeshes[i];
 
@@ -210,12 +243,13 @@ void ProgressModel(string path)
         outFile.write(cast(uint)aimesh.mMaterialIndex);
 
         //Num vertices
+        writefln("%d vertices", aimesh.mNumVertices);
         outFile.write(cast(uint)aimesh.mNumVertices);
 
         //vertices
         outFile.startWriteChunk("vertices");
         outFile.write((cast(const(float*))aimesh.mVertices)[0..aimesh.mNumVertices * 3]);
-        outFile.endWriteChunk();
+        writefln("mesh %d vertices %d kb", i, outFile.endWriteChunk()/1024);
 
         if(aimesh.mNormals !is null && (aimesh.mTangents is null || aimesh.mBitangents is null))
         {
@@ -226,30 +260,52 @@ void ProgressModel(string path)
         if(aimesh.mNormals !is null)
         {
           outFile.startWriteChunk("normals");
-          outFile.write((cast(const(float*))aimesh.mNormals)[0..aimesh.mNumVertices * 3]);
-          outFile.endWriteChunk();
+          for(size_t j=0; j<aimesh.mNumVertices; j++)
+          {
+            auto data = (cast(const(float*))(aimesh.mNormals + j))[0..3];
+            outFile.write(CompressFloat(data[0]));
+            outFile.write(CompressFloat(data[1]));
+            outFile.write(CompressFloat(data[2]));
+          }
+          writefln("mesh %d normals %d kb", i, outFile.endWriteChunk()/1024);
         }
 
         //tangents
         if(aimesh.mTangents !is null)
         {
           outFile.startWriteChunk("tangents");
-          outFile.write((cast(const(float*))aimesh.mTangents)[0..aimesh.mNumVertices * 3]);
-          outFile.endWriteChunk();
+          for(size_t j=0; j<aimesh.mNumVertices; j++)
+          {
+            auto data = (cast(const(float*))(aimesh.mTangents + j))[0..3];
+            outFile.write(CompressFloat(data[0]));
+            outFile.write(CompressFloat(data[1]));
+            outFile.write(CompressFloat(data[2]));
+          }
+          writefln("mesh %d tangents %d kb", i, outFile.endWriteChunk()/1024);
         }
 
         //bitangents
         if(aimesh.mBitangents !is null)
         {
           outFile.startWriteChunk("bitangents");
-          outFile.write((cast(const(float*))aimesh.mBitangents)[0..aimesh.mNumVertices * 3]);
-          outFile.endWriteChunk();
+          for(size_t j=0; j<aimesh.mNumVertices; j++)
+          {
+            auto data = (cast(const(float*))(aimesh.mBitangents + j))[0..3];
+            outFile.write(CompressFloat(data[0]));
+            outFile.write(CompressFloat(data[1]));
+            outFile.write(CompressFloat(data[2]));
+          }
+          writefln("mesh %d bitangents %d kb", i, outFile.endWriteChunk()/1024);
         }
 
         //Texture coordinates
         {
           outFile.startWriteChunk("texcoords");
-          scope(exit)outFile.endWriteChunk();
+          scope(exit) 
+          {
+            size_t size = outFile.endWriteChunk();
+            writefln("mesh %d texcoords %d kb", i, size/1024);
+          }
 
           ubyte numTexCoords = 0;
           while(numTexCoords < AI_MAX_NUMBER_OF_TEXTURECOORDS && aimesh.mTextureCoords[numTexCoords] !is null)
@@ -280,13 +336,27 @@ void ProgressModel(string path)
         {
           outFile.startWriteChunk("faces");
           outFile.write(cast(uint)aimesh.mNumFaces);
-          for(size_t j=0; j<aimesh.mNumFaces; j++)
+          if(aimesh.mNumFaces > ushort.max)
           {
-            if(aimesh.mFaces[j].mNumIndices != 3)
-              Error("Non triangle face in mesh");
-            outFile.write(aimesh.mFaces[j].mIndices[0..3]);
+            for(size_t j=0; j<aimesh.mNumFaces; j++)
+            {
+              if(aimesh.mFaces[j].mNumIndices != 3)
+                Error("Non triangle face in mesh");
+              outFile.write(aimesh.mFaces[j].mIndices[0..3]);
+            }
           }
-          outFile.endWriteChunk();
+          else
+          {
+            for(size_t j=0; j<aimesh.mNumFaces; j++)
+            {
+              if(aimesh.mFaces[j].mNumIndices != 3)
+                Error("Non triangle face in mesh");
+              outFile.write(cast(ushort)aimesh.mFaces[j].mIndices[0]);
+              outFile.write(cast(ushort)aimesh.mFaces[j].mIndices[1]);
+              outFile.write(cast(ushort)aimesh.mFaces[j].mIndices[2]);
+            }
+          }
+          writefln("mesh %d faces %d kb", i, outFile.endWriteChunk()/1024);
         }
       }
     }
@@ -294,7 +364,10 @@ void ProgressModel(string path)
     //Nodes
     {
       outFile.startWriteChunk("nodes");
-      scope(exit) outFile.endWriteChunk();
+      scope(exit) {
+        size_t size = outFile.endWriteChunk();
+        writefln("nodes %d kb",size/1024);
+      }
 
       auto nodeLookup = scopedRef!(Hashmap!(void*, uint))(New!(Hashmap!(void*, uint))());
       uint nextNodeId = 0;
@@ -355,17 +428,33 @@ void ProgressModel(string path)
 
 int main(string[] args)
 {
+  Assimp.Load("assimp.dll","");
   auto models = scopedRef!(Stack!string)(New!(Stack!string)());
-  foreach(arg; args)
+  for(size_t i=1; i<args.length; i++)
   {
-    if(arg.endsWith(".dae", CaseSensitive.no))
+    if(args[i] == "-workdir")
     {
-      if(thBase.file.exists(arg))
-        models.push(arg);
+      if(i + 1 > args.length)
+      {
+        writefln("Error: Missing argument after -workdir");
+        return -1;
+      }
+      g_workDir = args[++i];
+      if(g_workDir[g_workDir.length-1] != '\\' && g_workDir[g_workDir.length-1] != '/')
+        g_workDir ~= '\\';
+    }
+    else if(args[i].endsWith(".dae", CaseSensitive.no))
+    {
+      if(thBase.file.exists(args[i]))
+        models.push(args[i]);
       else
       {
-        writefln("File: %s does not exist", arg);
+        writefln("File: %s does not exist", args[i]);
       }
+    }
+    else
+    {
+      writefln("Error: Unkown command line option %s", args[i]);
     }
   }
   if(models.size == 0)
