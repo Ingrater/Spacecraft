@@ -122,16 +122,11 @@ void ProgressModel(string path)
 
     auto textureFiles = scopedRef!(Hashmap!(const(char)[], uint, StringHashPolicy))(New!(Hashmap!(const(char)[], uint, StringHashPolicy))());
     auto materialTextures = scopedRef!(Vector!MaterialTextureInfo)(New!(Vector!MaterialTextureInfo)());
+    auto textures = scopedRef!(Vector!(const(char)[]))(New!(Vector!(const(char)[]))());
+    uint numNextureReferences;
 
-    // Textures
+    // Collect Textures
     {
-      outFile.startWriteChunk("textures");
-      scope(exit){
-        size_t size = outFile.endWriteChunk();
-        writefln("textures %d kb", size/1024);
-      }
-
-      auto textures = scopedRef!(Vector!(const(char)[]))(New!(Vector!(const(char)[]))());
       uint nextTextureId = 0;
 
       if(scene.mMaterials !is null)
@@ -164,20 +159,17 @@ void ProgressModel(string path)
                   Warning("Texture '%s' has non supported semantic, ignoring...", textureFilename);
                 }
                 else {
-                  uint index = cast(uint)textures.length;
-                  textureFiles[textureFilename] = index;
-                  textures ~= textureFilename;
+                  numTextureReferences++;
+                  if(!textureFiles.exists(textureFilename))
+                  {
+                    uint index = cast(uint)textures.length;
+                    textureFiles[textureFilename] = index;
+                    textures ~= textureFilename;
+                  }
                 }
               }
             }
           }
-        }
-
-        //Write the collected results to the chunkfile
-        outFile.write(cast(uint)textures.length);
-        foreach(const(char)[] filename; textures)
-        {
-          outFile.writeArray(filename);
         }
       }
     }
@@ -186,6 +178,13 @@ void ProgressModel(string path)
     {
       outFile.startWriteChunk("sizeinfo");
       scope(exit) outFile.endWriteChunk();
+
+      outFile.write(cast(uint)textures.length);
+      uint texturePathMemory = 0;
+      foreach(const(char)[] filename; textures){
+        texturePathMemory += filename.length;
+      }
+      outFile.write(texturePathMemory);
 
       outFile.write(scene.mNumMeshes);
       for(size_t i=0; i<scene.mNumMeshes; i++)
@@ -219,6 +218,47 @@ void ProgressModel(string path)
           }
         }
         outFile.write(aimesh.mNumFaces);
+
+        outFile.write(aimesh.mNumMaterials);
+      }
+
+      uint numNodes = 0;
+      uint numNodeReferences = 0;
+      uint numMeshReferences = 0;
+
+      void nodeSizeHelper(const(aiNode*) node)
+      {
+        if(node is null)
+          return;
+
+        numNodes++;
+        numNodeReferences += node.mNumChildren;
+        numMeshReferences += node.mNumMeshes;
+        foreach(child; node.mChildren[0..node.mNumChildren])
+        {
+          nodeSizeHelper(child);
+        }
+      }
+
+      outFile.write(numNodes);
+      outFile.write(numNodeReferences);
+      outFile.write(numMeshReferences);
+      outFile.write(numTextureReferences);
+    }
+
+    //Write textures
+    {
+      outFile.startWriteChunk("textures");
+      scope(exit){
+        size_t size = outFile.endWriteChunk();
+        writefln("textures %d kb", size/1024);
+      }
+
+      //Write the collected results to the chunkfile
+      outFile.write(cast(uint)textures.length);
+      foreach(const(char)[] filename; textures)
+      {
+        outFile.writeArray(filename);
       }
     }
 
@@ -231,9 +271,10 @@ void ProgressModel(string path)
         writefln("materials %d kb", size/1024);
       }
 
+      outFile.write(cast(uint)scene.mNumMaterials);
+
       if(scene.mMaterials !is null)
       {
-        outFile.write(cast(uint)scene.mNumMaterials);
         for(size_t i=0; i<scene.mNumMaterials; i++)
         {
           materialTextures.resize(0);
@@ -257,17 +298,11 @@ void ProgressModel(string path)
             }
           }
 
-          //Texture files
+          outFile.write(cast(uint)materialTextures.length);
+          foreach(ref MaterialTextureInfo info; materialTextures)
           {
-            outFile.startWriteChunk("textures");
-            scope(exit) outFile.endWriteChunk();
-
-            outFile.write(cast(uint)materialTextures.length);
-            foreach(ref MaterialTextureInfo info; materialTextures)
-            {
-              outFile.write(info.id);
-              outFile.write(info.semantic);
-            }
+            outFile.write(info.id);
+            outFile.write(info.semantic);
           }
         }
       }

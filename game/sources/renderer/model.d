@@ -120,25 +120,38 @@ interface IDrawModel {
  */
 class Model : IModel, IDrawModel {
 public:
-	/**
-	 * exisiting texture types
-	 */
-	enum TextureType {
-		DIFFUSE, /// diffuse texture
-		AMBIENT, /// ambient texture
-		DISPLACEMENT, /// displacement texture
-		EMISSIVE, /// emissive texture
-		HEIGHT, /// heightmap (normal map for collada)
-		LIGHTMAP, /// lightmap
-		NONE, ///none (should never happen)
-		NORMALS, /// normal map
-		OPACITY, /// opacity map
-		REFLECTION, /// reflection map
-		SHININESS, /// shininess texture
-		SPECULAR, /// specular texture
-		UNKOWN /// unkown texture type
-	}
-	
+  struct FaceData
+  {
+    uint[3] indices;
+  }
+
+  struct MeshData
+  {
+    uint numFaces;
+    FaceData[] faces;
+  }
+
+  struct NodeData
+  {
+    mat4 transform;
+    NodeData* father;
+    NodeData*[] children;
+    MeshData*[] meshes;
+  }
+
+  struct MaterialData
+  {
+    string[] textures;
+  }
+  
+  struct ModelData
+  {
+    string[] textures;
+    MaterialData[] materials;
+    MeshData[] meshes;
+    NodeData* rootNode;
+  }
+
 	/**
 	 * Information about a texture needed by the model
 	 */
@@ -211,6 +224,9 @@ public:
 	}
 	
 private:
+
+  void[] m_meshDataMemory;
+  FixedBlockAllocator!(NoLockPolicy) m_meshDataAllocator;
 	
 	static class Mesh {
 		rcstring m_Name;
@@ -481,7 +497,151 @@ public:
 	}
 	body {
 		m_Filename = pFilename;
-		const(aiScene)* scene = Assimp.ImportFile(toCString(pFilename), 
+		
+    if(!thBase.file.exists(pFilename))
+    {
+      throw New!FileException(format("File '%s' does not exist", pFilename[]));
+    }
+
+    auto file = scopedRef!(ChunkFile)(New!ChunkFile(pFilename, Chunkfile.Operation.Read));
+
+    if(file.startReading("model") != thResult.SUCCESS)
+    {
+      throw New!RCException(format("File '%s' is not a model format", pFilename[]));
+    }
+
+    if(file.fileVersion != ModelFormatVersion.Version1)
+    {
+      throw New!RCException(format("Model '%s' does have old format, please reexport", pFilename[]));
+    }
+
+    //Read the size info
+    {
+      file.startReadChunk();
+      if(file.currentChunkName != "sizeinfo")
+      {
+        throw New!RCException(format("Expected sizeinfo chunk, got '%s' chunk in file '%s'", file.currentChunkName, pFilename[]));
+      }
+
+      size_t meshDataSize = MeshData.sizeof;
+
+      uint numTextures;
+      file.read(numTextures);
+      meshDataSize += string.sizeof * numTextures;
+      
+      uint texturePathMemory;
+      file.read(texturePathMemory);
+      meshDataSize += texturePathMemory;
+
+      uint numMeshes;
+      file.read(numMeshes);
+      meshDataSize += MeshData.sizeof * numMeshes;
+      for(uint i=0; i<numMeshes; i++)
+      {
+        uint numVertices, PerVertexFlags, numComponents, numTexcoords;
+        file.read(numVertices);
+        file.read(PerVertexFlags);
+
+        if(PerVertexFlags & PerVertexData.Position)
+          numComponents++;
+        if(PerVertexFlags & PerVertexData.Tangent)
+          numComponents++;
+        if(PerVertexFlags & PerVertexData.Bitangent)
+          numComponents++;
+        if(PerVertexFlags & PerVertexData.TexCoord0)
+          numTexcoords++;
+        if(PerVertexFlags & PerVertexData.TexCoord1)
+          numTexcoords++;
+        if(PerVertexFlags & PerVertexData.TexCoord2)
+          numTexcoords++;
+        if(PerVertexFlags & PerVertexData.TexCoord3)
+          numTexcoords++;
+
+        meshDataSize += numVertices * numComponents * 3 * float.sizeof;
+
+        for(uint j=0; j<numTexcoords; j++)
+        {
+          ubyte numUVComponents;
+          file.read(numUVComponents);
+          meshDataSize += numVertices * numUVComponents * float.sizeof;
+        }
+
+        uint numFaces;
+        file.read(numFaces);
+        meshDataSize += numFaces * FaceData.sizeof;
+
+        uint numMaterials;
+        file.read(numMaterials);
+        meshDataSize += numMaterials * MaterialData.sizeof;
+      }
+
+      uint numNodes,numNodeReferences,numMeshReferences,numTextureReferences;
+      file.read(numNodes);
+      file.read(numNodeReferences);
+      file.read(numMeshReferences);
+      file.read(numTextureReferences);
+      
+      meshDataSize += numNodes * NodeData.sizeof;
+      meshDataSize += numNodeReferences * (NodeData*).sizeof;
+      meshDataSize += numMeshReferences * (MeshData*).sizeof;
+      meshDataSize += numTextureReferences * string.sizeof;
+
+      file.endReadChunk();
+
+      m_meshDataMemory = StdAllocator.globalInstance.AllocateMemory(meshDataSize);
+      m_meshDataAllocator = New!(typeof(m_meshDataAllocator))(m_meshDataMemory);
+    }
+
+    m_modelData = AllocatorNew!ModelData(m_meshDataAllocator);
+    
+    // Load textures
+    {
+      file.startReadChunk();
+      if(file.currentChunkName != "textures")
+      {
+        throw New!RCException("Expected 'textures' chunk but got '%s' chunk", file.currentChunkName);
+      }
+
+      uint numTextures;
+      file.read(numTextures);
+
+      if(numTextures > 0)
+      {
+        m_modelData.textures = AllocatorNewArray!string(m_meshDataAllocator, numTextures);
+        foreach(ref texture; m_modelData.textures)
+        {
+          uint length;
+          file.read(length);
+          auto data = AllocatorNewArray!char(m_meshDataAllocator, length);
+          file.read(data);
+          texture = cast(string)data;
+        }
+      }
+
+      file.endReadChunk();
+    }
+
+    // Read Materials
+    {
+      file.startReadChunk();
+      if(file.currentChunkName != "materials")
+      {
+        throw New!RCException(format("Expected 'materials' chunk but go '%s'", file.currentChunkName));
+      }
+
+      uint numMaterials;
+      file.read(numMaterials);
+
+      if(numMaterials > 0)
+      {
+
+      }
+    }
+    
+    
+    
+    
+    const(aiScene)* scene = Assimp.ImportFile(toCString(pFilename), 
 		                                   aiPostProcessSteps.CalcTangentSpace |
 		                                   aiPostProcessSteps.Triangulate |
 		                                   aiPostProcessSteps.JoinIdenticalVertices |
