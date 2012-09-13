@@ -316,6 +316,7 @@ void ProgressModel(string path)
         writefln("meshes %d kb", size/1024);
       }
 
+      outFile.write(cast(uint)scene.mNumMeshes);
       for(size_t i=0; i<scene.mNumMeshes; i++)
       {
         outFile.startWriteChunk("mesh");
@@ -409,7 +410,7 @@ void ProgressModel(string path)
             outFile.write(numUVComponents);
             if(numUVComponents == 3)
             {
-              outFile.write((cast(const(float*))aimesh.mTextureCoords[j])[0..aimesh.mNumVertices]);
+              outFile.write((cast(const(float*))aimesh.mTextureCoords[j])[0..aimesh.mNumVertices*3]);
             }
             else
             {
@@ -425,7 +426,7 @@ void ProgressModel(string path)
         {
           outFile.startWriteChunk("faces");
           outFile.write(cast(uint)aimesh.mNumFaces);
-          if(aimesh.mNumFaces > ushort.max)
+          if(aimesh.mNumVertices > ushort.max)
           {
             for(size_t j=0; j<aimesh.mNumFaces; j++)
             {

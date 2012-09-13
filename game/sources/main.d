@@ -4,7 +4,6 @@ import base.all;
 import client.main, server.main;
 
 import base.debughelper;
-import base.assimp.assimp;
 import thBase.io;
 import thBase.conv;
 import thBase.file;

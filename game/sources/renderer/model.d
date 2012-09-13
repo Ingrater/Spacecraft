@@ -21,6 +21,9 @@ import renderer.internal;
 import thBase.math;
 import thBase.string;
 import thBase.algorithm;
+import thBase.chunkfile;
+import thBase.policies.locking;
+import modeltypes;
 
 /**
  * a Material for a subpart of a model
@@ -120,18 +123,29 @@ interface IDrawModel {
  */
 class Model : IModel, IDrawModel {
 public:
-  struct FaceData
+  static struct FaceData
   {
     uint[3] indices;
   }
 
-  struct MeshData
+  static struct MaterialData
   {
-    uint numFaces;
-    FaceData[] faces;
+    TextureReference[] textures;
   }
 
-  struct NodeData
+  static struct MeshData
+  {
+    MaterialData* material;
+    uint numFaces;
+    FaceData[] faces;
+    vec3[] vertices;
+    vec3[] normals;
+    vec3[] tangents;
+    vec3[] bitangents;
+    vec2[4][] texcoords;
+  }
+
+  static struct NodeData
   {
     mat4 transform;
     NodeData* father;
@@ -139,12 +153,13 @@ public:
     MeshData*[] meshes;
   }
 
-  struct MaterialData
+  static struct TextureReference
   {
-    string[] textures;
+    TextureType semantic;
+    string texture;
   }
   
-  struct ModelData
+  static struct ModelData
   {
     string[] textures;
     MaterialData[] materials;
@@ -227,6 +242,7 @@ private:
 
   void[] m_meshDataMemory;
   FixedBlockAllocator!(NoLockPolicy) m_meshDataAllocator;
+  ModelData m_modelData;
 	
 	static class Mesh {
 		rcstring m_Name;
@@ -269,8 +285,6 @@ private:
 	
 	Hashmap!(rcstring, Node) m_NodeLookup;
 	bool m_NeedsNodeLookup = false;
-	
-	const(aiScene)* m_Scene = null;
 	
 	static ShaderConstant m_ModelMatrixConstant;
 	static ShaderConstant m_BonesConstant;
@@ -523,7 +537,7 @@ public:
         throw New!RCException(format("Expected sizeinfo chunk, got '%s' chunk in file '%s'", file.currentChunkName, pFilename[]));
       }
 
-      size_t meshDataSize = MeshData.sizeof;
+      size_t meshDataSize;
 
       uint numTextures;
       file.read(numTextures);
@@ -584,7 +598,7 @@ public:
       meshDataSize += numNodes * NodeData.sizeof;
       meshDataSize += numNodeReferences * (NodeData*).sizeof;
       meshDataSize += numMeshReferences * (MeshData*).sizeof;
-      meshDataSize += numTextureReferences * string.sizeof;
+      meshDataSize += numTextureReferences * TextureReference.sizeof;
 
       file.endReadChunk();
 
@@ -634,10 +648,159 @@ public:
 
       if(numMaterials > 0)
       {
+        m_modelData.materials = AllocatorNewArray!MaterialData(m_meshDataAllocator, numMaterials);
+        foreach(ref material; m_modelData.materials)
+        {
+          file.startReadChunk();
+          if(file.currentChunkName != "mat")
+          {
+            throw New!RCException(format("Expected 'mat' chunk but go '%s'", file.currentChunkName));
+          }
 
+          uint numTextures;
+          file.read(numTextures);
+          material.textures = AllocatorNewArray!TextureReference(m_meshDataAllocator, numTextures);
+          foreach(ref texture; material.textures)
+          {
+            uint textureIndex;
+            file.read(textureIndex);
+            texture.texture = m_modelData.texures[textureIndex];
+            file.read(texture.semantic);
+          }
+
+          file.endReadChunk();
+        }
       }
+
+      file.endReadChunk();
     }
-    
+
+
+    // Read Meshes
+    {
+      file.startReadChunk();
+      if(file.currentChunkName != "meshes")
+      {
+        throw New!RCException(format("Expected 'meshes' chunk but got '%s'", file.currentChunkName));
+      }
+
+      uint numMeshes;
+      file.read(numMeshes);
+      m_modelData.meshes = AllocatorNewArray!MeshData(m_meshDataAllocator, numMeshes);
+
+      foreach(ref mesh; m_modelData.meshes)
+      {
+        file.startReadChunk();
+        if(file.currentChunkName != "mesh")
+        {
+          throw New!RCException(format("Expected 'mesh' chunk but got '%s'", file.currentChunkName));
+        }
+
+        uint materialIndex;
+        file.read(materialIndex);
+        mesh.material = m_modelData.materials[materialIndex];
+
+        uint numVertices;
+        file.read(numVertices);
+
+        mesh.vertices = AllocatorNewArray!(m_meshDataAllocator, numVertices, InitializeMemoryWith.NOTHING);
+        file.read(mesh.vertices);
+
+        float UncompressFloat()
+        {
+          short data;
+          file.read(data);
+          return cast(float)data / cast(float)short.max;
+        }
+
+        {
+          file.startReadChunk();
+          if(file.currentChunkName == "normals")
+          {
+            mesh.normals = AllocatorNewArray!(m_meshDataAllocator, numVertices, InitializeMemoryWith.NOTHING);
+            foreach(ref normal; mesh.normals)
+            {
+              normal.x = UncompressFloat();
+              normal.y = UncompressFloat();
+              normal.z = UncompressFloat();
+            }
+            file.endReadChunk();
+            file.startReadChunk();
+          }
+          if(file.currentChunkName == "tangents")
+          {
+            mesh.tangents = AllocatorNewArray!(m_meshDataAllocator, numVertices, InitMemoryWith.NOTHING);
+            foreach(ref tangent; mesh.tangents)
+            {
+              tangent.x = UncompressFloat();
+              tangent.y = UncompressFloat();
+              tangent.z = UncompressFloat();
+            }
+            file.endReadChunk();
+            file.startReadChunk();
+          }
+          if(file.currentChunkName == "bitangents")
+          {
+            mesh.bitangents = AllocatorNewArray!(m_meshDataAllocator, numVertices, InitMemoryWith.NOTHING);
+            foreach(ref bitangent; mesh.bitangents)
+            {
+              tangent.x = UncompressFloat();
+              tangent.y = UncompressFloat();
+              tangent.z = UncompressFloat();
+            }
+            file.endReadChunk();
+            file.startReadChunk();
+          }
+          if(file.currentChunkName == "texcoords")
+          {
+            ubyte numTexCoords;
+            file.read(numTexCoords);
+            for(ubyte i=0; i<numTexCoords; i++)
+            {
+              ubyte numUVComponents;
+              file.read(numUVComponents);
+              if(numUVComponents != 2)
+              {
+                throw New!RCException(format("Currently only 2 component texture coordinates are supported got %d", numUVComponents));
+              }
+              mesh.texcoords[j] = AllocatorNewArray!vec2(m_meshDataAllocator, numVertices, InitMemoryWith.NOTHING);
+              file.read((cast(float*)mesh.texcoords[j].ptr)[0..numVertices*2]);
+            }
+            file.endReadChunk();
+            file.startReadChunk();
+          }
+          if(file.currentChunkName == "faces")
+          {
+            uint numFaces;
+            file.read(numFaces);
+            mesh.faces = AllocatorNewArray!FaceData(m_meshDataAllocator, numFaces, InitMemoryWith.NOTHING);
+            if(numVertices > ushort.max)
+            {
+              file.read((cast(uint*)mesh.faces.ptr)[0..numFaces*3]);
+            }
+            else
+            {
+              ushort data;
+              foreach(ref face; mesh.faces)
+              {
+                file.read(data); face.indices[0] = cast(uint)data;
+                file.read(data); face.indices[1] = cast(uint)data;
+                file.read(data); face.indices[2] = cast(uint)data;
+              }
+            }
+          }
+          else
+          {
+            throw New!RCException(format("Unexpected chunk '%s'", file.currentChunkName));
+          }
+          file.endReadChunk();
+        }
+
+        file.endReadChunk();
+      }
+
+      file.endReadChunk();
+    }
     
     
     

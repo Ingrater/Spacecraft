@@ -1,7 +1,6 @@
 module game.collision;
 
 import thBase.math3d.all;
-import base.assimp.assimp;
 import base.renderer;
 import thBase.string;
 import core.refcounted;
