@@ -453,7 +453,7 @@ class GameSimulation : IGameThread, IGame {
 		 * model viewer with a default model.
 		 */
 		private void initStandaloneClient(){
-			g_Env.viewModel = "models/frigatte.dae";
+			g_Env.viewModel = "models/frigatte.thModel";
 			initModelViewer();
 		}
 		

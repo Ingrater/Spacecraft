@@ -9,12 +9,6 @@ import core.thread;
 void server_main(){
 	assert(g_Env.isServer);
 	
-	core.memory.GC.disable();
-	scope(exit){
-		core.memory.GC.enable();
-		core.memory.GC.collect();
-	}
-	
 	// Setup the server console
 	console.init();
 	scope(exit) console.shutdown();
@@ -35,20 +29,20 @@ void server_main(){
 	//scriptSystem.RegisterGlobal("say", toDelegate(&say));
 	
 	// Load the resources the server needs
-	server.resources.loadCollision(_T("rock1"), _T("models/env/rock_small_1_coll.dae"));
-  server.resources.loadCollision(_T("rock2"), _T("models/env/rock_small_2_coll.dae"));
-  server.resources.loadCollision(_T("rock3"), _T("models/env/rock_small_3_coll.dae"));
-  server.resources.loadCollision(_T("rock1_high"), _T("models/env/rock_small_1_coll_high.dae"));
-  server.resources.loadCollision(_T("rock2_high"), _T("models/env/rock_small_2_coll_high.dae"));
-  server.resources.loadCollision(_T("rock3_high"), _T("models/env/rock_small_3_coll_high.dae"));
-  server.resources.loadCollision(_T("frigate"), _T("models/frigate_coll.dae"));
-  server.resources.loadCollision(_T("heavy_base"), _T("models/weapons/heavy_base_coll.dae"));
-  server.resources.loadCollision(_T("heavy_cannon"), _T("models/weapons/heavy_cannon_coll.dae"));
-  server.resources.loadCollision(_T("flak_base"), _T("models/weapons/flak_base_coll.dae"));
-  server.resources.loadCollision(_T("flak_cannon"), _T("models/weapons/flak_cannon_coll.dae"));
-  server.resources.loadCollision(_T("fighter"), _T("models/figther_coll.dae"));
-  server.resources.loadCollision(_T("spacestation"), _T("models/env/spacestation_full_coll.dae"));
-  server.resources.loadCollision(_T("habitat"), _T("models/env/spacestation2_coll.dae"));
+	server.resources.loadCollision(_T("rock1"), _T("models/env/rock_small_1_coll.thModel"));
+  server.resources.loadCollision(_T("rock2"), _T("models/env/rock_small_2_coll.thModel"));
+  server.resources.loadCollision(_T("rock3"), _T("models/env/rock_small_3_coll.thModel"));
+  server.resources.loadCollision(_T("rock1_high"), _T("models/env/rock_small_1_coll_high.thModel"));
+  server.resources.loadCollision(_T("rock2_high"), _T("models/env/rock_small_2_coll_high.thModel"));
+  server.resources.loadCollision(_T("rock3_high"), _T("models/env/rock_small_3_coll_high.thModel"));
+  server.resources.loadCollision(_T("frigate"), _T("models/frigate_coll.thModel"));
+  server.resources.loadCollision(_T("heavy_base"), _T("models/weapons/heavy_base_coll.thModel"));
+  server.resources.loadCollision(_T("heavy_cannon"), _T("models/weapons/heavy_cannon_coll.thModel"));
+  server.resources.loadCollision(_T("flak_base"), _T("models/weapons/flak_base_coll.thModel"));
+  server.resources.loadCollision(_T("flak_cannon"), _T("models/weapons/flak_cannon_coll.thModel"));
+  server.resources.loadCollision(_T("fighter"), _T("models/figther_coll.thModel"));
+  server.resources.loadCollision(_T("spacestation"), _T("models/env/spacestation_full_coll.thModel"));
+  server.resources.loadCollision(_T("habitat"), _T("models/env/spacestation2_coll.thModel"));
   scope(exit) 
   {
     server.resources.unloadCollisions();

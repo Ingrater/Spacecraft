@@ -180,16 +180,8 @@ int main(string[] args){
 		base.logger.info("starting up engine");
 		
 		// Create the main timer
-		g_Env.mainTimer = new Timer();
+		g_Env.mainTimer = New!Timer();
     scope(exit) Delete(g_Env.mainTimer);
-		
-		//load assimp
-		version(X86){
-			Assimp.Load("assimp.dll","./libassimp.so");
-		}
-		version(X86_64){
-			Assimp.Load("assimp64.dll","./libassimp.so");
-		}
 
     version(ParticlePerformance)
     {

@@ -5,7 +5,9 @@ import base.renderer;
 import thBase.string;
 import core.refcounted;
 import core.allocator;
-
+import thBase.scoped;
+import base.modelloader;
+import thBase.enumbitfield;
 
 class CollisionHull {
 private
@@ -30,42 +32,26 @@ public:
 	 *  pFilename = the file to load
 	 */
 	void Load(rcstring pFilename){
-		const(aiScene)* scene = Assimp.ImportFile(toCString(pFilename), 
-		                                   aiPostProcessSteps.CalcTangentSpace |
-		                                   aiPostProcessSteps.Triangulate |
-		                                   aiPostProcessSteps.JoinIdenticalVertices |
-		                                   aiPostProcessSteps.FlipUVs |
-										   aiPostProcessSteps.PreTransformVertices );
-		if(scene is null){
-			throw New!RCException(format("Couldn't load collision mesh from file '%s'", pFilename[]));
-		}
+		auto loader = scopedRef!ModelLoader(New!ModelLoader());
+    loader.LoadFile(pFilename, EnumBitfield!(ModelLoader.Load)(ModelLoader.Load.Meshes));
 		
-		if(scene.mNumMeshes > 1){
+		if(loader.modelData.meshes.length > 1){
 			throw New!RCException(format("The collision mesh '%s' does contain more that 1 mesh", pFilename[]));
 		}
 		
-		const(aiMesh)* aimesh = scene.mMeshes[0];
+		auto mesh = loader.modelData.meshes[0];
     if(m_Faces)
     {
       Delete(m_Faces);
     }
-		m_Faces = NewArray!Triangle(aimesh.mNumFaces);
+		m_Faces = NewArray!Triangle(mesh.faces.length);
 		
-		/*mat4 inv;
-		inv.f[ 0]= 1.00; inv.f[ 1]= 0.00; inv.f[ 2]= 0.00; inv.f[ 3]= 0.00;
-		inv.f[ 4]= 0.00; inv.f[ 5]= 0.00; inv.f[ 6]= 1.00; inv.f[ 7]= 0.00;
-		inv.f[ 8]= 0.00; inv.f[ 9]=-1.00; inv.f[10]= 0.00; inv.f[11]= 0.00;
-		inv.f[12]= 0.00; inv.f[13]= 0.00; inv.f[14]= 0.00; inv.f[15]= 1.00;*/
-		
-		foreach(size_t i,ref face;m_Faces){
-			if(aimesh.mFaces[i].mNumIndices != 3){
-				throw new Exception("Trying to load a non triangle model");
+		foreach(size_t i,ref face;m_Faces){			
+      for(size_t j=0; j<3; j++)
+      {
+			  face.v[j] = mesh.vertices[mesh.faces[i].indices[j]];
 			}
-			
-			face.v[0] = vec3(/*inv */ vec4((&aimesh.mVertices[aimesh.mFaces[i].mIndices[0]].x)[0..3]));
-			face.v[1] = vec3(/*inv */ vec4((&aimesh.mVertices[aimesh.mFaces[i].mIndices[1]].x)[0..3]));
-			face.v[2] = vec3(/*inv */ vec4((&aimesh.mVertices[aimesh.mFaces[i].mIndices[2]].x)[0..3]));
-			face.plane = Plane(face.v[0],face.v[1],face.v[2]);
+      face.plane = Plane(face.v[0], face.v[1], face.v[2]);
 		}
 	}
 

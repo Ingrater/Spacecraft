@@ -9,7 +9,9 @@ import thBase.file;
 import thBase.chunkfile;
 import thBase.format;
 import thBase.math;
+import thBase.math3d.all;
 import thBase.math3d.mats;
+import thBase.math3d.vecs;
 import assimp.assimp;
 import modeltypes;
 
@@ -112,7 +114,7 @@ void ProgressModel(string path)
       scene = null;
     }
 
-    rcstring outputFilename = path[0..$-3];
+    rcstring outputFilename = path[0..$-4];
     outputFilename ~= ".thModel";
 
     auto outFile = scopedRef!Chunkfile(New!Chunkfile(outputFilename, Chunkfile.Operation.Write));
@@ -123,7 +125,7 @@ void ProgressModel(string path)
     auto textureFiles = scopedRef!(Hashmap!(const(char)[], uint, StringHashPolicy))(New!(Hashmap!(const(char)[], uint, StringHashPolicy))());
     auto materialTextures = scopedRef!(Vector!MaterialTextureInfo)(New!(Vector!MaterialTextureInfo)());
     auto textures = scopedRef!(Vector!(const(char)[]))(New!(Vector!(const(char)[]))());
-    uint numNextureReferences;
+    uint numTextureReferences;
 
     // Collect Textures
     {
@@ -186,6 +188,7 @@ void ProgressModel(string path)
       }
       outFile.write(texturePathMemory);
 
+      outFile.write(scene.mNumMaterials);
       outFile.write(scene.mNumMeshes);
       for(size_t i=0; i<scene.mNumMeshes; i++)
       {
@@ -218,13 +221,12 @@ void ProgressModel(string path)
           }
         }
         outFile.write(aimesh.mNumFaces);
-
-        outFile.write(aimesh.mNumMaterials);
       }
 
       uint numNodes = 0;
       uint numNodeReferences = 0;
       uint numMeshReferences = 0;
+      uint nodeNameMemory = 0;
 
       void nodeSizeHelper(const(aiNode*) node)
       {
@@ -234,6 +236,7 @@ void ProgressModel(string path)
         numNodes++;
         numNodeReferences += node.mNumChildren;
         numMeshReferences += node.mNumMeshes;
+        nodeNameMemory += node.mName.length;
         foreach(child; node.mChildren[0..node.mNumChildren])
         {
           nodeSizeHelper(child);
@@ -242,6 +245,7 @@ void ProgressModel(string path)
 
       outFile.write(numNodes);
       outFile.write(numNodeReferences);
+      outFile.write(nodeNameMemory);
       outFile.write(numMeshReferences);
       outFile.write(numTextureReferences);
     }
@@ -330,6 +334,17 @@ void ProgressModel(string path)
 
         //Material index
         outFile.write(cast(uint)aimesh.mMaterialIndex);
+
+        //min, max
+        auto minBounds = vec3(float.max, float.max, float.max);
+        auto maxBounds = vec3(-float.max, -float.max, -float.max);
+        foreach(ref v; (cast(const(vec3*))aimesh.mVertices)[0..aimesh.mNumVertices])
+        {
+          minBounds = thBase.math3d.all.min(minBounds, v);
+          maxBounds = thBase.math3d.all.max(maxBounds, v);
+        }
+        outFile.write(minBounds.f[]);
+        outFile.write(maxBounds.f[]);
 
         //Num vertices
         writefln("%d vertices", aimesh.mNumVertices);
@@ -495,19 +510,21 @@ void ProgressModel(string path)
           outFile.write(uint.max);
         else
           outFile.write(nodeLookup[cast(void*)node.mParent]);
+
+        outFile.writeArray(node.mMeshes[0..node.mNumMeshes]);
+
         outFile.write(node.mNumChildren);
         for(uint i=0; i<node.mNumChildren; i++)
         {
           outFile.write(nodeLookup[cast(void*)node.mChildren[i]]);
         }
 
-        outFile.writeArray(node.mMeshes[0..node.mNumMeshes]);
-
         foreach(child; node.mChildren[0..node.mNumChildren])
         {
           writeNode(child);
         }
       }
+      writeNode(scene.mRootNode);
     }
   }
   catch(Exception ex)
@@ -534,7 +551,7 @@ int main(string[] args)
       if(g_workDir[g_workDir.length-1] != '\\' && g_workDir[g_workDir.length-1] != '/')
         g_workDir ~= '\\';
     }
-    else if(args[i].endsWith(".dae", CaseSensitive.no))
+    else if(args[i].endsWith(".thModel", CaseSensitive.no))
     {
       if(thBase.file.exists(args[i]))
         models.push(args[i]);

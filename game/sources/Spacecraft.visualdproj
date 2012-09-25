@@ -656,6 +656,7 @@
    <File path="base\logger.d" />
    <File path="base\memory.d" />
    <File path="base\messages.d" />
+   <File path="base\modelloader.d" />
    <File path="base\net.d" />
    <File path="base\octree.d" />
    <File path="base\profiler.d" />

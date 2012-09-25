@@ -13,6 +13,7 @@ import thBase.container.hashmap;
 import thBase.container.queue;
 import thBase.container.vector;
 import core.thread;
+import modeltypes;
 
 
 class AssetLoader : IAssetLoader {
@@ -218,7 +219,7 @@ public:
 			
 			foreach(ref t;matInfo[i].textures){
 				
-				if(t.type == Model.TextureType.DIFFUSE){
+				if(t.type == TextureType.DIFFUSE){
 					debug base.logger.info("Adding diffuse map %s",t.file[]);
 					if(!m_modelTextures.exists(t.file)){
 						auto texture = m_Renderer.CreateTexture2D(t.file, ImageCompression.AUTO);
@@ -231,7 +232,7 @@ public:
 						mat.SetShader(m_TextureShader.GetShader());
 				}
 				
-				if(t.type == Model.TextureType.HEIGHT){
+				if(t.type == TextureType.HEIGHT){
 					debug base.logger.info("Adding bump map %s", t.file[]);
 					if(!m_modelTextures.exists(t.file)){
 						auto texture = m_Renderer.CreateTexture2D(t.file, ImageCompression.AUTO);
@@ -250,7 +251,7 @@ public:
 						mat.SetShader(m_TextureNormalShader.GetShader());
 				}
 				
-				if(t.type == Model.TextureType.SPECULAR){
+				if(t.type == TextureType.SPECULAR){
 					debug base.logger.info("Adding specular map %s", t.file[]);
 					if(!m_modelTextures.exists(t.file)){
 						auto texture = m_Renderer.CreateTexture2D(t.file,ImageCompression.AUTO);
@@ -267,7 +268,7 @@ public:
 						mat.SetShader(m_TextureSpecShader.GetShader());
 				}
 				
-				if(t.type == Model.TextureType.EMISSIVE){
+				if(t.type == TextureType.EMISSIVE){
           auto file = t.file;
 					debug base.logger.info("Adding self illu map %s", t.file[]);
 					if(!m_modelTextures.exists(file)){

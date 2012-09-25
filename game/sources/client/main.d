@@ -198,26 +198,26 @@ public:
 				  base.logger.info("Loading resources...");
 
           auto resourceData = [
-					  [_T("nothing"), _T("models/weapons/flak_cannon.dae")], // This model is used as a placeholder if the real model is still unknown (pending from network)
-					  [_T("rock1"), _T("models/env/rock_small_1.dae")],
-					  [_T("rock2"), _T("models/env/rock_small_2.dae")],
-					  [_T("rock3"), _T("models/env/rock_small_3.dae")],
-					  [_T("frigate"), _T("models/frigate.dae")],
-					  [_T("heavy_base"), _T("models/weapons/heavy_base.dae")],
-					  [_T("heavy_cannon"), _T("models/weapons/heavy_cannon.dae")],
-					  [_T("frigate_coll"), _T("models/frigate_coll.dae")],
-					  [_T("heavy_base_coll"), _T("models/weapons/heavy_base_coll.dae")],
-					  [_T("heavy_cannon_coll"), _T("models/weapons/heavy_cannon_coll.dae")],
-					  [_T("flak_base"), _T("models/weapons/flak_base.dae")],
-					  [_T("flak_cannon"), _T("models/weapons/flak_cannon.dae")],
-					  [_T("flak_base_coll"), _T("models/weapons/flak_base_coll.dae")],
-					  [_T("flak_cannon_coll"), _T("models/weapons/flak_cannon_coll.dae")],
-					  [_T("fighter"), _T("models/figther.dae")],
-					  [_T("fighter_coll"), _T("models/figther_coll.dae")],
-					  [_T("cockpit"), _T("models/cockpit.dae")],
-					  [_T("cockpit_glass"), _T("models/cockpit_glass.dae")],
-					  [_T("spacestation"), _T("models/env/spacestation_full.dae")],
-					  [_T("habitat"), _T("models/env/spacestation2.dae")]
+					  [_T("nothing"), _T("models/weapons/flak_cannon.thModel")], // This model is used as a placeholder if the real model is still unknown (pending from network)
+					  [_T("rock1"), _T("models/env/rock_small_1.thModel")],
+					  [_T("rock2"), _T("models/env/rock_small_2.thModel")],
+					  [_T("rock3"), _T("models/env/rock_small_3.thModel")],
+					  [_T("frigate"), _T("models/frigate.thModel")],
+					  [_T("heavy_base"), _T("models/weapons/heavy_base.thModel")],
+					  [_T("heavy_cannon"), _T("models/weapons/heavy_cannon.thModel")],
+					  [_T("frigate_coll"), _T("models/frigate_coll.thModel")],
+					  [_T("heavy_base_coll"), _T("models/weapons/heavy_base_coll.thModel")],
+					  [_T("heavy_cannon_coll"), _T("models/weapons/heavy_cannon_coll.thModel")],
+					  [_T("flak_base"), _T("models/weapons/flak_base.thModel")],
+					  [_T("flak_cannon"), _T("models/weapons/flak_cannon.thModel")],
+					  [_T("flak_base_coll"), _T("models/weapons/flak_base_coll.thModel")],
+					  [_T("flak_cannon_coll"), _T("models/weapons/flak_cannon_coll.thModel")],
+					  [_T("fighter"), _T("models/figther.thModel")],
+					  [_T("fighter_coll"), _T("models/figther_coll.thModel")],
+					  [_T("cockpit"), _T("models/cockpit.thModel")],
+					  [_T("cockpit_glass"), _T("models/cockpit_glass.thModel")],
+					  [_T("spacestation"), _T("models/env/spacestation_full.thModel")],
+					  [_T("habitat"), _T("models/env/spacestation2.thModel")]
 				  ];
 				
 				  client.resources.loadModels(progressBar, game, 0, 0.75, resourceData);
