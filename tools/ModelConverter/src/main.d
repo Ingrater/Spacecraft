@@ -16,6 +16,7 @@ import assimp.assimp;
 import modeltypes;
 
 rcstring g_workDir;
+bool g_debug = false;
 
 static ~this()
 {
@@ -117,7 +118,7 @@ void ProgressModel(string path)
     rcstring outputFilename = path[0..$-4];
     outputFilename ~= ".thModel";
 
-    auto outFile = scopedRef!Chunkfile(New!Chunkfile(outputFilename, Chunkfile.Operation.Write));
+    auto outFile = scopedRef!Chunkfile(New!Chunkfile(outputFilename, Chunkfile.Operation.Write, g_debug ? Chunkfile.DebugMode.On : Chunkfile.DebugMode.Off ));
 
     outFile.startWriting("thModel", ModelFormatVersion.max);
     scope(exit) outFile.endWriting();
@@ -212,7 +213,7 @@ void ProgressModel(string path)
         outFile.write(PerVertexFlags);
         for(int j=0; j<4; j++)
         {
-          if(aimesh.mTextureCoords[i] !is null)
+          if(aimesh.mTextureCoords[j] !is null)
           {
             ubyte numUVComponents = cast(ubyte)aimesh.mNumUVComponents[j];
             if(numUVComponents == 0)
@@ -242,6 +243,8 @@ void ProgressModel(string path)
           nodeSizeHelper(child);
         }
       }
+
+      nodeSizeHelper(scene.mRootNode);
 
       outFile.write(numNodes);
       outFile.write(numNodeReferences);
@@ -540,18 +543,22 @@ int main(string[] args)
   auto models = scopedRef!(Stack!string)(New!(Stack!string)());
   for(size_t i=1; i<args.length; i++)
   {
-    if(args[i] == "-workdir")
+    if(args[i] == "--workdir")
     {
       if(i + 1 > args.length)
       {
-        writefln("Error: Missing argument after -workdir");
+        writefln("Error: Missing argument after --workdir");
         return -1;
       }
       g_workDir = args[++i];
       if(g_workDir[g_workDir.length-1] != '\\' && g_workDir[g_workDir.length-1] != '/')
         g_workDir ~= '\\';
     }
-    else if(args[i].endsWith(".thModel", CaseSensitive.no))
+    else if(args[i] == "--debug")
+    {
+      g_debug = true;
+    }
+    else if(args[i].endsWith(".dae", CaseSensitive.no))
     {
       if(thBase.file.exists(args[i]))
         models.push(args[i]);

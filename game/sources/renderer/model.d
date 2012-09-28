@@ -13,6 +13,7 @@ import renderer.vertexbuffermanager;
 import renderer.rendergroup;
 import renderer.rendercall;
 import thBase.constref;
+import thBase.enumbitfield;
 
 import renderer.exceptions;
 import thBase.container.vector;
@@ -358,6 +359,7 @@ public:
    */
   void LoadFile(rcstring filename)
   {
+    m_modelLoader.LoadFile(filename, Flags(ModelLoader.Load.Everything));
   }
 	
 	/**

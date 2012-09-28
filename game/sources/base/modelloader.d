@@ -52,7 +52,7 @@ public:
     vec3[] normals;
     vec3[] tangents;
     vec3[] bitangents;
-    vec2[4][] texcoords;
+    vec2[][4] texcoords;
   }
 
   static struct NodeDrawData
@@ -85,8 +85,7 @@ public:
     bool hasData;
   }
 
-  private void[] m_meshDataMemory;
-  private FixedBlockAllocator!(NoLockPolicy) m_meshDataAllocator;
+  private FixedStackAllocator!(NoLockPolicy, StdAllocator) m_meshDataAllocator;
   private ModelData m_modelData;
   rcstring  filename;
 
@@ -116,7 +115,7 @@ public:
       throw New!RCException(format("File '%s' does not exist", pFilename[]));
     }
 
-    auto file = scopedRef!(Chunkfile)(New!Chunkfile(pFilename, Chunkfile.Operation.Read));
+    auto file = scopedRef!(Chunkfile)(New!Chunkfile(pFilename, Chunkfile.Operation.Read, Chunkfile.DebugMode.On ));
 
     if(file.startReading("thModel") != thResult.SUCCESS)
     {
@@ -138,6 +137,7 @@ public:
 
     //Read the size info
     {
+      enum size_t alignmentOverhead = m_meshDataAllocator.alignment - 1;
       file.startReadChunk();
       if(file.currentChunkName != "sizeinfo")
       {
@@ -149,7 +149,10 @@ public:
       uint numTextures;
       file.read(numTextures);
       if(loadWhat.IsSet(Load.Materials))
+      {
         meshDataSize += string.sizeof * numTextures;
+        meshDataSize += numTextures * alignmentOverhead; //alignment overhead for texture paths
+      }
 
       uint texturePathMemory;
       file.read(texturePathMemory);
@@ -214,6 +217,7 @@ public:
       if(loadWhat.IsSet(Load.Nodes))
       {
         meshDataSize += numNodes * NodeData.sizeof;
+        meshDataSize += numNodes * alignmentOverhead; //alignment overhead for node names
         meshDataSize += numNodes * NodeDrawData.sizeof;
         meshDataSize += numNodeReferences * (NodeData*).sizeof;
         meshDataSize += nodeNameMemory;
@@ -224,8 +228,12 @@ public:
 
       file.endReadChunk();
 
-      m_meshDataMemory = StdAllocator.globalInstance.AllocateMemory(meshDataSize);
-      m_meshDataAllocator = New!(typeof(m_meshDataAllocator))(m_meshDataMemory);
+      debug 
+      {
+        meshDataSize += 512 * size_t.sizeof; //room for size tracking inside allocator in debug
+      }
+
+      m_meshDataAllocator = New!(typeof(m_meshDataAllocator))(meshDataSize, StdAllocator.globalInstance);
     }
 
     // Load textures
@@ -342,8 +350,14 @@ public:
           uint numVertices;
           file.read(numVertices);
 
+          file.startReadChunk();
+          if(file.currentChunkName != "vertices")
+          {
+            throw New!RCException(format("Expected 'vertices' chunk but got '%s'", file.currentChunkName));
+          }
           mesh.vertices = AllocatorNewArray!vec3(m_meshDataAllocator, numVertices, InitializeMemoryWith.NOTHING);
-          file.read(mesh.vertices);
+          file.read(mesh.vertices[0].f.ptr[0..numVertices * 3]);
+          file.endReadChunk();
 
           float UncompressFloat()
           {
