@@ -178,7 +178,7 @@ class MgProjectile : GameObject, ISerializeable {
 	// Stuff that is reused between all game objects of this kind on the client
 	protected static {
 		shared(ISpriteAtlas) m_SpriteAtlas;
-		Hashmap!(ubyte,IRenderProxy) m_ReuseableRenderProxy;
+		Hashmap!(ubyte, SmartPtr!IRenderProxy) m_ReuseableRenderProxy;
 	}
 	
 	private {

@@ -208,39 +208,39 @@ public:
 		model.SetNumMaterialSets(2);
 		
 		// load textures and create materials for the model
-		auto matInfo = model.GetMaterialInfo();
-		for(int i=0;i<model.GetNumMaterials();i++){	
+		foreach(size_t i, matInfo; model.GetMaterialInfo())
+    {
 			model.SetMaterial(0,i,m_ShadowMaterial);
 			
 			auto mat = New!Material();
 			mat.SetShader(m_GrayShader.GetShader());
-			mat.SetTexture(m_Renderer.shadowMap,4);
-			model.SetMaterial(1,i,mat);
+			mat.SetTexture(m_Renderer.shadowMap, 4);
+			model.SetMaterial(1, i, mat);
 			
-			foreach(ref t;matInfo[i].textures){
-				
-				if(t.type == TextureType.DIFFUSE){
-					debug base.logger.info("Adding diffuse map %s",t.file[]);
-					if(!m_modelTextures.exists(t.file)){
-						auto texture = m_Renderer.CreateTexture2D(t.file, ImageCompression.AUTO);
-						texture.GetImageData().LoadFromFile(t.file,ImageCompression.AUTO);
+			foreach(ref t; matInfo.textures){
+        auto filename = rcstring(t.file);
+				if(t.semantic == TextureType.DIFFUSE){
+					debug base.logger.info("Adding diffuse map %s", t.file);
+					if(!m_modelTextures.exists(filename)){
+						auto texture = m_Renderer.CreateTexture2D(filename, ImageCompression.AUTO);
+						texture.GetImageData().LoadFromFile(filename, ImageCompression.AUTO);
 						texture.UploadImageData(Texture2D.Options.LINEAR | Texture2D.Options.MIPMAPS | Texture2D.Options.NO_LOCAL_DATA);
-						m_modelTextures[t.file] = texture;
+						m_modelTextures[filename] = texture;
 					}
-					mat.SetTexture(m_modelTextures[t.file],0);
+					mat.SetTexture(m_modelTextures[filename], 0);
 					if(mat.GetShader() is m_GrayShader.GetShader())
 						mat.SetShader(m_TextureShader.GetShader());
 				}
 				
-				if(t.type == TextureType.HEIGHT){
-					debug base.logger.info("Adding bump map %s", t.file[]);
-					if(!m_modelTextures.exists(t.file)){
-						auto texture = m_Renderer.CreateTexture2D(t.file, ImageCompression.AUTO);
-						texture.GetImageData().LoadFromFile(t.file, ImageCompression.AUTO);
+				if(t.semantic == TextureType.HEIGHT){
+					debug base.logger.info("Adding bump map %s", t.file);
+					if(!m_modelTextures.exists(filename)){
+						auto texture = m_Renderer.CreateTexture2D(filename, ImageCompression.AUTO);
+						texture.GetImageData().LoadFromFile(filename, ImageCompression.AUTO);
 						texture.UploadImageData(Texture2D.Options.LINEAR | Texture2D.Options.MIPMAPS | Texture2D.Options.NO_LOCAL_DATA);
-						m_modelTextures[t.file] = texture;
+						m_modelTextures[filename] = texture;
 					}
-					mat.SetTexture(m_modelTextures[t.file],1);
+					mat.SetTexture(m_modelTextures[filename], 1);
 					if(mat.GetShader() is m_TextureSpecShader.GetShader())
 						mat.SetShader(m_TextureNormalSpecShader.GetShader());
 					else if(mat.GetShader() is m_TextureIlluShader.GetShader())
@@ -251,15 +251,15 @@ public:
 						mat.SetShader(m_TextureNormalShader.GetShader());
 				}
 				
-				if(t.type == TextureType.SPECULAR){
-					debug base.logger.info("Adding specular map %s", t.file[]);
-					if(!m_modelTextures.exists(t.file)){
-						auto texture = m_Renderer.CreateTexture2D(t.file,ImageCompression.AUTO);
-						texture.GetImageData().LoadFromFile(t.file,ImageCompression.AUTO);
+				if(t.semantic == TextureType.SPECULAR){
+					debug base.logger.info("Adding specular map %s", t.file);
+					if(!m_modelTextures.exists(filename)){
+						auto texture = m_Renderer.CreateTexture2D(filename, ImageCompression.AUTO);
+						texture.GetImageData().LoadFromFile(filename, ImageCompression.AUTO);
 						texture.UploadImageData(Texture2D.Options.LINEAR | Texture2D.Options.MIPMAPS | Texture2D.Options.NO_LOCAL_DATA);
-						m_modelTextures[t.file] = texture;
+						m_modelTextures[filename] = texture;
 					}
-					mat.SetTexture(m_modelTextures[t.file],2);
+					mat.SetTexture(m_modelTextures[filename], 2);
 					if(mat.GetShader() is m_TextureNormalShader.GetShader())
 						mat.SetShader(m_TextureNormalSpecShader.GetShader());
 					else if(mat.GetShader() is m_TextureIlluShader.GetShader())
@@ -268,16 +268,15 @@ public:
 						mat.SetShader(m_TextureSpecShader.GetShader());
 				}
 				
-				if(t.type == TextureType.EMISSIVE){
-          auto file = t.file;
-					debug base.logger.info("Adding self illu map %s", t.file[]);
-					if(!m_modelTextures.exists(file)){
-						auto texture = m_Renderer.CreateTexture2D(t.file, ImageCompression.AUTO);
-						texture.GetImageData().LoadFromFile(t.file,ImageCompression.AUTO);
+				if(t.semantic == TextureType.EMISSIVE){
+					debug base.logger.info("Adding self illu map %s", t.file);
+					if(!m_modelTextures.exists(filename)){
+						auto texture = m_Renderer.CreateTexture2D(filename, ImageCompression.AUTO);
+						texture.GetImageData().LoadFromFile(filename, ImageCompression.AUTO);
 						texture.UploadImageData(Texture2D.Options.LINEAR | Texture2D.Options.MIPMAPS | Texture2D.Options.NO_LOCAL_DATA);
-						m_modelTextures[t.file] = texture;
+						m_modelTextures[filename] = texture;
 					}
-					mat.SetTexture(m_modelTextures[t.file],3);
+					mat.SetTexture(m_modelTextures[filename],3);
 					if(mat.GetShader() is m_TextureShader.GetShader())
 						mat.SetShader(m_TextureIlluShader.GetShader());
 					else if(mat.GetShader() is m_TextureSpecShader.GetShader())

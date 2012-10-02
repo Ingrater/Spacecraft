@@ -135,26 +135,6 @@ public:
 		int index; /// used texture channel
 	}
 	
-	/**
-	 * Information about a material needed by the model
-	 */
-	struct MaterialInfo {
-		Vector!ModelTextureInfo textures; /// array of textures
-    Hashmap!(rcstring, Overwrite) properties; /// array of properties, key is the property name
-
-    void init()
-    {
-      textures = New!(typeof(textures))();
-      properties = New!(typeof(properties))();
-    }
-
-    ~this()
-    {
-      Delete(properties);
-      Delete(textures);
-    }
-	};
-	
 	class SubModel : ISubModel, IDrawModel {
 		private:
 			const(ModelLoader.NodeDrawData*) m_SubRootNode;
@@ -210,7 +190,6 @@ private:
   }
 
 	Vector!(Vector!(Material)) m_Materials;
-	MaterialInfo[] m_MaterialInfo;
 	IVertexBufferManager m_Manager;
 	IRendererInternal m_Renderer;
   composite!ModelLoader m_modelLoader;
@@ -331,8 +310,6 @@ public:
       Delete(set);
     }
     Delete(m_Materials);
-
-    Delete(m_MaterialInfo);
 
     Delete(m_NodeLookup);
   }
@@ -539,7 +516,7 @@ public:
 	 * gets the number of materials used
 	 */
 	size_t GetNumMaterials(){
-		return m_Materials[0].size();
+		return m_modelLoader.modelData.materials.length;
 	}
 	
 	/**
@@ -557,9 +534,7 @@ public:
 			if(m_Materials[i] is null){
 				m_Materials[i] = New!(Vector!Material)();
 			}
-			if(m_Materials[0].size() != m_Materials[i].size()){
-				m_Materials[i].resize(m_Materials[0].size());
-			}
+		  m_Materials[i].resize(GetNumMaterials());
 		}
 	}
 	
@@ -601,8 +576,8 @@ public:
 	 * Has to be called after the model file has been loaded
 	 * Returns: A array of MaterialInfo structs
 	 */ 
-	MaterialInfo[] GetMaterialInfo(){
-		return m_MaterialInfo;
+	const(ModelLoader.MaterialData)[] GetMaterialInfo(){
+		return m_modelLoader.modelData.materials;
 	}
 	
 	/**

@@ -48,7 +48,7 @@ public:
 	
 	override void Update(){
 		foreach(sound;m_StreamingSounds[]){
-			if(sound.IsPlaying()){
+			if(sound.isStreaming){
 				//writefln("updating streaming sound");
 				sound.Update();
 			}

@@ -314,6 +314,7 @@ class SourceOggStream : Source {
 private:
 	al.ALuint m_aluiBuffer2;
 	ov.OggVorbis_File m_oggFile;
+  bool m_isStreaming;
 	
 	int Stream(al.ALuint Buffer){
 		enum size_t BUFFER_SIZE = 131072;
@@ -443,25 +444,59 @@ public:
 	  Stream(m_aluiBuffer2);
 	  al.SourceQueueBuffers(m_aluiSource,1,&m_aluiBuffer2);
 	}
+
+  override void Play()
+  {
+    if(!m_bDataLoaded)
+      return;
+    m_isStreaming = true;
+    super.Play();
+  }
+
+  override void Stop()
+  {
+    if(!m_bDataLoaded)
+      return;
+    m_isStreaming = false;
+    super.Stop();
+  }
+
+  override void Pause()
+  {
+    if(!m_bDataLoaded)
+      return;
+    m_isStreaming = false;
+    super.Pause();
+  }
+
+  @property final bool isStreaming()
+  {
+    return m_isStreaming;
+  }
 	
 	/**
 	 * streams new data to the sound card
 	 */
 	bool Update(){
-	  int processed=0,bytes;
+	  int processed=0, bytes;
 	  al.ALuint Buffer;
-	  al.GetSourcei(m_aluiSource,al.BUFFERS_PROCESSED,&processed);
+	  al.GetSourcei(m_aluiSource, al.BUFFERS_PROCESSED, &processed);
 	  while(processed--){
-		al.SourceUnqueueBuffers(m_aluiSource,1,&Buffer);
+		  al.SourceUnqueueBuffers(m_aluiSource,1,&Buffer);
 
-		bytes = Stream(Buffer);
-		if( bytes < 0)
-		   return false;
-		else if( bytes == 0)
-		  break;
+		  bytes = Stream(Buffer);
+		  if( bytes < 0)
+		     return false;
+		  else if( bytes == 0)
+		    break;
 
-		al.SourceQueueBuffers(m_aluiSource,1,&Buffer);
+		  al.SourceQueueBuffers(m_aluiSource,1,&Buffer);
 	  }
+
+    if(!IsPlaying())
+    {
+      super.Play();
+    }
 
 	  return true;
 	}

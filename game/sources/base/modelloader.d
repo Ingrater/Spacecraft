@@ -73,7 +73,7 @@ public:
   static struct TextureReference
   {
     TextureType semantic;
-    string texture;
+    string file;
   }
 
   static struct ModelData
@@ -300,7 +300,7 @@ public:
             {
               uint textureIndex;
               file.read(textureIndex);
-              texture.texture = m_modelData.textures[textureIndex];
+              texture.file = m_modelData.textures[textureIndex];
               file.read(texture.semantic);
             }
 
@@ -530,12 +530,7 @@ public:
           else
             node.data.parent = &nodes[nodeParentIndex];
 
-          uint numMeshes;
-          file.read(numMeshes);
-          if(numMeshes > 0)
-          {
-            node.meshes = file.readAndAllocateArray!uint(m_meshDataAllocator);
-          }
+          node.meshes = file.readAndAllocateArray!uint(m_meshDataAllocator);
 
           uint numChildren;
           file.read(numChildren);

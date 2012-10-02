@@ -153,7 +153,9 @@ public:
 					for(auto r = oct.getObjectsInBox(m_Renderer.queryBox); !r.empty(); r.popFront()){
 						auto proxy = r.front.renderProxy;
 						if(proxy !is null)
+            {
 							proxy.extractDo(r.front,this);
+            }
 					}
 				}
 				
@@ -163,7 +165,9 @@ public:
 					for(auto r = oct.globalObjects(); !r.empty(); r.popFront()){
 						auto proxy = r.front.renderProxy;
 						if(proxy !is null)
+            {
 							proxy.extractDo(r.front,this);
+            }
 					}	
 				}
 			}
@@ -174,9 +178,11 @@ public:
         auto renderables = oct.globalRenderables();
         foreach(r; renderables)
         {
-					IRenderProxy proxy = r.renderProxy;
+					auto proxy = r.renderProxy;
 					if(proxy !is null)
+          {
 						proxy.extractDo(r,this);
+          }
 				}
 			}
 		}
