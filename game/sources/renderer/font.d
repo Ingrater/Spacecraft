@@ -163,6 +163,12 @@ public:
     m_FontsById = New!(typeof(m_FontsById))();
   }
 
+  shared static ~this()
+  {
+    Delete(m_Fonts);
+    Delete(m_FontsById);
+  }
+
   static void DeleteFonts()
   {
     if(m_Fonts !is null && m_Fonts.count > 0)

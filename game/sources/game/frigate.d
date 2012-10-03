@@ -146,7 +146,7 @@ class TurretBase(ProjectileClass) : HitableGameObject, ISerializeable {
 		netvar!float m_CannonAngleDeg;
 	}
 
-	override IGameObject father() const {
+	override const(IGameObject) father() const {
 		return m_Frigate;
 	}
 
@@ -428,7 +428,7 @@ class TurretCannon(ProjectileClass) : GameObject, ISerializeable, IHitable {
 		return super.entityId();
 	}
 
-	override IGameObject father() const {
+	override const(IGameObject) father() const {
 		return m_Base;
 	}
 

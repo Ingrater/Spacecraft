@@ -70,14 +70,14 @@ private:
 	
 	Cull m_CullFace = Cull.BACK;
 	
-	composite!(Vector!vec4) m_ClippingPlanes;
+	Vector!vec4 m_ClippingPlanes;
 	
 	bool m_WireFrame = false;
 	
 	bool m_ClampFloat = true;
 	
-	__gshared static ConstRef!(const(StateObject)) m_CurrentStateObject;
-	__gshared static ConstRef!(const(ShaderConstantMat4)) m_ViewMatrix;
+	__gshared ConstRef!(const(StateObject)) m_CurrentStateObject;
+	__gshared ConstRef!(const(ShaderConstantMat4)) m_ViewMatrix;
 public:
 	shared static this(){
 		m_CurrentStateObject = null;
@@ -86,19 +86,19 @@ public:
 
   this()
   {
-    m_ClippingPlanes = typeof(m_ClippingPlanes)(DefaultCtor());
-    m_ClippingPlanes.construct();
+    m_ClippingPlanes = New!(typeof(m_ClippingPlanes))();
   }
 
   ~this()
   {
+    Delete(m_ClippingPlanes);
   }
 	
 	void copy(const(StateObject) o){
 		this.m_Blending = o.m_Blending;
 		this.m_BlendingDst = o.m_BlendingDst;
 		this.m_BlendingSrc = o.m_BlendingSrc;
-		this.m_ClippingPlanes.CopyFrom(o.m_ClippingPlanes._instance);
+		this.m_ClippingPlanes.CopyFrom(o.m_ClippingPlanes);
 		this.m_ColorWrite = o.m_ColorWrite;
 		this.m_CullFace = o.m_CullFace;
 		this.m_DepthFunc = o.m_DepthFunc;

@@ -78,8 +78,6 @@ public resource model(rcstring name){
 	if (loadedResources.exists(name))
   {
 		auto res = loadedResources[name];
-    //Workaround
-    callPostBlit(&res);
     return res;
   }
 	throw New!RCException(format("resources: could not find the resources for '%s'. It's probably not loaded.", name[]));
