@@ -40,6 +40,7 @@ shared static ~this()
 {
   Delete(CreationMutex);
   Delete(ProfilerList);
+  Delete(BlockColors);
 }
 
 static ~this()

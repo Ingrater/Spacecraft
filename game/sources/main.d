@@ -180,7 +180,7 @@ int main(string[] args){
 		base.logger.info("starting up engine");
 		
 		// Create the main timer
-		g_Env.mainTimer = New!Timer();
+		g_Env.mainTimer = cast(shared(Timer))New!Timer();
     scope(exit) Delete(g_Env.mainTimer);
 
     version(ParticlePerformance)

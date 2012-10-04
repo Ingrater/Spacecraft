@@ -57,7 +57,7 @@ void client_main(){
   renderer = rendererFactory.GetRenderer();
 	g_Env.renderer = cast(shared(IRenderer)) renderer;
 	renderer.OnResize(g_Env.screenWidth, g_Env.screenHeight);
-	renderer.Init(game);
+	renderer.Init(cast(shared(IGameThread))game);
 	base.logger.info("loaded renderer");
 	
 	// Build the event handler

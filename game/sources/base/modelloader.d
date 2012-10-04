@@ -98,6 +98,15 @@ public:
     return m_modelData;
   }
 
+  ~this()
+  {
+    if(m_meshDataAllocator !is null)
+    {
+      m_meshDataAllocator.FreeAllMemory();
+      Delete(m_meshDataAllocator);
+    }
+  }
+
 	/**
   * Load the model from a file
   * Params:
@@ -530,7 +539,7 @@ public:
           else
             node.data.parent = &nodes[nodeParentIndex];
 
-          node.meshes = file.readAndAllocateArray!uint(m_meshDataAllocator);
+          node.meshes = file.readAndAllocateArray!(uint, uint, typeof(m_meshDataAllocator))(m_meshDataAllocator);
 
           uint numChildren;
           file.read(numChildren);

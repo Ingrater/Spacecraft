@@ -970,7 +970,7 @@ public:
 		m_ScreenQuad.AddVertexData(vec3(-1.0f, 1.0f,0.5f));
 		m_ScreenQuad.UploadData();
 		
-		m_LastTime = Zeitpunkt(m_Timer);
+		m_LastTime = Zeitpunkt(cast(shared(Timer))m_Timer);
 		m_CurrentTime = m_LastTime;
 		m_LastFrameCount = m_LastTime;
 		
@@ -1141,7 +1141,7 @@ public:
         Delete(m_FrameAllocator);
         m_FrameAllocator = null;
       }
-			m_CurrentTime = Zeitpunkt(m_Timer);
+			m_CurrentTime = Zeitpunkt(cast(shared(Timer))m_Timer);
 			if(m_CurrentTime - m_LastFrameCount > 500.0f){
 				m_FramesPerSecond = cast(float)m_Frame * (1000.0f / (m_CurrentTime - m_LastFrameCount));
 				m_Frame = 0;
@@ -1306,7 +1306,7 @@ public:
 					//Aim for 30Fps while minimized
 					int wait = cast(int)(1000.0 / 30.0 - TimeDiff);
 					if(wait > 0)
-						Thread.getThis().sleep(wait);
+						Thread.getThis().sleep(dur!("msecs")(wait));
 				}
 				
 				//Download Textures
@@ -2039,7 +2039,7 @@ public:
     BaseMessage *bmsg;
     while( (bmsg = answerQueue.tryGet!BaseMessage()) is null)
     {
-      Thread.sleep(1);
+      Thread.sleep(dur!("nsecs")(1));
     }
     assert(bmsg !is null);
     assert(bmsg.type == typeid(MsgSetup3DHudGeomDone));
