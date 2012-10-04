@@ -167,10 +167,10 @@ public:
 	body
 	{
 		if(!(pOptions & Options.NO_LOCAL_DATA)){
-			m_Data.CreateEmpty(pWidth,pHeight,pFormat,m_Compression);
+			m_Data.CreateEmpty(pWidth, pHeight, pFormat, m_Compression);
 		}
 		else {
-			m_Data.SetData(null, null, null, pWidth, pHeight, pFormat, m_Compression);
+			m_Data.SetData(null, ImageData2D.image_data_t(), pWidth, pHeight, pFormat, m_Compression);
 		}
 		
 		if(!(pOptions & Options.NO_VRAM_DATA)){
@@ -239,7 +239,7 @@ public:
 	in 
 	{
 		assert(m_TextureId != 0,"texture does not exist on gpu");
-		assert(m_Data.GetData() !is null,"no local storage to download to");
+		assert(m_Data.GetData().length > 0,"no local storage to download to");
 	}
 	body {
 		gl.BindTexture(gl.TEXTURE_2D, m_TextureId);

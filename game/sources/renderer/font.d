@@ -130,19 +130,21 @@ private:
 		FT_Bitmap* bitmap = &bitmap_glyph.bitmap;
 		
 		//We need to do this for space
-		ubyte[] buffer = null;
+		ImageData2D.image_data_t buffer;
 		if(bitmap.width > 0 || bitmap.rows > 0) {
-			buffer = AllocatorNewArray!ubyte(StdAllocator.globalInstance, 2 * bitmap.rows * bitmap.width);
+      buffer = ImageData2D.image_data_t(1, StdAllocator.globalInstance);
+      buffer[0] = ImageData2D.mipmap_data_t(2 * bitmap.rows * bitmap.width, StdAllocator.globalInstance);
+      auto mipmap = buffer[0];
 			for(int i=0;i<bitmap.rows * bitmap.width;i++){
-				buffer[i*2] = cast(ubyte)255;
-				buffer[i*2+1] = bitmap.buffer[i];
+				mipmap[i*2] = cast(ubyte)255;
+				mipmap[i*2+1] = bitmap.buffer[i];
 			}
 		}
 		
 		with(m_Glyphs[pNum]){
 			if(bitmap.width > 0 || bitmap.rows > 0) {
 				m_Data = New!ImageData2D();
-				m_Data.SetData(StdAllocator.globalInstance, buffer, null, bitmap.width, bitmap.rows, ImageFormat.LUMINANCE_ALPHA8, ImageCompression.AUTO);
+				m_Data.SetData(StdAllocator.globalInstance, buffer, bitmap.width, bitmap.rows, ImageFormat.LUMINANCE_ALPHA8, ImageCompression.AUTO);
 			}
 			m_Width = bitmap.width;
 			m_Height = bitmap.rows;

@@ -80,14 +80,15 @@ enum ImageComponent : gl.GLenum {
  * Wrapper class for holding image data of any format
  */
 class ImageData2D {
+  alias RCArray!(ubyte, IAllocator) mipmap_data_t;
+  alias RCArray!(mipmap_data_t, IAllocator) image_data_t;
 private:
 	size_t 			m_Width = 0,m_Height = 0;
 	ImageFormat 	m_Format;
 	ImageBaseFormat	m_BaseFormat;
 	ImageComponent 	m_Component;
-	ubyte[]			m_Data = null;
-  ubyte[][]     m_Mipmaps = null;
-  IAllocator m_allocator = null;
+  image_data_t     m_Data;
+  IAllocator  m_allocator = null;
 	size_t			m_SizeOfComponent = 0;
 	size_t			m_NumComponents = 0;
 	
@@ -208,8 +209,6 @@ public:
 	~this(){
 		if(m_Data.ptr !is null){
       assert(m_allocator !is null);
-			m_allocator.FreeMemory(m_Data.ptr);
-			m_Data = null;
       m_allocator = null;
 		}
 	}
@@ -222,7 +221,7 @@ public:
 	 * 	 	pHeight = height of the image data to set, hast to be > 0 
 	 *		pFormat	= format of the image data to set 
 	 */
-	void SetData(IAllocator allocator, ubyte[] pData, ubyte[][] pMipmaps, size_t pWidth, size_t pHeight, ImageFormat pFormat, ImageCompression compression)
+	void SetData(IAllocator allocator, image_data_t pData, size_t pWidth, size_t pHeight, ImageFormat pFormat, ImageCompression compression)
 	in
 	{
 		assert(pWidth > 0,"pWidth is 0");
@@ -235,8 +234,7 @@ public:
 		m_Width = pWidth;
 		m_Height = pHeight;
     m_allocator = allocator;
-		m_Data = pData;
-    m_Mipmaps = pMipmaps;
+    m_Data = pData;
 	}
 	
 	/**
@@ -262,9 +260,8 @@ public:
 		m_Width = pWidth;
 		m_Height = pHeight;
 		size_t imageSize = m_Width * m_Height * m_NumComponents * m_SizeOfComponent;
-		m_Data = (cast(ubyte*)(allocator.AllocateMemory(ubyte.sizeof * imageSize).ptr))[0..imageSize];
-		m_Data[0..(imageSize-1)] = 0;
-    m_Mipmaps = [];
+    m_Data = image_data_t(1, m_allocator);
+    m_Data[0] = mipmap_data_t(imageSize, m_allocator);
 	}
 	
 	/**
@@ -280,20 +277,16 @@ public:
 		assert(pSrc.m_Format == m_Format,"Can only insert image data of the same format");
 		assert(pX + pSrc.m_Width <= m_Width,"Insert out of bounds on x axis");
 		assert(pY + pSrc.m_Height <= m_Height,"Insert out of bounds on y axis");
-		assert(m_Data !is null,"Image data to insert in has no data");
+		assert(m_Data.length > 0,"Image data to insert in has no data");
 	}
 	body 
 	{
 		size_t sizeOfPixel = m_NumComponents * m_SizeOfComponent;
 		size_t sizeOfRow = m_Width * sizeOfPixel;
 
-    auto dstData = m_Data;
-    if(m_Mipmaps !is null)
-      dstData = m_Mipmaps[mipmap];
-    else
-      assert(mipmap == 0, "texture does not have mipmaps");
+    auto dstData = m_Data[mipmap][];
 		
-		const(ubyte[]) srcData = pSrc.GetData();
+		const(ubyte[]) srcData = pSrc.GetData()[mipmap][];
 		size_t sizeOfSrcRow = pSrc.m_Width * sizeOfPixel;
 		for(size_t y=0;y<pSrc.m_Height;y++){
 			size_t dstIndex = (pY + y) * sizeOfRow + pX * sizeOfPixel;
@@ -308,14 +301,11 @@ public:
 	void Free()
 	in
 	{
-		assert(m_Data !is null);
     assert(m_allocator !is null);
 	}
 	body
 	{
-		m_allocator.FreeMemory(m_Data.ptr);
-		m_Data = null;
-    AllocatorDelete(m_allocator, m_Mipmaps);
+		m_Data = image_data_t();
 		/*m_Width = 0;
 		m_Height = 0;
 		m_SizeOfComponent = 0;
@@ -328,10 +318,7 @@ public:
 	 *		pFilename = the file to load
 	 */
 	void LoadFromFile(rcstring pFilename, ImageCompression compression)
-	in {
-		assert(m_Data is null);
-	}
-	body {
+	{
     version(NO_OPENGL)
     {
       size_t size = 4 * 4;
@@ -345,6 +332,39 @@ public:
 		  }
       if(endsWith(pFilename, ".dds", CaseSensitive.no))
       {
+        auto loader = AllocatorNew!DDSLoader(ThreadLocalStackAllocator.globalInstance, StdAllocator.globalInstance);
+        scope(exit) AllocatorDelete(ThreadLocalStackAllocator.globalInstance, loader);
+
+        loader.LoadFile(pFilename);
+        if(loader.isCubemap)
+        {
+          throw New!RCException(format("Trying to load file '%s' which is a cubemap as 2d texture", pFilename[]));
+        }
+
+        if(loader.images.length > 1)
+        {
+          throw New!RCException(format("Trying to loader file '%s' which is a texture array of size %d as 2d texture", pFilename[], loader.images.length));
+        }
+
+        m_Width = loader.width;
+        m_Height = loader.height;
+        
+        switch(loader.dataFormat)
+        {
+          case DDSLoader.D3DFORMAT.DXT1:
+            m_BaseFormat = ImageFormat.COMPRESSED_RGBA_DXT1;
+            break;
+          case DDSLoader.D3DFORMAT.DXT3:
+            m_BaseFormat = ImageFormat.COMPRESSED_RGBA_DXT3;
+            break;
+          case DDSLoader.D3DFORMAT.DXT5:
+            m_BaseFormat = ImageFormat.COMPRESSED_RGBA_DXT5;
+            break;
+          default:
+            throw New!RCException(format("Trying to load file %s which has unsupported format %s", pFilename[], EnumToString(loader.dataFormat)));
+        }
+
+        m_Data = loader.images[0];
       }
       else
       {
@@ -365,8 +385,11 @@ public:
 		    }
 		    size_t size = img.format.BytesPerPixel * img.width * img.height;
 		    ubyte* oldData = cast(ubyte*)img.pixels;
-		    //ubyte[] newData = new ubyte[size];
-		    ubyte[] newData = (cast(ubyte*)(StdAllocator.globalInstance.AllocateMemory(ubyte.sizeof * size).ptr))[0..size];
+
+        auto newImage = image_data_t(1, m_allocator);
+        newImage[0] = mipmap_data_t(size, m_allocator);
+
+		    ubyte[] newData = newImage[0][];
 		    newData[0..size] = oldData[0..size];
 		    if(img.format.Rshift > 0){ //dealing with BGR texture here
 			    for(size_t i=0;i<size;i+=3){
@@ -376,20 +399,20 @@ public:
 			    }
 		    }
 		    if(img.format.BytesPerPixel == 1){
-			    SetData(StdAllocator.globalInstance, newData, null, img.width, img.height, ImageFormat.LUMINANCE8, compression);
+			    SetData(StdAllocator.globalInstance, newImage, img.width, img.height, ImageFormat.LUMINANCE8, compression);
 		    }
 		    else if(img.format.BytesPerPixel == 3){
-			    SetData(StdAllocator.globalInstance, newData, null, img.width, img.height, ImageFormat.RGB8, compression);
+			    SetData(StdAllocator.globalInstance, newImage, img.width, img.height, ImageFormat.RGB8, compression);
 		    }
 		    else{
-			    SetData(StdAllocator.globalInstance, newData, null, img.width, img.height, ImageFormat.RGBA8, compression);
+			    SetData(StdAllocator.globalInstance, newImage, img.width, img.height, ImageFormat.RGBA8, compression);
 		    }
       }
     }
 	}
 	
-	const(ubyte[]) GetData() const { return m_Data; } ///get internal data
-	ubyte[] GetData() { return m_Data; } ///get internal data 
+	const(image_data_t) GetData() const { return m_Data; } ///get internal data
+	image_data_t GetData() { return m_Data; } ///get internal data 
 	size_t GetWidth() const { return m_Width; } ///get width
 	size_t GetHeight() const { return m_Height; } ///get height
 	ImageFormat GetFormat() const { return m_Format; } ///get format
@@ -402,5 +425,5 @@ public:
 	 * Checks if internal data is present or not
 	 * Returns: true if there is no internal data, false otherwise
 	 */ 
-	bool empty() const { return (m_Data is null); }
+	bool empty() const { return (m_Data.length == 0); }
 };
