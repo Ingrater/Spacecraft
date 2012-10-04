@@ -170,7 +170,7 @@ public:
 			m_Data.CreateEmpty(pWidth,pHeight,pFormat,m_Compression);
 		}
 		else {
-			m_Data.SetData(null,null,pWidth,pHeight,pFormat,m_Compression);
+			m_Data.SetData(null, null, null, pWidth, pHeight, pFormat, m_Compression);
 		}
 		
 		if(!(pOptions & Options.NO_VRAM_DATA)){

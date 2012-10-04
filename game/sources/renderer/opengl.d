@@ -729,6 +729,7 @@ class gl {
 		  alias void function(int s) glClearStencil;
 		  alias void function(GLenum target) glGenerateMipmap;
 		  alias void function(GLenum target, int level, GLenum pname, int* params) glGetTexLevelParameteriv;
+      alias void function(GLenum target, int level, GLenum internalformat, size_t width, size_t height, int border, size_t imageSize, const(void*) data) glCompressedTexImage2D;
 		  //alias void function(GLenum target, uint index) glEnableIndexed;
       //alias void function(GLenum target, uint index) glDisableIndexed;
 

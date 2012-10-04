@@ -142,7 +142,7 @@ private:
 		with(m_Glyphs[pNum]){
 			if(bitmap.width > 0 || bitmap.rows > 0) {
 				m_Data = New!ImageData2D();
-				m_Data.SetData(StdAllocator.globalInstance, buffer,bitmap.width,bitmap.rows,ImageFormat.LUMINANCE_ALPHA8,ImageCompression.AUTO);
+				m_Data.SetData(StdAllocator.globalInstance, buffer, null, bitmap.width, bitmap.rows, ImageFormat.LUMINANCE_ALPHA8, ImageCompression.AUTO);
 			}
 			m_Width = bitmap.width;
 			m_Height = bitmap.rows;

@@ -86,6 +86,7 @@ private:
 	ImageBaseFormat	m_BaseFormat;
 	ImageComponent 	m_Component;
 	ubyte[]			m_Data = null;
+  ubyte[][]     m_Mipmaps = null;
   IAllocator m_allocator = null;
 	size_t			m_SizeOfComponent = 0;
 	size_t			m_NumComponents = 0;
@@ -221,7 +222,7 @@ public:
 	 * 	 	pHeight = height of the image data to set, hast to be > 0 
 	 *		pFormat	= format of the image data to set 
 	 */
-	void SetData(IAllocator allocator, ubyte[] pData, size_t pWidth, size_t pHeight, ImageFormat pFormat, ImageCompression compression)
+	void SetData(IAllocator allocator, ubyte[] pData, ubyte[][] pMipmaps, size_t pWidth, size_t pHeight, ImageFormat pFormat, ImageCompression compression)
 	in
 	{
 		assert(pWidth > 0,"pWidth is 0");
@@ -235,6 +236,7 @@ public:
 		m_Height = pHeight;
     m_allocator = allocator;
 		m_Data = pData;
+    m_Mipmaps = pMipmaps;
 	}
 	
 	/**
@@ -260,9 +262,9 @@ public:
 		m_Width = pWidth;
 		m_Height = pHeight;
 		size_t imageSize = m_Width * m_Height * m_NumComponents * m_SizeOfComponent;
-		//m_Data = new ubyte[imageSize];
 		m_Data = (cast(ubyte*)(allocator.AllocateMemory(ubyte.sizeof * imageSize).ptr))[0..imageSize];
 		m_Data[0..(imageSize-1)] = 0;
+    m_Mipmaps = [];
 	}
 	
 	/**
@@ -272,7 +274,7 @@ public:
 	 *		pX = point to insert x coordinate
 	 * 		pY = point to insert y coordinate
 	 */ 
-	void Insert(const(ImageData2D) pSrc, size_t pX, size_t pY)
+	void Insert(const(ImageData2D) pSrc, size_t pX, size_t pY, size_t mipmap = 0)
 	in
 	{
 		assert(pSrc.m_Format == m_Format,"Can only insert image data of the same format");
@@ -284,13 +286,19 @@ public:
 	{
 		size_t sizeOfPixel = m_NumComponents * m_SizeOfComponent;
 		size_t sizeOfRow = m_Width * sizeOfPixel;
+
+    auto dstData = m_Data;
+    if(m_Mipmaps !is null)
+      dstData = m_Mipmaps[mipmap];
+    else
+      assert(mipmap == 0, "texture does not have mipmaps");
 		
 		const(ubyte[]) srcData = pSrc.GetData();
 		size_t sizeOfSrcRow = pSrc.m_Width * sizeOfPixel;
 		for(size_t y=0;y<pSrc.m_Height;y++){
 			size_t dstIndex = (pY + y) * sizeOfRow + pX * sizeOfPixel;
 			size_t srcIndex = y * sizeOfSrcRow;
-			m_Data[dstIndex..(dstIndex + sizeOfSrcRow)] = srcData[srcIndex..(srcIndex + sizeOfSrcRow)];
+			dstData[dstIndex..(dstIndex + sizeOfSrcRow)] = srcData[srcIndex..(srcIndex + sizeOfSrcRow)];
 		}
 	}
 	
@@ -307,6 +315,7 @@ public:
 	{
 		m_allocator.FreeMemory(m_Data.ptr);
 		m_Data = null;
+    AllocatorDelete(m_allocator, m_Mipmaps);
 		/*m_Width = 0;
 		m_Height = 0;
 		m_SizeOfComponent = 0;
@@ -334,42 +343,48 @@ public:
 		  version(linux){
 			  pFilename = pFilename.replace("\\","/");
 		  }
-		  auto img = SDLImage.Load(toCString(pFilename));
-		  if( img is null ){
-			  char* error = SDL.GetError();
-			  rcstring message = format("Couldn't load image from file '%s'", pFilename[]);
-			  if(error !is null){
-				  message ~= ": " ~ error[0..strlen(error)];
-			  }
-			  throw New!RCException(message);
-		  }
-		  if( img.format is null){
-			  throw New!RCException(format("Loaded image '%s' does not have a pixel format", pFilename[]));
-		  }
-		  if( /*img.format.BitsPerPixel != 8 ||*/ (img.format.BytesPerPixel != 1 && img.format.BytesPerPixel != 3 && img.format.BytesPerPixel != 4)){
-			  throw New!RCException(format("Loaded image '%s' does have a unsupported image format. BitsPerPixel '%d' BytesPerPixel '%d'", pFilename[], img.format.BitsPerPixel, img.format.BytesPerPixel));
-		  }
-		  size_t size = img.format.BytesPerPixel * img.width * img.height;
-		  ubyte* oldData = cast(ubyte*)img.pixels;
-		  //ubyte[] newData = new ubyte[size];
-		  ubyte[] newData = (cast(ubyte*)(StdAllocator.globalInstance.AllocateMemory(ubyte.sizeof * size).ptr))[0..size];
-		  newData[0..size] = oldData[0..size];
-		  if(img.format.Rshift > 0){ //dealing with BGR texture here
-			  for(size_t i=0;i<size;i+=3){
-				  auto temp = newData[i];
-				  newData[i] = newData[i+2];
-				  newData[i+2] = temp;
-			  }
-		  }
-		  if(img.format.BytesPerPixel == 1){
-			  SetData(StdAllocator.globalInstance, newData,img.width,img.height,ImageFormat.LUMINANCE8,compression);
-		  }
-		  else if(img.format.BytesPerPixel == 3){
-			  SetData(StdAllocator.globalInstance, newData,img.width,img.height,ImageFormat.RGB8,compression);
-		  }
-		  else{
-			  SetData(StdAllocator.globalInstance, newData,img.width,img.height,ImageFormat.RGBA8,compression);
-		  }
+      if(endsWith(pFilename, ".dds", CaseSensitive.no))
+      {
+      }
+      else
+      {
+		    auto img = SDLImage.Load(toCString(pFilename));
+		    if( img is null ){
+			    char* error = SDL.GetError();
+			    rcstring message = format("Couldn't load image from file '%s'", pFilename[]);
+			    if(error !is null){
+				    message ~= ": " ~ error[0..strlen(error)];
+			    }
+			    throw New!RCException(message);
+		    }
+		    if( img.format is null){
+			    throw New!RCException(format("Loaded image '%s' does not have a pixel format", pFilename[]));
+		    }
+		    if( /*img.format.BitsPerPixel != 8 ||*/ (img.format.BytesPerPixel != 1 && img.format.BytesPerPixel != 3 && img.format.BytesPerPixel != 4)){
+			    throw New!RCException(format("Loaded image '%s' does have a unsupported image format. BitsPerPixel '%d' BytesPerPixel '%d'", pFilename[], img.format.BitsPerPixel, img.format.BytesPerPixel));
+		    }
+		    size_t size = img.format.BytesPerPixel * img.width * img.height;
+		    ubyte* oldData = cast(ubyte*)img.pixels;
+		    //ubyte[] newData = new ubyte[size];
+		    ubyte[] newData = (cast(ubyte*)(StdAllocator.globalInstance.AllocateMemory(ubyte.sizeof * size).ptr))[0..size];
+		    newData[0..size] = oldData[0..size];
+		    if(img.format.Rshift > 0){ //dealing with BGR texture here
+			    for(size_t i=0;i<size;i+=3){
+				    auto temp = newData[i];
+				    newData[i] = newData[i+2];
+				    newData[i+2] = temp;
+			    }
+		    }
+		    if(img.format.BytesPerPixel == 1){
+			    SetData(StdAllocator.globalInstance, newData, null, img.width, img.height, ImageFormat.LUMINANCE8, compression);
+		    }
+		    else if(img.format.BytesPerPixel == 3){
+			    SetData(StdAllocator.globalInstance, newData, null, img.width, img.height, ImageFormat.RGB8, compression);
+		    }
+		    else{
+			    SetData(StdAllocator.globalInstance, newData, null, img.width, img.height, ImageFormat.RGBA8, compression);
+		    }
+      }
     }
 	}
 	
