@@ -7,6 +7,7 @@ import renderer.openglex;
 import core.stdc.stdlib;
 import base.all;
 import renderer.internal;
+import thBase.math;
 
 /**
  * Wrapper class for grahpics api 2D textures
@@ -37,7 +38,10 @@ private:
 	
 	void SetTextureOptions(ushort pOptions) const {
 		if(pOptions & Options.MIPMAPS){
-			gl.TexParameteri(gl.TEXTURE_2D, gl.GENERATE_MIPMAP, gl.TRUE);
+      if(m_Data.GetData().length == 1)
+			  gl.TexParameteri(gl.TEXTURE_2D, gl.GENERATE_MIPMAP, gl.TRUE);
+      else
+        gl.TexParameteri(gl.TEXTURE_2D, gl.GENERATE_MIPMAP, gl.FALSE);
 			if(pOptions & Options.LINEAR){
 				gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
 				gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
@@ -81,7 +85,7 @@ public:
 	 */
 	this(rcstring pName, IRendererInternal pRenderer, ImageCompression compression){
 		m_Name = pName;
-		m_Data = New!ImageData2D();
+		m_Data = New!ImageData2D(StdAllocator.globalInstance);
 		m_Renderer = pRenderer;
 		m_Compression = compression;
 	}
@@ -107,34 +111,74 @@ public:
 		int maxTexSize; 
 		gl.GetIntegerv(gl.MAX_TEXTURE_SIZE, &maxTexSize);
 		if(m_Data.GetWidth() > maxTexSize || m_Data.GetHeight() > maxTexSize){
-			throw new OpenGLException("Texture " ~ m_Name ~ " is to big for the graphics card",false);
+			throw New!OpenGLException(format("Texture %s is to big for the graphics card", m_Name[]), false);
 		}
 		
 		gl.GenTextures(1, &m_TextureId);
 		gl.BindTexture(gl.TEXTURE_2D, m_TextureId);
 		
 		SetTextureOptions(pOptions);
-		
-		gl.TexImage2D(gl.TEXTURE_2D, 0, m_Data.GetFormat(), m_Data.GetWidth(), m_Data.GetHeight(), 0, m_Data.GetBaseFormat(), m_Data.GetComponent(), m_Data.GetData().ptr);
-		
 
-    debug{
-      gl.ErrorCode error = gl.GetError();
-      if(error != gl.ErrorCode.NO_ERROR)
+    if(m_Data.isCompressed)
+    {
+      if(!gl.isSupported(gl.Extensions.GL_ARB_texture_compression) ||
+         !gl.isSupported(gl.Extensions.GL_EXT_texture_compression_s3tc))
       {
-        auto msg = format("Error uploading texture '%s': %s", m_Name[], gl.TranslateError(error));
-        assert(0, msg[]);
+        throw New!RCException(format("Can not load compressed texture '%s' because extensions are not supported", m_Name[]));
+      }
+      assert(m_Compression != ImageCompression.NONE, "can't uncompress compressed data");
+      size_t divisor = 1;
+      m_UploadedMemorySize = 0;
+      foreach(size_t level, ref mipmap; m_Data.GetData())
+      {
+        gl.CompressedTexImage2D(gl.TEXTURE_2D, level, m_Data.GetFormat(), max(1, m_Data.GetWidth() / divisor), max(1, m_Data.GetHeight() / divisor), 0, mipmap.length, mipmap.ptr);
+
+        debug{
+          gl.ErrorCode error = gl.GetError();
+          if(error != gl.ErrorCode.NO_ERROR)
+          {
+            auto msg = format("Error uploading mipmap %d of texture '%s': %s", level, m_Name[], gl.TranslateError(error));
+            assert(0, msg[]);
+          }
+        }
+
+        m_UploadedMemorySize += mipmap.length;
+        divisor *= 2;
       }
     }
+    else
+    {
+      size_t divisor = 1;
+      foreach(size_t level, ref mipmap; m_Data.GetData())
+      {
+		    gl.TexImage2D(gl.TEXTURE_2D, level, m_Data.GetFormat(), max(1, m_Data.GetWidth() / divisor), max(1, m_Data.GetHeight() / divisor), 0, m_Data.GetBaseFormat(), m_Data.GetComponent(), mipmap.ptr);
 
-		if(m_Compression == ImageCompression.AUTO 
+        debug{
+          gl.ErrorCode error = gl.GetError();
+          if(error != gl.ErrorCode.NO_ERROR)
+          {
+            auto msg = format("Error uploading mipmap %d of texture '%s': %s", level, m_Name[], gl.TranslateError(error));
+            assert(0, msg[]);
+          }
+        }
+
+        divisor *= 2;
+      }
+		}
+
+
+
+    if(m_Data.isCompressed)
+    {
+    }
+		else if(m_Compression == ImageCompression.AUTO 
 		   && gl.isSupported(gl.Extensions.GL_ARB_texture_compression) )
 		{
 			int compressed = 0;
-			gl.GetTexLevelParameteriv(gl.TEXTURE_2D,0,gl.TEXTURE_COMPRESSED_ARB,&compressed);
+			gl.GetTexLevelParameteriv(gl.TEXTURE_2D, 0, gl.TEXTURE_COMPRESSED_ARB, &compressed);
 			if(compressed > 0){
 				int size;
-				gl.GetTexLevelParameteriv(gl.TEXTURE_2D,0,gl.TEXTURE_COMPRESSED_IMAGE_SIZE_ARB,&size);
+				gl.GetTexLevelParameteriv(gl.TEXTURE_2D, 0, gl.TEXTURE_COMPRESSED_IMAGE_SIZE_ARB, &size);
 				m_UploadedMemorySize = size;
 			}
 			else {
@@ -178,8 +222,12 @@ public:
 			gl.BindTexture(gl.TEXTURE_2D,m_TextureId);
 			
 			SetTextureOptions(pOptions);
+
+      void* data = null;
+      if(m_Data.GetData().length > 0)
+        data = m_Data.GetData[0].ptr;
 			
-			gl.TexImage2D(gl.TEXTURE_2D, 0, m_Data.GetFormat(), m_Data.GetWidth(), m_Data.GetHeight(), 0, m_Data.GetBaseFormat(), m_Data.GetComponent(), m_Data.GetData().ptr);
+			gl.TexImage2D(gl.TEXTURE_2D, 0, m_Data.GetFormat(), m_Data.GetWidth(), m_Data.GetHeight(), 0, m_Data.GetBaseFormat(), m_Data.GetComponent(), data);
 		}
 		
 		if(m_Compression == ImageCompression.AUTO 
@@ -212,7 +260,44 @@ public:
 	}
 	body {
 		gl.BindTexture(gl.TEXTURE_2D, m_TextureId);
-		gl.TexImage2D(gl.TEXTURE_2D, 0, m_Data.GetFormat(), m_Data.GetWidth(), m_Data.GetHeight(), 0, m_Data.GetBaseFormat(), m_Data.GetComponent(), m_Data.GetData().ptr);
+    if(m_Data.isCompressed)
+    {
+      size_t divisor = 1;
+      foreach(size_t level, ref mipmap; m_Data.GetData())
+      {
+        gl.CompressedTexImage2D(gl.TEXTURE_2D, level, m_Data.GetFormat(), max(1, m_Data.GetWidth() / divisor), max(1, m_Data.GetHeight() / divisor), 0, mipmap.length, mipmap.ptr);
+
+        debug{
+          gl.ErrorCode error = gl.GetError();
+          if(error != gl.ErrorCode.NO_ERROR)
+          {
+            auto msg = format("Error re-uploading mipmap %d of texture '%s': %s", level, m_Name[], gl.TranslateError(error));
+            assert(0, msg[]);
+          }
+        }
+
+        divisor *= 2;
+      }
+    }
+    else
+    {
+      size_t divisor = 1;
+      foreach(size_t level, ref mipmap; m_Data.GetData())
+      {
+		    gl.TexImage2D(gl.TEXTURE_2D, level, m_Data.GetFormat(), m_Data.GetWidth() / divisor, m_Data.GetHeight() / divisor, 0, m_Data.GetBaseFormat(), m_Data.GetComponent(), mipmap.ptr);
+
+        debug{
+          gl.ErrorCode error = gl.GetError();
+          if(error != gl.ErrorCode.NO_ERROR)
+          {
+            auto msg = format("Error re-uploading mipmap %d of texture '%s': %s", level, m_Name[], gl.TranslateError(error));
+            assert(0, msg[]);
+          }
+        }
+
+        divisor *= 2;
+      }
+		}
 	}
 	
 	/**
@@ -240,10 +325,11 @@ public:
 	{
 		assert(m_TextureId != 0,"texture does not exist on gpu");
 		assert(m_Data.GetData().length > 0,"no local storage to download to");
+    assert(!m_Data.isCompressed, "can not download into compressed image data");
 	}
 	body {
 		gl.BindTexture(gl.TEXTURE_2D, m_TextureId);
-		gl.GetTexImage(gl.TEXTURE_2D, 0, m_Data.GetBaseFormat(), m_Data.GetComponent(), m_Data.GetData().ptr);
+		gl.GetTexImage(gl.TEXTURE_2D, 0, m_Data.GetBaseFormat(), m_Data.GetComponent(), m_Data.GetData()[0].ptr);
 	}
 	
 	size_t GetWidth() const { return m_Data.GetWidth(); } ///gets texture width

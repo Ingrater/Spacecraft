@@ -74,7 +74,7 @@ public:
 		/*auto ser = new XmlSerializer!Params(Params());
 		ser.ToFile("gfx/xml/enginetrail.xml");*/
 		FromXmlFile(m_Params,_T("gfx/xml/muzzleflash.xml"));
-		auto atlas = g_Env.renderer.assetLoader.LoadSpriteAtlas(_T("gfx/sprite_atlas.png"));
+		auto atlas = g_Env.renderer.assetLoader.LoadSpriteAtlas(_T("gfx/sprite_atlas.dds"));
 		m_Sprite = atlas.GetSprite(m_Params.sprite.x,m_Params.sprite.y,m_Params.sprite.width,m_Params.sprite.height);
 	}
 	

@@ -27,32 +27,19 @@ struct MsgLoadingModelDone {
 
 struct MsgLoadCubeMap {
   BaseMessage bm;
-  rcstring[6] paths;
+  rcstring path;
   shared(MessageQueue_t) answerQueue;
 	
-	this(rcstring positive_x_path, rcstring negative_x_path,
-		 rcstring positive_y_path, rcstring negative_y_path,
-		 rcstring positive_z_path, rcstring negative_z_path,
-     shared(MessageQueue_t) answerQueue)
+	this(rcstring path, shared(MessageQueue_t) answerQueue)
 	{
     bm.type = typeid(typeof(this));
-		paths[0] = positive_x_path;
-		paths[1] = negative_x_path;
-		paths[2] = positive_y_path;
-		paths[3] = negative_y_path;
-		paths[4] = positive_z_path;
-		paths[5] = negative_z_path;
+		this.path = path;
     this.answerQueue = answerQueue;
 	}
 	
 	this(ref MsgLoadCubeMap rh){
     this.bm = rh.bm;
-		this.paths[0] = rh.paths[0];
-		this.paths[1] = rh.paths[1];
-		this.paths[2] = rh.paths[2];
-		this.paths[3] = rh.paths[3];
-		this.paths[4] = rh.paths[4];
-		this.paths[5] = rh.paths[5];
+    this.path = rh.path;
     this.answerQueue = rh.answerQueue;
 	}
 }

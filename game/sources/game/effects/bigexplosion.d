@@ -143,7 +143,7 @@ public:
 		m_Loaded = true;
 		FromXmlFile(m_Params, _T("gfx/xml/bigexplosion.xml"));
 		if(!g_Env.isServer){
-			auto spriteAtlas = g_Env.renderer.assetLoader.LoadSpriteAtlas(_T("gfx/sprite_atlas.png"));
+			auto spriteAtlas = g_Env.renderer.assetLoader.LoadSpriteAtlas(_T("gfx/sprite_atlas.dds"));
 			m_RingSprite = spriteAtlas.GetSprite(m_Params.ring.sprite.x,
 												 m_Params.ring.sprite.y,
 												 m_Params.ring.sprite.width,

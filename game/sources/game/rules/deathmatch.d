@@ -584,10 +584,8 @@ class ClientRules : IClientRules {
 	// Lua functions to initialize the client
 	//
 	private {
-		void createSkybox(rcstring right, rcstring left, rcstring up, rcstring down, rcstring back, rcstring front){
-			auto skyBoxTexture = g_Env.renderer.assetLoader.LoadCubeMap(
-				right, left, up, down, back, front
-			);
+		void createSkybox(rcstring path){
+			auto skyBoxTexture = g_Env.renderer.assetLoader.LoadCubeMap(path);
 			if (m_skyBox){
 				game.octree.removeGlobalRenderable(m_skyBox);
         Delete(m_skyBox);

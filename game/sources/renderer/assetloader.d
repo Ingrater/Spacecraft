@@ -14,6 +14,8 @@ import thBase.container.queue;
 import thBase.container.vector;
 import core.thread;
 import modeltypes;
+import thBase.dds;
+import thBase.conv;
 
 
 class AssetLoader : IAssetLoader {
@@ -296,14 +298,9 @@ public:
 		return model;
 	}
 	
-	override shared(ITexture) LoadCubeMap(rcstring positive_x_path, rcstring negative_x_path,
-										  rcstring positive_y_path, rcstring negative_y_path,
-										  rcstring positive_z_path, rcstring negative_z_path) shared
+	override shared(ITexture) LoadCubeMap(rcstring path) shared
 	{
-    m_Renderer.loadingQueue.enqueue(MsgLoadCubeMap(positive_x_path,negative_x_path,
-                                                   positive_y_path,negative_y_path,
-                                                   positive_z_path,negative_z_path,
-                                                   m_MessageQueue));
+    m_Renderer.loadingQueue.enqueue(MsgLoadCubeMap(path, m_MessageQueue));
 
     BaseMessage *msg;
     while( (msg = m_MessageQueue.tryGet!BaseMessage()) is null)
@@ -328,16 +325,50 @@ public:
 		return result;		
 	}
 	
-	ITexture DoLoadCubeMap(ref rcstring[6] paths)
+	ITexture DoLoadCubeMap(ref rcstring path)
 	{
-		CubeTexture texture = New!CubeTexture(paths[0],m_Renderer,ImageCompression.AUTO);
+		CubeTexture texture = New!CubeTexture(path, m_Renderer, ImageCompression.AUTO);
     m_CubeMaps.push_back(texture);
-		foreach(i,data;texture.GetData()){
-			data.LoadFromFile(paths[i],ImageCompression.AUTO);
-		}
+		
+    auto loader = AllocatorNew!DDSLoader(ThreadLocalStackAllocator.globalInstance, StdAllocator.globalInstance);
+    scope(exit) AllocatorDelete(ThreadLocalStackAllocator.globalInstance, loader);
+
+    loader.LoadFile(path);
+    if(!loader.isCubemap)
+    {
+      throw New!RCException(format("File '%s' is not a cubemap", path[]));
+    }
+
+    if(loader.images.length != 6)
+    {
+      throw New!RCException(format("File '%s' does contain %d images but should contain 6 images to be a cubemap", path[], loader.images.length));
+    }
+
+    ImageFormat imgformat;
+
+    switch(loader.dataFormat)
+    {
+      case DDSLoader.D3DFORMAT.DXT1:
+        imgformat = ImageFormat.COMPRESSED_RGBA_DXT1;
+        break;
+      case DDSLoader.D3DFORMAT.DXT3:
+        imgformat = ImageFormat.COMPRESSED_RGBA_DXT3;
+        break;
+      case DDSLoader.D3DFORMAT.DXT5:
+        imgformat = ImageFormat.COMPRESSED_RGBA_DXT5;
+        break;
+      default:
+        throw New!RCException(format("Trying to load cubemap '%s' which has unsupported format %s", path[], EnumToString(loader.dataFormat)));
+    }
+
+    for(size_t i=0; i<6; i++)
+    {
+      texture.GetData()[i].SetData(StdAllocator.globalInstance, loader.images[i], loader.width, loader.height, imgformat, ImageCompression.AUTO);
+    }
+
 		texture.UploadImageData(CubeTexture.Options.LINEAR | 
-								CubeTexture.Options.MIPMAPS |
-								CubeTexture.Options.NO_LOCAL_DATA);
+								            CubeTexture.Options.MIPMAPS |
+								            CubeTexture.Options.NO_LOCAL_DATA);
 		return texture;
 	}
 	

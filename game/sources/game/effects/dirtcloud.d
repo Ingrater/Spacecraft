@@ -113,7 +113,7 @@ public:
 	void loadXml(){
 		FromXmlFile(m_Params,_T("gfx/xml/dirtcloud.xml"));
     scope(exit) Delete(m_Params.sprites);
-		auto spriteAtlas = g_Env.renderer.assetLoader.LoadSpriteAtlas(_T("gfx/sprite_atlas.png"));
+		auto spriteAtlas = g_Env.renderer.assetLoader.LoadSpriteAtlas(_T("gfx/sprite_atlas.dds"));
 		
     if(m_Sprites !is null)
     {

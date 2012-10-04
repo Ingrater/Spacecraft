@@ -228,12 +228,16 @@ class MgProjectile : GameObject, ISerializeable {
   static ~this()
   {
     Delete(m_ReuseableRenderProxy);
+    foreach(sound; m_SoundCache)
+    {
+      Delete(sound);
+    }
     Delete(m_SoundCache); m_SoundCache = null;
   }
 	
 	protected void loadRenderProxy(rcstring file, ubyte index){
 		if (m_SpriteAtlas is null)
-			m_SpriteAtlas = g_Env.renderer.assetLoader.LoadSpriteAtlas(_T("gfx/sprite_atlas.png"));
+			m_SpriteAtlas = g_Env.renderer.assetLoader.LoadSpriteAtlas(_T("gfx/sprite_atlas.dds"));
     if(m_ReuseableRenderProxy is null)
       m_ReuseableRenderProxy = New!(typeof(m_ReuseableRenderProxy))();
 		

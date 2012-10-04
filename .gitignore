@@ -1,6 +1,7 @@
 *.png
 *.dae
 *.ttf
+*.dds
 *.obj
 *.exe
 *.exe_cv

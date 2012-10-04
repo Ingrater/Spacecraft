@@ -82,7 +82,7 @@ public:
 		m_Loaded = true;
 		FromXmlFile(m_Params, _T("gfx/xml/smallexplosion.xml"));
 		if(!g_Env.isServer){
-			auto spriteAtlas = g_Env.renderer.assetLoader.LoadSpriteAtlas(_T("gfx/sprite_atlas.png"));
+			auto spriteAtlas = g_Env.renderer.assetLoader.LoadSpriteAtlas(_T("gfx/sprite_atlas.dds"));
 			m_Sprites = new Sprite[m_Params.sprites.length];
 			foreach(uint i,ref param;m_Params.sprites){
 				m_Sprites[i] = spriteAtlas.GetSprite(param.x,param.y,param.width,param.height);

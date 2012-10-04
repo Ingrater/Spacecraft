@@ -91,7 +91,7 @@ public:
 		m_Loaded = true;
 		FromXmlFile(m_Params, _T("gfx/xml/bigshieldimpact.xml"));
 		if(!g_Env.isServer){
-			auto spriteAtlas = g_Env.renderer.assetLoader.LoadSpriteAtlas(_T("gfx/sprite_atlas.png"));
+			auto spriteAtlas = g_Env.renderer.assetLoader.LoadSpriteAtlas(_T("gfx/sprite_atlas.dds"));
 			m_Sprite = spriteAtlas.GetSprite(m_Params.sprite.x,m_Params.sprite.y,m_Params.sprite.width,m_Params.sprite.height);
 		}
 	}

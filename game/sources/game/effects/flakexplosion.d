@@ -91,7 +91,7 @@ public:
 		m_Loaded = true;
 		FromXmlFile(m_Params, _T("gfx/xml/flakexplosion.xml"));
 		if(!g_Env.isServer){
-			auto spriteAtlas = g_Env.renderer.assetLoader.LoadSpriteAtlas(_T("gfx/sprite_atlas.png"));
+			auto spriteAtlas = g_Env.renderer.assetLoader.LoadSpriteAtlas(_T("gfx/sprite_atlas.dds"));
       if(m_Sprites !is null)
         Delete(m_Sprites);
 			m_Sprites = NewArray!Sprite(m_Params.sprites.length);

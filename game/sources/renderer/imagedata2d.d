@@ -7,6 +7,9 @@ import renderer.sdl.main;
 import core.stdc.stdlib;
 import thBase.string;
 import thBase.format;
+import thBase.conv;
+import thBase.dds;
+import thBase.allocator;
 
 
 import std.c.string;
@@ -62,7 +65,8 @@ enum ImageBaseFormat : gl.GLenum {
  */
 enum ImageCompression : uint {
 	NONE,
-	AUTO
+	AUTO,
+  PRECOMPRESSED
 }
 
 /**
@@ -91,6 +95,7 @@ private:
   IAllocator  m_allocator = null;
 	size_t			m_SizeOfComponent = 0;
 	size_t			m_NumComponents = 0;
+  bool m_isCompressed = false;
 	
 	void GetComponentSizes(ImageCompression compression){
 		switch(m_Format){
@@ -103,12 +108,14 @@ private:
 				 && gl.isSupported(gl.Extensions.GL_ARB_texture_compression) ){
 				  m_Format = ImageFormat.COMPRESSED_LUMINANCE;
 			  }
+        m_isCompressed = false;
 			  break;
 			case ImageFormat.LUMINANCE32F:
 			  m_SizeOfComponent = 4;
 			  m_NumComponents = 1;
 			  m_Component = ImageComponent.FLOAT;
 			  m_BaseFormat = ImageBaseFormat.LUMINANCE;
+        m_isCompressed = false;
 			  break;
 			case ImageFormat.LUMINANCE_ALPHA8:
 			  m_SizeOfComponent = 1;
@@ -119,6 +126,7 @@ private:
 				 && gl.isSupported(gl.Extensions.GL_ARB_texture_compression) ){
 				  m_Format = ImageFormat.COMPRESSED_LUMINANCE_ALPHA;
 			  }
+        m_isCompressed = false;
 			  break;
 			case ImageFormat.R16F:
 			case ImageFormat.R32F:
@@ -126,6 +134,7 @@ private:
 			  m_NumComponents = 1;
 			  m_Component =	ImageComponent.FLOAT;
 			  m_BaseFormat = ImageBaseFormat.R;
+        m_isCompressed = false;
 			  break;
 			case ImageFormat.RGB8:
 			  m_SizeOfComponent = 1;
@@ -140,12 +149,14 @@ private:
 					  m_Format = ImageFormat.COMPRESSED_RGB;
 				  }
 			  }
+        m_isCompressed = false;
 			  break;
 			case ImageFormat.RGB16:
 			  m_SizeOfComponent = 2;
 			  m_NumComponents = 3;
 			  m_Component = ImageComponent.UNSIGNED_SHORT;
 			  m_BaseFormat = ImageBaseFormat.RGB;
+        m_isCompressed = false;
 			  break;
 			case ImageFormat.RGB16F:
 			case ImageFormat.RGB32F:
@@ -153,6 +164,7 @@ private:
 			  m_NumComponents = 3;
 			  m_Component = ImageComponent.FLOAT;
 			  m_BaseFormat = ImageBaseFormat.RGB;
+        m_isCompressed = false;
 			  break;
 			case ImageFormat.RGBA8:
 			  m_SizeOfComponent = 1;
@@ -167,12 +179,14 @@ private:
 					  m_Format = ImageFormat.COMPRESSED_RGBA;
 				  }
 			  }
+        m_isCompressed = false;
 			  break;
 			case ImageFormat.RGBA16:
 			  m_SizeOfComponent = 2;
 			  m_NumComponents = 4;
 			  m_Component = ImageComponent.UNSIGNED_SHORT;
 			  m_BaseFormat = ImageBaseFormat.RGBA;
+        m_isCompressed = false;
 			  break;
 			case ImageFormat.RGBA16F:
 			case ImageFormat.RGBA32F:
@@ -180,12 +194,14 @@ private:
 			  m_NumComponents = 4;
 			  m_Component = ImageComponent.FLOAT;
 			  m_BaseFormat = ImageBaseFormat.RGBA;
+        m_isCompressed = false;
 			  break;
 			case ImageFormat.DEPTH16:
 			  m_SizeOfComponent = 2;
 			  m_NumComponents = 1;
 			  m_Component = ImageComponent.UNSIGNED_SHORT;
 			  m_BaseFormat = ImageBaseFormat.DEPTH;
+        m_isCompressed = false;
 			  break;
 			case ImageFormat.DEPTH24:
 			case ImageFormat.DEPTH32:
@@ -193,19 +209,36 @@ private:
 			  m_NumComponents = 1;
 			  m_Component = ImageComponent.UNSIGNED_INT;
 			  m_BaseFormat = ImageBaseFormat.DEPTH;
+        m_isCompressed = false;
 			  break;
 			case ImageFormat.DEPTH24STENCIL:
 			  m_SizeOfComponent = 4;
 			  m_NumComponents = 1;
 			  m_Component = ImageComponent.UNSIGNED_INT_24_8;
 			  m_BaseFormat = ImageBaseFormat.DEPTH_STENCIL;
+        m_isCompressed = false;
 			  break;
+      case ImageFormat.COMPRESSED_RGBA_DXT1:
+      case ImageFormat.COMPRESSED_RGBA_DXT3:
+      case ImageFormat.COMPRESSED_RGBA_DXT5:
+        m_SizeOfComponent = 1;
+        m_NumComponents = 4;
+        m_Component = ImageComponent.UNSIGNED_BYTE;
+        m_BaseFormat = ImageBaseFormat.RGBA;
+        m_isCompressed = true;
+        break;
 			default:
-			  throw new Exception("Invalid Format for ImageData2D"); //,"renderer::ImageData2D::GetComponentSizes");
+			  throw New!RCException(format("Invalid Format for '%s' ImageData2D", EnumToString(m_Format))); //,"renderer::ImageData2D::GetComponentSizes");
 		}
 	}
 	
 public:
+
+  this(IAllocator allocator)
+  {
+    m_allocator = allocator;
+  }
+
 	~this(){
 		if(m_Data.ptr !is null){
       assert(m_allocator !is null);
@@ -318,7 +351,11 @@ public:
 	 *		pFilename = the file to load
 	 */
 	void LoadFromFile(rcstring pFilename, ImageCompression compression)
-	{
+  in
+  {
+    assert(m_allocator !is null);
+  }
+	body {
     version(NO_OPENGL)
     {
       size_t size = 4 * 4;
@@ -346,25 +383,27 @@ public:
           throw New!RCException(format("Trying to loader file '%s' which is a texture array of size %d as 2d texture", pFilename[], loader.images.length));
         }
 
-        m_Width = loader.width;
-        m_Height = loader.height;
+        ImageFormat imgformat;
         
         switch(loader.dataFormat)
         {
           case DDSLoader.D3DFORMAT.DXT1:
-            m_BaseFormat = ImageFormat.COMPRESSED_RGBA_DXT1;
+            imgformat = ImageFormat.COMPRESSED_RGBA_DXT1;
+            assert(compression != ImageCompression.NONE, "can not uncompress compressed dxt1 texture");
             break;
           case DDSLoader.D3DFORMAT.DXT3:
-            m_BaseFormat = ImageFormat.COMPRESSED_RGBA_DXT3;
+            imgformat = ImageFormat.COMPRESSED_RGBA_DXT3;
+            assert(compression != ImageCompression.NONE, "can not uncompress compressed dxt3 texture");
             break;
           case DDSLoader.D3DFORMAT.DXT5:
-            m_BaseFormat = ImageFormat.COMPRESSED_RGBA_DXT5;
+            imgformat = ImageFormat.COMPRESSED_RGBA_DXT5;
+            assert(compression != ImageCompression.NONE, "can not uncompress compressed dxt5 texture");
             break;
           default:
             throw New!RCException(format("Trying to load file %s which has unsupported format %s", pFilename[], EnumToString(loader.dataFormat)));
         }
 
-        m_Data = loader.images[0];
+        SetData(m_allocator, loader.images[0], loader.width, loader.height, imgformat, ImageCompression.PRECOMPRESSED);
       }
       else
       {
@@ -399,13 +438,13 @@ public:
 			    }
 		    }
 		    if(img.format.BytesPerPixel == 1){
-			    SetData(StdAllocator.globalInstance, newImage, img.width, img.height, ImageFormat.LUMINANCE8, compression);
+			    SetData(m_allocator, newImage, img.width, img.height, ImageFormat.LUMINANCE8, compression);
 		    }
 		    else if(img.format.BytesPerPixel == 3){
-			    SetData(StdAllocator.globalInstance, newImage, img.width, img.height, ImageFormat.RGB8, compression);
+			    SetData(m_allocator, newImage, img.width, img.height, ImageFormat.RGB8, compression);
 		    }
 		    else{
-			    SetData(StdAllocator.globalInstance, newImage, img.width, img.height, ImageFormat.RGBA8, compression);
+			    SetData(m_allocator, newImage, img.width, img.height, ImageFormat.RGBA8, compression);
 		    }
       }
     }
@@ -420,6 +459,7 @@ public:
 	ImageComponent GetComponent() const { return m_Component; } ///get component
 	size_t GetSizeOfComponent() const { return m_SizeOfComponent; } ///get size of component
 	size_t GetNumberOfComponents() const { return m_NumComponents; } ///get number of components (channels)
+  @property final bool isCompressed() const { return m_isCompressed; }
 	
 	/**
 	 * Checks if internal data is present or not

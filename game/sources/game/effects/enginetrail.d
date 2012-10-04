@@ -227,7 +227,7 @@ public:
 		/*auto ser = new XmlSerializer!Params(Params());
 		ser.ToFile("gfx/xml/enginetrail.xml");*/
 		FromXmlFile(m_Params, _T("gfx/xml/enginetrail.xml"));
-		auto spriteAtlas = g_Env.renderer.assetLoader.LoadSpriteAtlas(_T("gfx/sprite_atlas.png"));
+		auto spriteAtlas = g_Env.renderer.assetLoader.LoadSpriteAtlas(_T("gfx/sprite_atlas.dds"));
 		m_FireSprite = spriteAtlas.GetSprite(m_Params.fire.sprite.x,m_Params.fire.sprite.y,m_Params.fire.sprite.width,m_Params.fire.sprite.height);
 	}
 	

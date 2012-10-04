@@ -1,13 +1,12 @@
 module renderer.cubetexture;
 
-
-
 import renderer.texture;
 import renderer.imagedata2d;
 import renderer.opengl;
 import base.all;
 import core.stdc.stdlib;
 import renderer.internal;
+import thBase.math;
 
 class CubeTexture : ITextureInternal {
 public:
@@ -82,7 +81,7 @@ public:
 		m_Renderer = pRenderer;
 		m_Name = pName;
 		foreach(ref data;m_Data){
-			data = New!ImageData2D();
+			data = New!ImageData2D(StdAllocator.globalInstance);
 		}
 	}
 	
@@ -120,33 +119,73 @@ public:
 		
 		SetTextureOptions(pOptions);
 	
-		foreach(i,data;m_Data){
-			gl.TexImage2D(CUBE_FACE[i], 0, data.GetFormat(), data.GetWidth(), data.GetHeight(), 0, data.GetBaseFormat(), data.GetComponent(), data.GetData().ptr);
-			if(m_Compression == ImageCompression.AUTO 
-			   && gl.isSupported(gl.Extensions.GL_ARB_texture_compression) )
-			{
-				int compressed = 0;
-				gl.GetTexLevelParameteriv(CUBE_FACE[i],0,gl.TEXTURE_COMPRESSED_ARB,&compressed);
-				if(compressed > 0){
-					int size;
-					gl.GetTexLevelParameteriv(CUBE_FACE[i],0,gl.TEXTURE_COMPRESSED_IMAGE_SIZE_ARB,&size);
-					m_UploadedDataSize += size;
-				}
-				else {
-					m_UploadedDataSize += data.GetData().length;
-				}
-			}
-			else {
-				m_UploadedDataSize += data.GetData().length;
-			}
+    m_UploadedDataSize = 0;
+		foreach(i, data;m_Data){
+      if(data.isCompressed)
+      {
+        size_t divisor = 1;
+        foreach(size_t level, ref mipmap; data.GetData())
+        {
+          gl.CompressedTexImage2D(CUBE_FACE[i], level, data.GetFormat(), max(1, data.GetWidth() / divisor), max(1, data.GetHeight() / divisor), 0, mipmap.length, mipmap.ptr);
+
+          debug{
+            gl.ErrorCode error = gl.GetError();
+            if(error != gl.ErrorCode.NO_ERROR)
+            {
+              auto msg = format("Error uploading face %d mipmap %d of texture '%s': %s", i, level, m_Name[], gl.TranslateError(error));
+              assert(0, msg[]);
+            }
+          }
+
+          m_UploadedDataSize += mipmap.length;
+          divisor *= 2;
+        }
+      }
+      else
+      {
+        size_t divisor = 1;
+        foreach(size_t level, ref mipmap; data.GetData())
+        {
+          gl.TexImage2D(CUBE_FACE[i], level, data.GetFormat(), max(1, data.GetWidth() / divisor), max(1, data.GetHeight() / divisor), 0, data.GetBaseFormat(), data.GetComponent(), mipmap.ptr);
+
+          debug{
+            gl.ErrorCode error = gl.GetError();
+            if(error != gl.ErrorCode.NO_ERROR)
+            {
+              auto msg = format("Error uploading face %d mipmap %d of texture '%s': %s", i, level, m_Name[], gl.TranslateError(error));
+              assert(0, msg[]);
+            }
+          }
+
+          divisor *= 2;
+        }
+
+			  if(m_Compression == ImageCompression.AUTO 
+			     && gl.isSupported(gl.Extensions.GL_ARB_texture_compression) )
+			  {
+				  int compressed = 0;
+				  gl.GetTexLevelParameteriv(CUBE_FACE[i],0,gl.TEXTURE_COMPRESSED_ARB,&compressed);
+				  if(compressed > 0){
+					  int size;
+					  gl.GetTexLevelParameteriv(CUBE_FACE[i],0,gl.TEXTURE_COMPRESSED_IMAGE_SIZE_ARB,&size);
+					  m_UploadedDataSize += size;
+				  }
+				  else {
+					  m_UploadedDataSize += data.GetData().length;
+				  }
+			  }
+			  else {
+				  m_UploadedDataSize += data.GetData().length;
+			  }
+      }
 		}
 		m_Renderer.addTextureMemoryAmount(m_UploadedDataSize);
 		if(pOptions & Options.NO_LOCAL_DATA){
-			foreach(data;m_Data){
+			foreach(data; m_Data){
 				data.Free();
 			}
 		}
-		if(pOptions & Options.MIPMAPS)
+		if(pOptions & Options.MIPMAPS && m_Data[0].GetData().length == 1)
 			gl.GenerateMipmap(gl.TEXTURE_CUBE_MAP);
 	}
 	

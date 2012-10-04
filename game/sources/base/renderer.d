@@ -165,16 +165,9 @@ shared interface IAssetLoader {
 	/**
 	 * this tells the resource loader, to load a cube map, the call blocks until the model was loaded
 	 * Params:
-	 *  positive_x_path = path to the image for the positive x cube face
-	 *  negative_x_path = path to the image for the negative x cube face
-	 *  positive_y_path = path to the image for the positive y cube face
-	 *  negative_y_path = path to the image for the negative y cube face
-	 *  positive_z_path = path to the image for the positive z cube face
-	 *  negative_z_path = path to the image for the negative z cube face
+	 *  path = path to the cubemap file
 	 */
-	shared(ITexture) LoadCubeMap(rcstring positive_x_path, rcstring negative_x_path,
-								 rcstring positive_y_path, rcstring negative_y_path,
-								 rcstring positive_z_path, rcstring negative_z_path);
+	shared(ITexture) LoadCubeMap(rcstring path);
 	
 	/**
 	 * this loads a sprite atlas (a image containing multiple sprites)

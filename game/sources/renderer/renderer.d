@@ -1482,10 +1482,10 @@ public:
         auto msg = m_LoadingMessageQueue.tryGet!MsgLoadCubeMap();
         assert(msg !is null);
         scope(exit) m_LoadingMessageQueue.skip!MsgLoadCubeMap();
-        debug base.logger.info("loading cube map '%s'", msg.paths[0][]);
+        debug base.logger.info("loading cube map '%s'", msg.path[]);
         try {
           ITexture texture = 
-            m_AssetLoader.DoLoadCubeMap(msg.paths);
+            m_AssetLoader.DoLoadCubeMap(msg.path);
           msg.answerQueue.enqueue(MsgLoadingCubeMapDone(texture));
         }
         catch(Throwable e){
