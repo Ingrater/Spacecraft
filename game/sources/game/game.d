@@ -363,7 +363,7 @@ class GameSimulation : IGameThread, IGame {
 			m_InputHandler = new GameInput();
 			g_Env.eventHandler.RegisterInputListener(cast(shared(GameInput))m_InputHandler);
 			
-			shared(ITexture) skyBoxTexture = g_Env.renderer.assetLoader.LoadCubeMap(_T("gfx/env/skybox.dds"));
+			shared(ITexture) skyBoxTexture = g_Env.renderer.assetLoader.LoadCubeMap(_T("gfx/env/teide.dds"));
 			auto skyBoxRenderProxy = g_Env.renderer.CreateRenderProxySkyBox(skyBoxTexture);
       m_SkyBox = New!SkyBox(skyBoxRenderProxy);
 			m_Octree.addGlobalRenderable( m_SkyBox );
