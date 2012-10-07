@@ -228,11 +228,14 @@ class MgProjectile : GameObject, ISerializeable {
   static ~this()
   {
     Delete(m_ReuseableRenderProxy);
-    foreach(sound; m_SoundCache)
+    if(m_SoundCache !is null)
     {
-      Delete(sound);
+      foreach(sound; m_SoundCache)
+      {
+        Delete(sound);
+      }
+      Delete(m_SoundCache); m_SoundCache = null;
     }
-    Delete(m_SoundCache); m_SoundCache = null;
   }
 	
 	protected void loadRenderProxy(rcstring file, ubyte index){

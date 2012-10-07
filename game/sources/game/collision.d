@@ -32,8 +32,8 @@ public:
 	 *  pFilename = the file to load
 	 */
 	void Load(rcstring pFilename){
-		auto loader = scopedRef!ModelLoader(New!ModelLoader());
-    loader.LoadFile(pFilename, EnumBitfield!(ModelLoader.Load)(ModelLoader.Load.Meshes));
+		auto loader = scopedRef!(ModelLoader, ThreadLocalStackAllocator)(AllocatorNew!ModelLoader(ThreadLocalStackAllocator.globalInstance));
+    loader.LoadFile(pFilename, EnumBitfield!(ModelLoader.Load)(ModelLoader.Load.Meshes, ModelLoader.Load.Nodes));
 		
 		if(loader.modelData.meshes.length > 1){
 			throw New!RCException(format("The collision mesh '%s' does contain more that 1 mesh", pFilename[]));
@@ -45,11 +45,44 @@ public:
       Delete(m_Faces);
     }
 		m_Faces = NewArray!Triangle(mesh.faces.length);
+    auto vertices = AllocatorNewArray!vec3(ThreadLocalStackAllocator.globalInstance, mesh.vertices.length);
+    scope(exit) AllocatorDelete(ThreadLocalStackAllocator.globalInstance, vertices);
+    
+    const(ModelLoader.NodeDrawData*) findLeaf(const(ModelLoader.NodeDrawData*) node)
+    {
+      if(node.meshes.length > 0)
+      {
+        return node;
+      }
+      foreach(child; node.children)
+      {
+        auto result = findLeaf(child);
+        if(result !is null)
+        {
+          return result;
+        }
+      }
+      return null;
+    }
+
+    const(ModelLoader.NodeDrawData)* curNode = findLeaf(loader.modelData.rootNode);
+    assert(curNode !is null, "no node with mesh found");
+    mat4 transform = loader.modelData.rootNode.transform;
+    while(curNode !is null && curNode != loader.modelData.rootNode)
+    {
+      transform = curNode.transform * transform;
+      curNode = curNode.data.parent;
+    }
+
+    foreach(size_t i, ref vertex; vertices)
+    {
+      vertex = transform * mesh.vertices[i];
+    }
 		
 		foreach(size_t i,ref face;m_Faces){			
       for(size_t j=0; j<3; j++)
       {
-			  face.v[j] = mesh.vertices[mesh.faces[i].indices[j]];
+			  face.v[j] = vertices[mesh.faces[i].indices[j]];
 			}
       face.plane = Plane(face.v[0], face.v[1], face.v[2]);
 		}
