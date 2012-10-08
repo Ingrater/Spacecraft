@@ -341,8 +341,8 @@ public:
 
 		
 		FT_Face face;
-		if(ft.New_Face( library, toCString(pFilename), 0, &face )){
-			throw New!FontException(format("Couldn't load font '%s' from file '%s'", m_Name[], pFilename[]));
+		if(FT_Error error = ft.New_Face( library, toCString(pFilename), 0, &face )){
+			throw New!FontException(format("Couldn't load font '%s' from file '%s' error %d", m_Name[], pFilename[], error));
 		}
 		scope(exit) {
 			ft.Done_Face(face);
