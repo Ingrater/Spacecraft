@@ -89,6 +89,16 @@ public:
   private ModelData m_modelData;
   rcstring  filename;
 
+  private uint allocationSize(T)(uint num)
+  {
+    uint size = T.sizeof * num;
+    if(size % m_meshDataAllocator.alignment != 0)
+    {
+      size += m_meshDataAllocator.alignment - (size & m_meshDataAllocator.alignment);
+    }
+    return size;
+  }
+
   /**
    * provides read only access for the loaded data
    */
@@ -136,6 +146,41 @@ public:
       throw New!RCException(format("Model '%s' does have old format, please reexport", pFilename[]));
     }
 
+    static struct MemoryPool
+    {
+      uint size;
+      uint cur;
+
+      this(size_t size)
+      {
+        assert(size <= uint.max);
+        this.size = cast(uint)size;
+      }
+
+      void opOpAssign(string op, T)(T val)
+      {
+        this.cur += cast(uint)val;
+        assert(this.cur <= this.size, "Memory pool overflow");
+      }
+    }
+
+    static struct MemoryStatistics
+    {
+      MemoryPool materialData;
+      MemoryPool nodeNameMemory;
+      MemoryPool texturePathMemory;
+      MemoryPool texturePathReferencesMemory;
+      MemoryPool meshDataArray;
+      MemoryPool vertexData;
+      MemoryPool faceDataArray;
+      MemoryPool nodeData;
+      MemoryPool meshReferenceMemory;
+      MemoryPool nodeReferenceMemory;
+      MemoryPool textureReferenceMemory;
+    }
+
+    MemoryStatistics memstat;
+
     uint nodeNameMemory;
 
     Load[4] loadTexCoords;
@@ -144,6 +189,7 @@ public:
     loadTexCoords[2] = Load.TexCoords2;
     loadTexCoords[3] = Load.TexCoords3;
 
+    uint texturePathMemory;
     //Read the size info
     {
       enum size_t alignmentOverhead = m_meshDataAllocator.alignment - 1;
@@ -160,23 +206,33 @@ public:
       if(loadWhat.IsSet(Load.Materials))
       {
         meshDataSize += string.sizeof * numTextures;
-        meshDataSize += numTextures * alignmentOverhead; //alignment overhead for texture paths
+        memstat.texturePathReferencesMemory = MemoryPool(string.sizeof * numTextures);
       }
 
-      uint texturePathMemory;
       file.read(texturePathMemory);
+      if(texturePathMemory % m_meshDataAllocator.alignment != 0)
+        texturePathMemory += m_meshDataAllocator.alignment - (texturePathMemory % m_meshDataAllocator.alignment);
       if(loadWhat.IsSet(Load.Materials))
+      {
         meshDataSize += texturePathMemory;
+        memstat.texturePathMemory = MemoryPool(texturePathMemory);
+      }
 
       uint numMaterials;
       file.read(numMaterials);
       if(loadWhat.IsSet(Load.Materials))
-        meshDataSize += numMaterials * MaterialData.sizeof;
+      {
+        memstat.materialData = MemoryPool(numMaterials * MaterialData.sizeof);
+        meshDataSize += memstat.materialData.size;
+      }
 
       uint numMeshes;
       file.read(numMeshes);
       if(loadWhat.IsSet(Load.Meshes))
+      {
         meshDataSize += MeshData.sizeof * numMeshes;
+        memstat.meshDataArray = MemoryPool(MeshData.sizeof * numMeshes);
+      }
       for(uint i=0; i<numMeshes; i++)
       {
         uint numVertices, PerVertexFlags, numComponents, numTexcoords;
@@ -201,19 +257,26 @@ public:
           numTexcoords++;
 
         meshDataSize += numVertices * numComponents * 3 * float.sizeof;
+        memstat.vertexData.size += numVertices * numComponents * 3 * float.sizeof;
 
         for(uint j=0; j<numTexcoords; j++)
         {
           ubyte numUVComponents;
           file.read(numUVComponents);
           if(loadWhat.IsSet(loadTexCoords[j]))
+          {
             meshDataSize += numVertices * numUVComponents * float.sizeof;
+            memstat.vertexData.size += numVertices * numUVComponents * float.sizeof;
+          }
         }
 
         uint numFaces;
         file.read(numFaces);
         if(loadWhat.IsSet(Load.Meshes))
+        {
           meshDataSize += numFaces * FaceData.sizeof;
+          memstat.faceDataArray.size += numFaces * FaceData.sizeof;
+        }
       }
 
       uint numNodes,numNodeReferences,numMeshReferences,numTextureReferences;
@@ -223,17 +286,29 @@ public:
       file.read(numMeshReferences);
       file.read(numTextureReferences);
 
+      if(nodeNameMemory % m_meshDataAllocator.alignment != 0)
+        nodeNameMemory += m_meshDataAllocator.alignment - (nodeNameMemory % m_meshDataAllocator.alignment);
+
       if(loadWhat.IsSet(Load.Nodes))
       {
         meshDataSize += numNodes * NodeData.sizeof;
-        meshDataSize += numNodes * alignmentOverhead; //alignment overhead for node names
         meshDataSize += numNodes * NodeDrawData.sizeof;
+        memstat.nodeData = MemoryPool(numNodes * NodeData.sizeof + numNodes * NodeDrawData.sizeof);
+
+        meshDataSize += numMeshReferences * uint.sizeof;
+        memstat.meshReferenceMemory = MemoryPool(numMeshReferences * uint.sizeof);
+
         meshDataSize += numNodeReferences * (NodeData*).sizeof;
+        memstat.nodeReferenceMemory = MemoryPool(numNodeReferences * (NodeDrawData*).sizeof);
+
         meshDataSize += nodeNameMemory;
-        meshDataSize += numMeshReferences * (MeshData*).sizeof;
+        memstat.nodeNameMemory = MemoryPool(nodeNameMemory);
       }
       if(loadWhat.IsSet(Load.Materials))
+      {
         meshDataSize += numTextureReferences * TextureReference.sizeof;
+        memstat.textureReferenceMemory = MemoryPool(numTextureReferences * TextureReference.sizeof);
+      }
 
       file.endReadChunk();
 
@@ -259,12 +334,18 @@ public:
 
         if(numTextures > 0)
         {
+          memstat.texturePathReferencesMemory += allocationSize!string(numTextures);
           m_modelData.textures = AllocatorNewArray!string(m_meshDataAllocator, numTextures);
+
+          memstat.texturePathMemory += allocationSize!char(texturePathMemory);
+          char[] textureNames = AllocatorNewArray!char(m_meshDataAllocator, texturePathMemory);
+          size_t curNamePos = 0;
           foreach(ref texture; m_modelData.textures)
           {
-            uint length;
-            file.read(length);
-            auto data = AllocatorNewArray!char(m_meshDataAllocator, length);
+            uint len;
+            file.read(len);
+            auto data = textureNames[curNamePos..(curNamePos+len)];
+            curNamePos += len;
             file.read(data);
             texture = cast(string)data;
           }
@@ -293,6 +374,7 @@ public:
 
         if(numMaterials > 0)
         {
+          memstat.materialData += allocationSize!MaterialData(numMaterials);
           m_modelData.materials = AllocatorNewArray!MaterialData(m_meshDataAllocator, numMaterials);
           foreach(ref material; m_modelData.materials)
           {
@@ -304,6 +386,7 @@ public:
 
             uint numTextures;
             file.read(numTextures);
+            memstat.textureReferenceMemory += allocationSize!TextureReference(numTextures);
             material.textures = AllocatorNewArray!TextureReference(m_meshDataAllocator, numTextures);
             foreach(ref texture; material.textures)
             {
@@ -338,6 +421,7 @@ public:
       {
         uint numMeshes;
         file.read(numMeshes);
+        memstat.meshDataArray += allocationSize!MeshData(numMeshes);
         m_modelData.meshes = AllocatorNewArray!MeshData(m_meshDataAllocator, numMeshes);
 
         foreach(ref mesh; m_modelData.meshes)
@@ -364,6 +448,7 @@ public:
           {
             throw New!RCException(format("Expected 'vertices' chunk but got '%s'", file.currentChunkName));
           }
+          memstat.vertexData += allocationSize!vec3(numVertices);
           mesh.vertices = AllocatorNewArray!vec3(m_meshDataAllocator, numVertices, InitializeMemoryWith.NOTHING);
           file.read(mesh.vertices[0].f.ptr[0..numVertices * 3]);
           file.endReadChunk();
@@ -381,6 +466,7 @@ public:
             {
               if(loadWhat.IsSet(Load.Normals))
               {
+                memstat.vertexData += allocationSize!vec3(numVertices);
                 mesh.normals = AllocatorNewArray!vec3(m_meshDataAllocator, numVertices, InitializeMemoryWith.NOTHING);
                 foreach(ref normal; mesh.normals)
                 {
@@ -400,6 +486,7 @@ public:
             {
               if(loadWhat.IsSet(Load.Tangents))
               {
+                memstat.vertexData += allocationSize!vec3(numVertices);
                 mesh.tangents = AllocatorNewArray!vec3(m_meshDataAllocator, numVertices, InitializeMemoryWith.NOTHING);
                 foreach(ref tangent; mesh.tangents)
                 {
@@ -419,6 +506,7 @@ public:
             {
               if(loadWhat.IsSet(Load.Bitangents))
               {
+                memstat.vertexData += allocationSize!vec3(numVertices);
                 mesh.bitangents = AllocatorNewArray!vec3(m_meshDataAllocator, numVertices, InitializeMemoryWith.NOTHING);
                 foreach(ref bitangent; mesh.bitangents)
                 {
@@ -451,6 +539,7 @@ public:
                   }
                   if(loadWhat.IsSet(loadTexCoords[i]))
                   {
+                    memstat.vertexData += allocationSize!vec2(numVertices);
                     mesh.texcoords[i] = AllocatorNewArray!vec2(m_meshDataAllocator, numVertices, InitializeMemoryWith.NOTHING);
                     file.read((cast(float*)mesh.texcoords[i].ptr)[0..numVertices*numUVComponents]);
                   }
@@ -472,6 +561,7 @@ public:
             {
               uint numFaces;
               file.read(numFaces);
+              memstat.faceDataArray += allocationSize!FaceData(numFaces);
               mesh.faces = AllocatorNewArray!FaceData(m_meshDataAllocator, numFaces, InitializeMemoryWith.NOTHING);
               if(numVertices > ushort.max)
               {
@@ -518,9 +608,15 @@ public:
         uint numNodes;
         file.read(numNodes);
 
+        memstat.nodeNameMemory += allocationSize!char(nodeNameMemory);
         auto nodeNames = AllocatorNewArray!char(m_meshDataAllocator, nodeNameMemory);
+
         size_t curNodeNamePos = 0;
+        
+        memstat.nodeData += allocationSize!NodeData(numNodes);
         auto nodesData = AllocatorNewArray!NodeData(m_meshDataAllocator, numNodes);
+
+        memstat.nodeData += allocationSize!NodeDrawData(numNodes);
         auto nodes = AllocatorNewArray!NodeDrawData(m_meshDataAllocator, numNodes);
 
         foreach(size_t i, ref node; nodes)
@@ -539,12 +635,14 @@ public:
           else
             node.data.parent = &nodes[nodeParentIndex];
 
+          
           node.meshes = file.readAndAllocateArray!(uint, uint, typeof(m_meshDataAllocator))(m_meshDataAllocator);
-
+          memstat.meshReferenceMemory += allocationSize!uint(node.meshes.length);
           uint numChildren;
           file.read(numChildren);
           if(numChildren > 0)
           {
+            memstat.nodeReferenceMemory += allocationSize!(NodeDrawData*)(numChildren);
             node.children = AllocatorNewArray!(NodeDrawData*)(m_meshDataAllocator, numChildren);
             foreach(ref child; node.children)
             {

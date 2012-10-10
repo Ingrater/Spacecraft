@@ -14,6 +14,7 @@ import thBase.math3d.mats;
 import thBase.math3d.vecs;
 import assimp.assimp;
 import modeltypes;
+import core.stdc.stdlib;
 
 rcstring g_workDir;
 bool g_debug = false;
@@ -300,7 +301,8 @@ void ProgressModel(string path)
                 MaterialTextureInfo info;
                 info.id = textureFiles[textureFilename];
                 info.semantic = MapTextureType(cast(aiTextureType)prop.mSemantic);
-                materialTextures ~= info;
+                if(info.semantic != TextureType.UNKNOWN)
+                  materialTextures ~= info;
               }
             }
           }
@@ -590,6 +592,8 @@ int main(string[] args)
     Delete(ex);
     return -1;
   }
+
+  system("pause");
 
   return 0;
 }

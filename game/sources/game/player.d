@@ -149,11 +149,11 @@ class Player : HitableGameObject, ISerializeable, IControllable {
 		}
 		
 		void moveForward(bool pressed){
-			auto dir = vec3(0, 0, 1) * m_MovementAcl;
+			auto dir = vec3(0, 0, -1) * m_MovementAcl;
 			m_Acceleration += (pressed) ? dir : -dir;
 		}
 		void moveBackward(bool pressed){
-			auto dir = vec3(0, 0, -1) * m_MovementAcl;
+			auto dir = vec3(0, 0, 1) * m_MovementAcl;
 			m_Acceleration += (pressed) ? dir : -dir;
 		}
 		void moveRight(bool pressed){

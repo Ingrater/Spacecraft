@@ -241,7 +241,6 @@ class GameSimulation : IGameThread, IGame {
 		AttachedCamera m_AttachedCamera;
 		IGameObject m_Camera;
 		Zeitpunkt m_LastUpdate;
-		Zeitpunkt m_LastEndFrame;
 		Zeitpunkt m_LastMeasurement;
 		
 		IScriptSystem m_ScriptSystem;
@@ -348,7 +347,6 @@ class GameSimulation : IGameThread, IGame {
 					initStandaloneClient();
 				}
 				m_LastUpdate = Zeitpunkt(g_Env.mainTimer);
-				m_LastEndFrame = Zeitpunkt(g_Env.mainTimer);
 			}
 		}
 		
@@ -635,23 +633,7 @@ class GameSimulation : IGameThread, IGame {
 				
 				m_LastUpdate = now;
 				m_Simulations++;
-			}
-			
-			//Slow the client down to 120 updates per second
-			
-			if(!g_Env.isServer)
-			{
-				auto endFrame = Zeitpunkt(g_Env.mainTimer);
-				auto profile = base.profiler.Profile("waiting");
-				int diff = cast(int)(8.0f - (endFrame - m_LastEndFrame));
-				if(diff > 0){
-					Thread.getThis().sleep( dur!("msecs")(diff) );
-					//base.logger.info("sleeping %s -> %s",diff,Zeitpunkt(g_Env.mainTimer) - endFrame); 
-				}
-				m_LastEndFrame = Zeitpunkt(g_Env.mainTimer);
-				//m_LastEndFrame = endFrame;
-			}
-			
+			}		
 			
 			return true;
 		}

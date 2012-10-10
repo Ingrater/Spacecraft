@@ -1633,6 +1633,8 @@ public:
 				ProgressLoadingMessages();
 				continue;
 			}
+
+      auto profile = base.profiler.Profile("reading");
 			
 			ObjectInfo* data = buffer.buffer;
 			vec3 shadowMin = vec3(float.max);
