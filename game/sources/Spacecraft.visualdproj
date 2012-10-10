@@ -675,6 +675,10 @@
    <File path="client\net.d" />
    <File path="client\resources.d" />
   </Folder>
+  <Folder name="physics">
+   <File path="physics\physics.d" />
+   <File path="physics\rigidbody.d" />
+  </Folder>
   <Folder name="game">
    <Folder name="effects">
     <File path="game\effects\bigexplosion.d" />
@@ -698,6 +702,7 @@
    <File path="game\cvars.d" />
    <File path="game\deco.d" />
    <File path="game\demomodel.d" />
+   <File path="game\devobjects.d" />
    <File path="game\factory.d" />
    <File path="game\frametimegraph.d" />
    <File path="game\freecam.d" />

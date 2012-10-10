@@ -150,8 +150,8 @@ void main(){
   samples2.z = texture2D(ShadowMap,LightCoord2.xy + ShadowOffset * (rotation * vec2( 1.0,-2.0)) ).r;
   samples2.w = texture2D(ShadowMap,LightCoord2.xy + ShadowOffset * (rotation * vec2(-2.0,-1.0)) ).r;
 
-  float shadow = dot(step(LightCoord2.z - 0.005,samples1),vec4(0.125,0.125,0.125,0.125))
-               + dot(step(LightCoord2.z - 0.005,samples2),vec4(0.125,0.125,0.125,0.125));
+  float shadow = dot(step(LightCoord2.z - 0.001,samples1),vec4(0.125,0.125,0.125,0.125))
+               + dot(step(LightCoord2.z - 0.001,samples2),vec4(0.125,0.125,0.125,0.125));
   shadow = mix(1.0,shadow,inside);
   shadow = shadow * 0.9 + 0.1;
   #endif

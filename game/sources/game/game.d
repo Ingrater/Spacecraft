@@ -17,6 +17,7 @@ import game.objectfactory;
 import game.demomodel, game.frigate, game.player, game.attachedcam;
 import game.effects.enginetrail, game.effects.shieldimpact, game.effects.smallexplosion;
 import game.effects.bigexplosion;
+import game.devobjects;
 
 import game.rules.base, game.rules.deathmatch;
 import thBase.container.queue;
@@ -237,7 +238,7 @@ class GameSimulation : IGameThread, IGame {
 		bool m_ExitGame = false;
 		
 		IControllable m_Controller;
-		FreeCam m_FreeCamera;
+		FreeCamUp m_FreeCamera;
 		AttachedCamera m_AttachedCamera;
 		IGameObject m_Camera;
 		Zeitpunkt m_LastUpdate;
@@ -368,21 +369,21 @@ class GameSimulation : IGameThread, IGame {
 			
 			SmartPtr!IRenderProxy cameraRenderProxy = g_Env.renderer.CreateRenderProxy();
 			
-			m_FreeCamera = New!FreeCam(cameraRenderProxy);
+			m_FreeCamera = New!FreeCamUp(cameraRenderProxy, vec3(0,1,0));
 			m_Controller = m_FreeCamera;
 			m_Camera = m_FreeCamera;
 			g_Env.renderer.camera = m_Camera;
 			
       version(ParticlePerformance) {}
       else {
-			  auto model = g_Env.renderer.assetLoader.LoadModel(g_Env.viewModel);
+			  /*auto model = g_Env.renderer.assetLoader.LoadModel(g_Env.viewModel);
 			  shared(ISubModel) viewerModel;
 			  if (g_Env.viewSubModel.length > 0)
 				  viewerModel = model.GetSubModel(-1, cast(string[]) g_Env.viewSubModel);
 			  else
 				  viewerModel = model;
 			  IGameObject modelEntity = New!DemoModel(m_GameObjectFactory.nextEntityId(), viewerModel, Position(vec3(0, 0, 0)), Quaternion(vec3(1, 0, 0), 0));
-			  m_Octree.addGlobalObject(modelEntity);
+			  m_Octree.addGlobalObject(modelEntity);*/
       }
 			
 			version(triangle_intersection_test){
@@ -423,7 +424,7 @@ class GameSimulation : IGameThread, IGame {
 			g_Env.eventHandler.RegisterInputListener(cast(shared(GameInput))m_InputHandler);
 			
 			SmartPtr!IRenderProxy cameraProxy = g_Env.renderer.CreateRenderProxy();
-			m_FreeCamera = New!FreeCam(cameraProxy);
+			m_FreeCamera = New!FreeCamUp(cameraProxy, vec3(0,1,0));
 			m_Camera = m_FreeCamera;
 			m_Controller = m_FreeCamera;
 			g_Env.renderer.camera = m_FreeCamera;
@@ -820,6 +821,30 @@ class GameSimulation : IGameThread, IGame {
 			obj.update(1.0f);
 			m_Octree.insert(obj);
 		}
+
+    /**
+     * Spawns a box in the model viewer
+     */
+    void spawnBox(float x, float y, float z)
+    {
+      base.logger.info("spawnBox %f %f %f", x, y, z);
+      auto obj = New!Box(EntityId(2), this);
+      obj.setPosition(x,y,z);
+      obj.update(1.0f);
+      m_Octree.insert(obj);
+    }
+
+    /**
+    * Spawns a plane in the model viewer
+    */
+    void spawnPlane(float x, float y, float z)
+    {
+      base.logger.info("spawnPlane %f %f %f", x, y, z);
+      auto obj = New!(game.devobjects.Plane)(EntityId(2), this);
+      obj.setPosition(x,y,z);
+      obj.update(1.0f);
+      m_Octree.insert(obj);
+    }
 		
 		/**
 		 * Spawns a new asteroid in the model viewer
@@ -887,7 +912,7 @@ class GameSimulation : IGameThread, IGame {
 		 * starts a rotation in the model viewer
 		 */
 		void startRotation(float radius, float speed, float offset){
-			m_FreeCamera.rotateAroundCenter(radius,speed,offset);
+			//m_FreeCamera.rotateAroundCenter(radius,speed,offset);
 		}
 		
 		/**
@@ -1012,6 +1037,8 @@ class GameSimulation : IGameThread, IGame {
 				m_ScriptSystem.RegisterGlobal("sa",&spawnAsteroid2);
 				m_ScriptSystem.RegisterGlobal("sav",&spawnAsteroidAtCam);
 				m_ScriptSystem.RegisterGlobal("startRotation",&startRotation);
+        m_ScriptSystem.RegisterGlobal("spawnBox", &spawnBox);
+        m_ScriptSystem.RegisterGlobal("spawnPlane", &spawnPlane);
 			}
 		}
 		

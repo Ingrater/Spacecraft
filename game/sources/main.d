@@ -170,6 +170,9 @@ int main(string[] args){
 					return -1;
 			}
 		}
+
+    //always start model viewer
+    g_Env.viewModel = "physics";
 		
 		// Clear the log file (truncate does not exist on Windows...)
     {

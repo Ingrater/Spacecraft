@@ -228,6 +228,26 @@ public:
           }
           Delete(resourceData);
 			  }
+        else
+        {
+				  // Load the resources required by the client. We do this before the network
+				  // connection because this can take some seconds. If many game objects are
+				  // flying around this can be enought to fill the network buffers.
+				  base.logger.info("Loading resources...");
+
+          auto resourceData = [
+					  [_T("box"), _T("models/chest1.thModel")],
+					  [_T("plane"), _T("models/plane.thModel")]
+				  ];
+
+				  client.resources.loadModels(progressBar, game, 0, 0.75, resourceData);
+          foreach(ref a; resourceData)
+          {
+            Delete(a);
+            a = [];
+          }
+          Delete(resourceData);
+        }
 			
 			  // Connect to server if a non-empty IP was given
 			  if (g_Env.serverIp != "" && !g_Env.viewModel) {

@@ -1389,7 +1389,7 @@ public:
 		// Shader constant for light direction
 		m_LightDirConstant = new ShaderConstantSimpleType!vec3();
 		RegisterShaderConstant(_T("LightDir"),m_LightDirConstant);
-		m_LightDir = vec3(2,1,4).normalize();
+		m_LightDir = vec3(2,5,3).normalize();
 		m_LightDirConstant.Set(m_LightDir);
 		
 		// shader constant for ambient color
@@ -1405,7 +1405,7 @@ public:
 		// shader constant for light specular power
 		m_SpecularPowerConstant = new ShaderConstantSimpleType!float();
 		RegisterShaderConstant(_T("SpecularPower"),m_SpecularPowerConstant);
-		m_SpecularPowerConstant.Set(16.0f);
+		m_SpecularPowerConstant.Set(32.0f);
 		
 		// shader constant for shadow map offset
 		m_ShadowOffsetConstant = new ShaderConstantSimpleType!vec2();
@@ -1419,7 +1419,7 @@ public:
 		// Shader constant for maximum shadow display distance
 		m_ShadowMaxDistanceConstant = new ShaderConstantSimpleType!float();
 		RegisterShaderConstant(_T("ShadowMaxDistance"),m_ShadowMaxDistanceConstant);
-		m_ShadowMaxDistanceConstant.Set(1500.0f);
+		m_ShadowMaxDistanceConstant.Set(100.0f);
 		
 		// create main camera
 		Camera cam = New!CameraProjection(cast(float)this.GetWidth(),cast(float)this.GetHeight(),1.0f,1000.0f,45.0f);
