@@ -204,11 +204,10 @@ class FreeCamUp : IGameObject, IControllable {
 private:
 	SmartPtr!IRenderProxy m_RenderProxy;
 	Position m_Position;
-	Quaternion m_Rotation;
 	mat4 m_ViewMatrix;
 	vec3 m_Velocity;
   vec3 m_Up;
-	float m_Rotate;
+  vec4 m_lookDir;
 
 
 	// TODO: Fix units for speeds
@@ -224,10 +223,10 @@ public:
 	this(IRenderProxy renderProxy, vec3 upVector){
 		m_RenderProxy = renderProxy;
 		m_Position = Position(vec3(0,-0.001f,20));
-		m_Rotation = Quaternion(vec3(1,0,0),15.0f);
 		m_Velocity = vec3(0.0f,0.0f,0.0f);
-		m_Rotate = 0.0f;
     m_Up = upVector;
+    m_ViewMatrix = mat4.Identity();
+    m_lookDir = vec4(1.0f, 0.0f, 0.0f, 1.0f);
 	}
 
   ~this()
@@ -255,11 +254,11 @@ public:
 	}
 
 	override Quaternion rotation() const {
-		return m_Rotation;
+		return Quaternion(m_ViewMatrix.rotationPart);
 	}
 
 	override mat4 transformation(Position origin) const {
-	  return m_ViewMatrix.Inverse() * TranslationMatrix(m_Position - origin);
+	  return m_ViewMatrix * TranslationMatrix(m_Position - origin);
 	}
 
 	override IGameObject father() const {
@@ -275,22 +274,24 @@ public:
 	}
 
 	override void update(float timeDiff){
-		vec4 dir = vec4(1.0f,0.0f,0.0f,1.0f);
-		dir = m_Rotation.toMat4() * dir;
-		if(m_Velocity.x != 0.0f)
-			m_Position = m_Position + vec3(dir * m_Velocity.x * timeDiff) * m_BoostFactor;
-
-		dir = vec4(0.0f,0.0f,1.0f,1.0f);
-		dir = m_Rotation.toMat4() * dir;
-
-		if(m_Velocity.y != 0.0f)
-			m_Position = m_Position + vec3(dir * m_Velocity.y * timeDiff) * m_BoostFactor;
+		vec4 dir = m_lookDir;
 
     vec4 from = vec4(0,0,0,1);
     vec4 up = vec4(m_Up,1.0f);
     m_ViewMatrix = mat4.LookAtMatrix(from, dir, up);
     //remove the translation part
     m_ViewMatrix.f[12] = m_ViewMatrix.f[13] = m_ViewMatrix.f[14] = 0.0f;
+    m_ViewMatrix = m_ViewMatrix.Inverse();
+
+    dir = vec4(1.0f,0.0f,0.0f,1.0f);
+		dir = m_ViewMatrix * dir;
+		if(m_Velocity.x != 0.0f)
+			m_Position = m_Position + vec3(dir * m_Velocity.x * timeDiff) * m_BoostFactor;
+
+		dir = vec4(0.0f,0.0f,1.0f,1.0f);
+		dir = m_ViewMatrix * dir;
+		if(m_Velocity.y != 0.0f)
+			m_Position = m_Position + vec3(dir * m_Velocity.y * timeDiff) * m_BoostFactor;
 	}
 
 	//
@@ -298,18 +299,17 @@ public:
 	//
 
 	void look(float screenDeltaX, float screenDeltaY){
-		auto qy = Quaternion(vec3(1, 0, 0), screenDeltaY);
+		auto qy = Quaternion(vec3(1, 0, 0), -screenDeltaY);
 		auto qx = Quaternion(vec3(0, 1, 0), screenDeltaX);
-		m_Rotation = qy * m_Rotation;
-		m_Rotation = qx * m_Rotation;
+		m_lookDir = (qy * qx).toMat4() * m_lookDir;
 	}
 
 	void moveForward(bool pressed){
-		auto dir = vec3(0, -1, 0) * m_MovementSpeed;
+		auto dir = vec3(0, 1, 0) * m_MovementSpeed;
 		m_Velocity += (pressed) ? dir : -dir;
 	}
 	void moveBackward(bool pressed){
-		auto dir = vec3(0, 1, 0) * m_MovementSpeed;
+		auto dir = vec3(0, -1, 0) * m_MovementSpeed;
 		m_Velocity += (pressed) ? dir : -dir;
 	}
 	void moveLeft(bool pressed){
@@ -352,9 +352,7 @@ public:
 	}
 
 	override rcstring inspect(){
-		return format("<%s id: %d pos: (cell: %s, pos: %s) vel: %s, rot: (axis: %s, %s, %s, angle: %s)>",
-                  this.classinfo.name, this.entityId, m_Position.cell.f, m_Position.relPos.f, m_Velocity.f,
-                  m_Rotation.x, m_Rotation.y, m_Rotation.z, m_Rotation.angle);
+		return _T("FreeCamUp");
 	}
 
 	override void debugDraw(shared(IRenderer) renderer){
