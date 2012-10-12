@@ -206,7 +206,7 @@ private:
 	Position m_Position;
 	mat4 m_ViewMatrix;
 	vec3 m_Velocity;
-  vec3 m_Up;
+  vec4 m_Up;
   vec4 m_lookDir;
 
 
@@ -224,7 +224,7 @@ public:
 		m_RenderProxy = renderProxy;
 		m_Position = Position(vec3(0,-0.001f,20));
 		m_Velocity = vec3(0.0f,0.0f,0.0f);
-    m_Up = upVector;
+    m_Up = vec4(upVector, 1.0f);
     m_ViewMatrix = mat4.Identity();
     m_lookDir = vec4(1.0f, 0.0f, 0.0f, 1.0f);
 	}
@@ -277,8 +277,7 @@ public:
 		vec4 dir = m_lookDir;
 
     vec4 from = vec4(0,0,0,1);
-    vec4 up = vec4(m_Up,1.0f);
-    m_ViewMatrix = mat4.LookAtMatrix(from, dir, up);
+    m_ViewMatrix = mat4.LookAtMatrix(from, dir, m_Up);
     //remove the translation part
     m_ViewMatrix.f[12] = m_ViewMatrix.f[13] = m_ViewMatrix.f[14] = 0.0f;
     m_ViewMatrix = m_ViewMatrix.Inverse();
@@ -291,7 +290,7 @@ public:
 		dir = vec4(0.0f,0.0f,1.0f,1.0f);
 		dir = m_ViewMatrix * dir;
 		if(m_Velocity.y != 0.0f)
-			m_Position = m_Position + vec3(dir * m_Velocity.y * timeDiff) * m_BoostFactor;
+			m_Position = m_Position + vec3(dir * -m_Velocity.y * timeDiff) * m_BoostFactor;
 	}
 
 	//
@@ -299,9 +298,10 @@ public:
 	//
 
 	void look(float screenDeltaX, float screenDeltaY){
-		auto qy = Quaternion(vec3(1, 0, 0), -screenDeltaY);
+    vec4 left = m_Up.cross(m_lookDir);
+		auto qy = Quaternion(vec3(left), screenDeltaY);
 		auto qx = Quaternion(vec3(0, 1, 0), screenDeltaX);
-		m_lookDir = (qy * qx).toMat4() * m_lookDir;
+		m_lookDir = ((qy * qx).toMat4() * m_lookDir).normalize();
 	}
 
 	void moveForward(bool pressed){

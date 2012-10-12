@@ -89,34 +89,68 @@ public:
 	}
 
 	/**
-     * Detectes wether this collision hull does intersect with a other collision hull
-     * Params:
+   * Detectes wether this collision hull does intersect with a other collision hull
+   * Params:
 	 *  other = the other collision hull to intersect with
 	 *  lhTrans = the transformation of this collision hull
 	 *  rhTrans = the transformation of the other collision hull
 	 */
-	bool intersects(CollisionHull other,mat4 lhTrans, mat4 rhTrans){
-		uint testcount = 0;
-		
-		auto transformed_other = new Triangle[](other.m_Faces.length);
+	bool intersects(CollisionHull other, mat4 lhTrans, mat4 rhTrans){
+		auto transformed_other = AllocatorNewArray!Triangle(ThreadLocalStackAllocator.globalInstance, other.m_Faces.length);
+    scope(exit) AllocatorDelete(ThreadLocalStackAllocator.globalInstance, transformed_other);
 		foreach(i, ref f2; other.m_Faces)
 			transformed_other[i] = f2.transform(rhTrans);
 		
+    Ray dummy;
 		foreach(ref f1;m_Faces){
 			Triangle lhTri = f1.transform(lhTrans);
 			
 			foreach(ref f2; transformed_other){
 				testcount++;
-				if(lhTri.intersects(f2)){
-					//base.logger.info("col: %d tests (hit)", testcount);
+				if(lhTri.intersects(f2, dummy)){
 					return true;
 				}
 			}
 		}
-		
-		//base.logger.info("col: %d tests (no hit)", testcount);
+
 		return false;
 	}
+
+	/**
+  * Computes the intersection rays of this collision hull and another
+  * Params:
+  *  other = the other collision hull to intersect with
+  *  lhTrans = the transformation of this collision hull
+  *  rhTrans = the transformation of the other collision hull
+  *  results = a preallocated array where the results should be stored to
+  *
+  * Returns:
+  *  the number of intersections stored in results
+  */
+  uint getIntersections(CollisionHull other, mat4 lhTrans, mat4 rhTrans, scope Ray[] results)
+  {
+		uint testcount = 0;
+
+		auto transformed_other = AllocatorNewArray!Triangle(ThreadLocalStackAllocator.globalInstance, other.m_Faces.length);
+    scope(exit) AllocatorDelete(ThreadLocalStackAllocator.globalInstance, transformed_other);
+		foreach(i, ref f2; other.m_Faces)
+			transformed_other[i] = f2.transform(rhTrans);
+
+    uint i=0;
+		foreach(ref f1;m_Faces){
+			Triangle lhTri = f1.transform(lhTrans);
+
+			foreach(ref f2; transformed_other){
+        if(i >= results.length)
+          return i;
+				if(lhTri.intersects(f2, results[i])){
+					i++;
+				}
+			}
+		}
+
+		return i;
+  }
 	
 	/**
 	 * Tests for a intersection with a already correctly transformed ray and this collision hull
