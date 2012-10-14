@@ -48,7 +48,7 @@
   <program>$(DMDInstallDir)\windows\bin-nostd\dmd.exe</program>
   <imppath>$(SolutionDir)\..\..\druntime\import;$(SolutionDir)\..\..\phobos;$(SolutionDir)\..\..\thBase\src;$(SolutionDir)\..\tools\ModelConverter\src</imppath>
   <fileImppath />
-  <outdir>../$(ConfigurationName)</outdir>
+  <outdir>..\$(ConfigurationName)</outdir>
   <objdir>$(OutDir)</objdir>
   <objname />
   <libname />
