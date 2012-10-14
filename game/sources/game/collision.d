@@ -106,7 +106,6 @@ public:
 			Triangle lhTri = f1.transform(lhTrans);
 			
 			foreach(ref f2; transformed_other){
-				testcount++;
 				if(lhTri.intersects(f2, dummy)){
 					return true;
 				}

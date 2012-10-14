@@ -48,7 +48,7 @@
   <program>ErrorMessageDecoder.exe</program>
   <imppath>$(SolutionDir)\..\..\druntime\import;$(SolutionDir)\..\..\phobos;$(SolutionDir)\..\..\thBase\src;$(SolutionDir)\..\tools\ModelConverter\src</imppath>
   <fileImppath />
-  <outdir>../$(ConfigurationName)</outdir>
+  <outdir>..\$(ConfigurationName)</outdir>
   <objdir>$(OutDir)</objdir>
   <objname />
   <libname />
@@ -675,10 +675,6 @@
    <File path="client\net.d" />
    <File path="client\resources.d" />
   </Folder>
-  <Folder name="physics">
-   <File path="physics\physics.d" />
-   <File path="physics\rigidbody.d" />
-  </Folder>
   <Folder name="game">
    <Folder name="effects">
     <File path="game\effects\bigexplosion.d" />
@@ -719,6 +715,10 @@
    <File path="game\scheibe.d" />
    <File path="game\skybox.d" />
    <File path="game\turret.d" />
+  </Folder>
+  <Folder name="physics">
+   <File path="physics\physics.d" />
+   <File path="physics\rigidbody.d" />
   </Folder>
   <Folder name="renderer">
    <Folder name="freetype">

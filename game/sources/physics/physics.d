@@ -1,6 +1,8 @@
 module physics.phsyics;
 
 import physics.rigidbody; 
+import base.octree;
+import thBase.container.vector;
 
 class PhysicsSimulation
 {
@@ -17,7 +19,7 @@ class PhysicsSimulation
 
     ~this()
     {
-      Delete(simulated);
+      Delete(m_simulated);
     }
 
     void AddSimulatedBody(RigidBody obj)
