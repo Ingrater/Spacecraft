@@ -6,9 +6,12 @@ A 3d multiplayer deathmatch space game written in D 2.0
 Setup
 -----
 
- * This project currently only works with dmd 2.058 on windows
- * You will also need my versions of druntime, phobos and thBase
- * Copy the sc.ini from thBase into your dmd2\windows\bin folder. Make a backup copy of the old one, it will break compiling other D projects.
+ * This project currently only works with dmd 2.060 on windows
+ * You will need a Visual Studio (2008,2010 and 2012 should work, I use 2010) and VisualD 0.3.34 ( http://www.dsource.org/projects/visuald )
+ * You will also need my versions of druntime, phobos and thBase (clone them from my github account)
+ * Make a copy of your dmd2\windows\bin folder to dmd2\windows\bin-nostd
+ * Copy the sc.ini from thBase into the just created dmd2\windows\bin-nostd folder. 
+ * You might need to change the path to dmd inside druntime\win32nogc.mak and phobos\win32nogc.mak, it should point to your dmd2\windows\bin-nostd\dmd.exe
  * Download the data package from the download section and unzip into the Spacecraft\game\data directory
  * Make sure to install OpenAL
 
@@ -20,7 +23,9 @@ The folder structure should look as follows:
 	* thBase
 	* Spacecraft
 	
-Then just build Spacecraft using one of the Visual Studio Solutions. You will need to have VisualD installed.
+If you want a stable and working version switch to the "Playable" or "Spacecraft-Playable" tags in druntime, phobos, thBase and Spacecraft.
+	
+Then just build Spacecraft using one of the Visual Studio Solutions.
 
 Usage
 -----
