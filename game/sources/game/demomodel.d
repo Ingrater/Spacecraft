@@ -49,6 +49,11 @@ class DemoModel : IGameObject {
 	override Position position() const {
 		return m_Position;
 	}
+
+  override Object physicsComponent()
+  {
+    return null;
+  }
 	
 	override void position(Position pos){
 	}

@@ -109,6 +109,11 @@ public:
 	override bool syncOverNetwork() const {
 		return false;
 	}
+
+  override Object physicsComponent()
+  {
+    return null;
+  }
 	
 	override IRenderProxy renderProxy() {
 		return this;

@@ -4,8 +4,13 @@ import game.gameobject, base.all;
 import game.collision;
 static import client.resources, server.resources;
 import game.game;
+import physics.rigidbody;
 
 class Box : GameObject, ISerializeable {
+private:
+  RigidBody m_RigidBody;
+
+public:
 	// Stuff for network integration
 	mixin MakeSerializeable;
 	mixin DummyMessageCode;
@@ -23,11 +28,19 @@ class Box : GameObject, ISerializeable {
   * for this game object arives. Therefore you can only set attributes but the
   * netvars will not be set to their proper server values yet.
   */
-	this(EntityId entityId, GameSimulation game){
+	this(EntityId entityId, GameSimulation game, float bounciness){
 		auto res = client.resources.model(_T("box"));
 		m_RenderProxy = res.proxy;
 		super(entityId, game, res.boundingBox, null);
+    m_RigidBody = New!RigidBody(server.resources.col(_T("Box")), bounciness);
+    game.physics.AddSimulatedBody(m_RigidBody);
 	}
+
+  ~this()
+  {
+    m_Game.physics.RemoveSimulatedBody(m_RigidBody);
+    Delete(m_RigidBody);
+  }
 
 	/**
   * position setter for debugging purposes
@@ -43,9 +56,18 @@ class Box : GameObject, ISerializeable {
 		m_Velocity = vec3(x,y,z);
 	}
 
+  override Object physicsComponent()
+  {
+    return m_RigidBody;
+  }
+
 }
 
 class Plane : GameObject, ISerializeable {
+private:
+  RigidBody m_RigidBody;
+
+public:
 	// Stuff for network integration
 	mixin MakeSerializeable;
 	mixin DummyMessageCode;
@@ -63,11 +85,17 @@ class Plane : GameObject, ISerializeable {
   * for this game object arives. Therefore you can only set attributes but the
   * netvars will not be set to their proper server values yet.
   */
-	this(EntityId entityId, GameSimulation game){
+	this(EntityId entityId, GameSimulation game, float bounciness){
 		auto res = client.resources.model(_T("plane"));
 		m_RenderProxy = res.proxy;
 		super(entityId, game, res.boundingBox, null);
+    m_RigidBody = New!RigidBody(server.resources.col(_T("plane")), bounciness);
 	}
+
+  ~this()
+  {
+    Delete(m_RigidBody);
+  }
 
 	/**
   * position setter for debugging purposes
@@ -75,4 +103,9 @@ class Plane : GameObject, ISerializeable {
 	void setPosition(float x, float y, float z){
 		m_Position = Position(vec3(x,y,z));
 	}
+
+  override Object physicsComponent()
+  {
+    return m_RigidBody;
+  }
 }

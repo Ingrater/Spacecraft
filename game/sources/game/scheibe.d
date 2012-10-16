@@ -67,6 +67,11 @@ class Scheibe : IGameObject {
 	override bool syncOverNetwork() const {
 		return false;
 	}
+
+  override Object physicsComponent()
+  {
+    return null;
+  }
 	
 	
 	//

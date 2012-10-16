@@ -1,8 +1,10 @@
-module physics.phsyics;
+module physics.physics;
 
 import physics.rigidbody; 
 import base.octree;
 import thBase.container.vector;
+import thBase.math3d.all;
+import thBase.casts;
 
 class PhysicsSimulation
 {
@@ -34,5 +36,11 @@ class PhysicsSimulation
 
     void Simulate(float timeDiff)
     {
+      vec3 gravity = vec3(0, -9.81, 0);
+      foreach(obj; m_simulated[])
+      {
+        obj.velocity += gravity * timeDiff;
+        obj.position = obj.position + obj.velocity * timeDiff;
+      }
     }
 }

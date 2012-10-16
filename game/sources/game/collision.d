@@ -115,6 +115,30 @@ public:
 		return false;
 	}
 
+  /**
+   * tests if two collision hulls intersect
+   * Params:
+   *  other = the other collision hull to test with
+   *  otherSpaceToThisSpace = a transformation that will transform the vertices of the other collision hull into the space of this collision hull
+   * Returns:
+   *  true if the two intersect, false otherwise
+   */
+  bool intersects(CollisionHull other, mat4 otherSpaceToThisSpace)
+  {
+    Ray dummy;
+    foreach(ref f1; other.m_Faces)
+    {
+      Triangle rhTri = f1.transform(otherSpaceToThisSpace);
+      foreach(ref lhTri; m_Faces)
+      {
+        if(rhTri.intersects(lhTri, dummy))
+          return true;
+      }
+    }
+
+    return false;
+  }
+
 	/**
   * Computes the intersection rays of this collision hull and another
   * Params:
@@ -149,6 +173,36 @@ public:
 		}
 
 		return i;
+  }
+
+  /**
+  * tests if two collision hulls intersect
+  * Params:
+  *  other = the other collision hull to test with
+  *  otherSpaceToThisSpace = a transformation that will transform the vertices of the other collision hull into the space of this collision hull
+  *  results = a preallocated array of which will be filled with the results
+  * Returns:
+  *  the number of intersections found
+  */
+  size_t intersects(CollisionHull other, mat4 otherSpaceToThisSpace, scope Ray[] results)
+  {
+    Ray dummy;
+    size_t i=0;
+    foreach(ref f1; other.m_Faces)
+    {
+      Triangle rhTri = f1.transform(otherSpaceToThisSpace);
+      foreach(ref lhTri; m_Faces)
+      {
+        if(i > results.length)
+          return i;
+        if(rhTri.intersects(lhTri, results[i]))
+        {
+          i++;
+        }
+      }
+    }
+
+    return i;
   }
 	
 	/**

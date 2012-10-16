@@ -48,6 +48,11 @@ public:
 	override IRenderProxy renderProxy() {
 		return m_RenderProxy;
 	}
+
+  override Object physicsComponent()
+  {
+    return null;
+  }
 	
 	override EntityId entityId() const {
 		return cast(EntityId)1;
@@ -248,6 +253,11 @@ public:
 	override Position position() const {
 		return m_Position;
 	}
+
+  override Object physicsComponent()
+  {
+    return null;
+  }
 
 	override void position(Position pos){
 		m_Position = pos;

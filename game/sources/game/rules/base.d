@@ -186,6 +186,11 @@ abstract class RulesBase : IGameObject, IRulesBase {
 		bool syncOverNetwork() const {
 			return true;
 		}
+
+    Object physicsComponent()
+    {
+      return null;
+    }
 		
 		// Other interface stuff we don't really need
 		Position position() const {

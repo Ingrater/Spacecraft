@@ -3,6 +3,7 @@ module game.gameobject;
 public import base.gameobject, base.game, base.net, base.renderer;
 public import game.collision, game.hitable;
 import game.game;
+import physics.rigidbody;
 
 
 import base.all: g_Env;
@@ -124,6 +125,11 @@ abstract class GameObject : IGameObject {
 	override const(IGameObject) father() const {
 		return null;
 	}
+
+  override Object physicsComponent()
+  {
+    return null;
+  }
 	
 	/**
 	 * Returns `true` every time the object has moved. The underlying variable

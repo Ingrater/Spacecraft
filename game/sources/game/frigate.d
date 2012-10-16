@@ -170,7 +170,9 @@ class TurretBase(ProjectileClass) : HitableGameObject, ISerializeable {
 		m_Cannons ~= cannon;
 		m_MountCenter = vec3(0, 0, 0);
 		foreach(c; m_Cannons)
+    {
 			m_MountCenter = m_MountCenter + c.m_Position.toVec3() / m_Cannons.length;
+    }
 	}
 
 

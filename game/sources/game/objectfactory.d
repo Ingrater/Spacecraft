@@ -278,6 +278,11 @@ class GameObjectFactory : IGameObject, IGameObjectFactory {
 		override void debugDraw(shared(IRenderer) renderer){
 			// Nothing to do right now
 		}
+
+    override Object physicsComponent()
+    {
+      return null;
+    }
 		
 		override bool syncOverNetwork() const {
 			return true;

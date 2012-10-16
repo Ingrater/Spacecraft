@@ -22,6 +22,7 @@ import game.devobjects;
 import game.rules.base, game.rules.deathmatch;
 import thBase.container.queue;
 import thBase.container.hashmap;
+import physics.physics;
 
 import core.thread;
 
@@ -121,6 +122,9 @@ class GameSimulation : IGameThread, IGame {
 							case Keys.q: //Q
 								m_Controller.rotateLeft(pressed);
 								break;
+              case Keys.p: //P
+                m_RunPhysics = !m_RunPhysics;
+                break;
 							case Keys.e: //E
 								m_Controller.rotateRight(pressed);
 								break;
@@ -236,6 +240,7 @@ class GameSimulation : IGameThread, IGame {
 		Mutex m_Mutex;
 		GameInput m_InputHandler;
 		bool m_ExitGame = false;
+    bool m_RunPhysics = false;
 		
 		IControllable m_Controller;
 		FreeCamUp m_FreeCamera;
@@ -250,6 +255,7 @@ class GameSimulation : IGameThread, IGame {
 		Console m_Console;
 		SmartPtr!HUD m_Hud;
 		IRulesBase m_Rules;
+    PhysicsSimulation m_Physics;
 
     SkyBox m_SkyBox;
 		
@@ -273,10 +279,14 @@ class GameSimulation : IGameThread, IGame {
 			m_LastMeasurement = m_LastUpdate;
 			m_FirstPersonOffset = vec3(0,0.4f,-1.0f);
 			m_ThirdPersonOffset = vec3(0,10,50);
+      m_Physics = New!PhysicsSimulation(m_Octree);
 		}
 
     ~this()
     {
+      Delete(m_Physics);
+      m_Physics = null;
+
       Delete(m_SkyBox);
       foreach(sound; m_Sounds.values)
       {
@@ -489,6 +499,8 @@ class GameSimulation : IGameThread, IGame {
 						g_Env.renderer.setSPS(simulationsPerSecond);
 					}
 				}
+
+        m_Physics.Simulate(m_RunPhysics ? timeDiff : 0.0f);
 				
 				//Server game code
 				if(g_Env.isServer){
@@ -739,6 +751,11 @@ class GameSimulation : IGameThread, IGame {
 			return m_Hud;
 		}
 
+    @property PhysicsSimulation physics()
+    {
+      return m_Physics;
+    }
+
     override void PreInit()
     {
       //initialize the profiler
@@ -825,10 +842,10 @@ class GameSimulation : IGameThread, IGame {
     /**
      * Spawns a box in the model viewer
      */
-    void spawnBox(float x, float y, float z)
+    void spawnBox(float x, float y, float z, float bounciness)
     {
-      base.logger.info("spawnBox %f %f %f", x, y, z);
-      auto obj = New!Box(EntityId(2), this);
+      base.logger.info("spawnBox %f %f %f %f", x, y, z, bounciness);
+      auto obj = New!Box(EntityId(2), this, bounciness);
       obj.setPosition(x,y,z);
       obj.update(1.0f);
       m_Octree.insert(obj);
@@ -837,10 +854,10 @@ class GameSimulation : IGameThread, IGame {
     /**
     * Spawns a plane in the model viewer
     */
-    void spawnPlane(float x, float y, float z)
+    void spawnPlane(float x, float y, float z, float bounciness)
     {
-      base.logger.info("spawnPlane %f %f %f", x, y, z);
-      auto obj = New!(game.devobjects.Plane)(EntityId(2), this);
+      base.logger.info("spawnPlane %f %f %f %f", x, y, z, bounciness);
+      auto obj = New!(game.devobjects.Plane)(EntityId(2), this, bounciness);
       obj.setPosition(x,y,z);
       obj.update(1.0f);
       m_Octree.insert(obj);

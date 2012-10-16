@@ -45,6 +45,11 @@ class AttachedCamera : IGameObject {
 	override bool hasMoved() {
 		return false;
 	}
+
+  override Object physicsComponent()
+  {
+    return null;
+  }
 	
 	override void update(float timeDiff) {
 		// Nothing to do yet

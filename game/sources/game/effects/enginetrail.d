@@ -298,6 +298,11 @@ public:
 	
 	override void toggleCollMode(){
 	}
+
+  override Object physicsComponent()
+  {
+    return null;
+  }
 	
 	void on(bool value){
 		m_On = value;

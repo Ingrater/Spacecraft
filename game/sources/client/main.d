@@ -6,6 +6,7 @@ import game.factory, base.game, renderer.factory, base.renderer, script.factory,
 import base.sound, sound.factory;
 import client.net;
 static import client.resources;
+static import server.resources;
 import thBase.format;
 import thBase.file;
 import thBase.io;
@@ -247,6 +248,9 @@ public:
             a = [];
           }
           Delete(resourceData);
+
+          server.resources.loadCollision(_T("box"), _T("models/chest1.thModel"));
+          server.resources.loadCollision(_T("plane"), _T("models/plane.thModel"));
         }
 			
 			  // Connect to server if a non-empty IP was given

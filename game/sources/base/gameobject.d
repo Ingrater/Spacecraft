@@ -127,6 +127,11 @@ interface IGameObject : IRenderable, ISerializeable {
 	 * Request that the game object switches its display mesh to the colision mesh.
 	 */
 	void toggleCollMode();
+
+  /**
+   * Returns the physics component for this game object (can be null)
+   */
+  @property Object physicsComponent();
 	
 	/**
 	 * neccssary function to allow storing inside a hash table
