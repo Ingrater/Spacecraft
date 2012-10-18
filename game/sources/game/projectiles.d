@@ -153,11 +153,11 @@ class MgProjectile : GameObject, ISerializeable {
 	
 	protected void onImpact(bool impacted, Ray projRay, float hitPos, vec3 hitNormal){
 		if (impacted) {
-			Position impactPos = this.position + (projRay.m_Dir * hitPos + hitNormal * 5.0f);
+			Position impactPos = this.position + (projRay.dir * hitPos + hitNormal * 5.0f);
 			auto impactEffect = new SmallExplosion(m_Game.factory.nextEntityId(), m_Game, impactPos);
 			(cast(GameObjectFactory)m_Game.factory).SpawnGameObject(impactEffect);
 		} else {
-			Position impactPos = this.position + projRay.m_Dir * hitPos;
+			Position impactPos = this.position + projRay.dir * hitPos;
 			auto impactEffect = new ShieldImpact(m_Game.factory.nextEntityId(), m_Game, impactPos, hitNormal);
 			(cast(GameObjectFactory)m_Game.factory).SpawnGameObject(impactEffect);
 		}
@@ -348,11 +348,11 @@ class HeavyProjectile : MgProjectile {
 	
 	protected override void onImpact(bool impacted, Ray projRay, float hitPos, vec3 hitNormal){
 		if (impacted) {
-			Position impactPos = this.position + (projRay.m_Dir * hitPos + hitNormal * 5.0f);
+			Position impactPos = this.position + (projRay.dir * hitPos + hitNormal * 5.0f);
 			auto impactEffect = new SmallExplosion2(m_Game.factory.nextEntityId(), m_Game, impactPos);
 			(cast(GameObjectFactory)m_Game.factory).SpawnGameObject(impactEffect);
 		} else {
-			Position impactPos = this.position + projRay.m_Dir * hitPos;
+			Position impactPos = this.position + projRay.dir * hitPos;
 			auto impactEffect = new BigShieldImpact(m_Game.factory.nextEntityId(), m_Game, impactPos, hitNormal);
 			(cast(GameObjectFactory)m_Game.factory).SpawnGameObject(impactEffect);
 		}

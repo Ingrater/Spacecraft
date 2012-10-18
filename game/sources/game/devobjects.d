@@ -32,7 +32,7 @@ public:
 		auto res = client.resources.model(_T("box"));
 		m_RenderProxy = res.proxy;
 		super(entityId, game, res.boundingBox, null);
-    m_RigidBody = New!RigidBody(server.resources.col(_T("Box")), bounciness);
+    m_RigidBody = New!RigidBody(server.resources.col(_T("box")), bounciness);
     game.physics.AddSimulatedBody(m_RigidBody);
 	}
 
@@ -46,19 +46,27 @@ public:
   * position setter for debugging purposes
   */
 	void setPosition(float x, float y, float z){
-		m_Position = Position(vec3(x,y,z));
+    m_RigidBody.position = Position(vec3(x,y,z));
 	}
 
 	/**
   * velocity setter for debugging purposes
   */
 	void setVelocity(float x, float y, float z){
-		m_Velocity = vec3(x,y,z);
+		m_RigidBody.velocity = vec3(x,y,z);
 	}
 
   override Object physicsComponent()
   {
     return m_RigidBody;
+  }
+
+  override void update(float timeDiff)
+  {
+    m_Position = m_RigidBody.position;
+    m_Rotation = m_RigidBody.rotation;
+
+    updateBoundingBox();
   }
 
 }

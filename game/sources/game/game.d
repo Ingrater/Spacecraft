@@ -123,7 +123,8 @@ class GameSimulation : IGameThread, IGame {
 								m_Controller.rotateLeft(pressed);
 								break;
               case Keys.p: //P
-                m_RunPhysics = !m_RunPhysics;
+                if(pressed)
+                  m_RunPhysics = !m_RunPhysics;
                 break;
 							case Keys.e: //E
 								m_Controller.rotateRight(pressed);

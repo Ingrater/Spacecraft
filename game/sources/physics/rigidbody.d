@@ -18,6 +18,11 @@ class RigidBody
       return m_bouncieness;
     }
 
+    @property const(CollisionHull) collision() const
+    {
+      return m_collision;
+    }
+
     /**
      * Constructor
      * Params:
@@ -27,6 +32,8 @@ class RigidBody
     {
       m_collision = collision;
       m_bouncieness = fBounciness;
+      rotation = Quaternion(vec3(1,0,0), 0);
+      velocity = vec3(0,0,0);
     }
 
     /**

@@ -8,12 +8,16 @@ import core.allocator;
 import thBase.scoped;
 import base.modelloader;
 import thBase.enumbitfield;
+import thBase.math;
 
 class CollisionHull {
 private
 	Triangle[] m_Faces;
 	
 public:
+  vec3 minBounds, maxBounds;
+  float boundingRadius;
+
 	/**
 	 * Builds a new collison hull from the model in pFilename.
 	 */
@@ -74,10 +78,18 @@ public:
       curNode = curNode.data.parent;
     }
 
+    minBounds = vec3(float.max, float.max, float.max);
+    maxBounds = vec3(-float.max, -float.max, -float.max);
+    boundingRadius = 0.0f;
+
     foreach(size_t i, ref vertex; vertices)
     {
       vertex = transform * mesh.vertices[i];
+      minBounds = minimum(minBounds, vertex);
+      maxBounds = maximum(maxBounds, vertex);
+      boundingRadius = max(boundingRadius, vertex.length);
     }
+
 		
 		foreach(size_t i,ref face;m_Faces){			
       for(size_t j=0; j<3; j++)
@@ -150,16 +162,14 @@ public:
   * Returns:
   *  the number of intersections stored in results
   */
-  uint getIntersections(CollisionHull other, mat4 lhTrans, mat4 rhTrans, scope Ray[] results)
+  size_t getIntersections(CollisionHull other, mat4 lhTrans, mat4 rhTrans, scope Ray[] results)
   {
-		uint testcount = 0;
-
 		auto transformed_other = AllocatorNewArray!Triangle(ThreadLocalStackAllocator.globalInstance, other.m_Faces.length);
     scope(exit) AllocatorDelete(ThreadLocalStackAllocator.globalInstance, transformed_other);
 		foreach(i, ref f2; other.m_Faces)
 			transformed_other[i] = f2.transform(rhTrans);
 
-    uint i=0;
+    size_t i=0;
 		foreach(ref f1;m_Faces){
 			Triangle lhTri = f1.transform(lhTrans);
 
@@ -184,7 +194,7 @@ public:
   * Returns:
   *  the number of intersections found
   */
-  size_t intersects(CollisionHull other, mat4 otherSpaceToThisSpace, scope Ray[] results)
+  size_t getIntersections(const(CollisionHull) other, mat4 otherSpaceToThisSpace, scope Ray[] results) const
   {
     Ray dummy;
     size_t i=0;
