@@ -1146,10 +1146,6 @@ public:
 			m_FontGroup = overlaySlice.AddRenderGroup();
 			
 			{
-				//this stops other threads from sending new direct draw calls
-				version(direct_draw){
-					auto directDrawLock = MultipleLock(m_BatchThreads);
-				}
 				{
 					auto profile = base.profiler.Profile("pre extract messages");
 					ProgressLoadingMessages();
@@ -2157,13 +2153,25 @@ public:
 	}
 	
 	override void drawBox(AlignedBox box, vec4 color) shared {
-		version(direct_draw){
-			synchronized(producingMutex()){
-				if( isDirectDrawBatchWorking() ){
-					send(GetTid(),makeMsg!(Renderer,"drawBox")(box,color));
-				}
-			}
-		}
+		vec3 size = box.max - box.min;
+    auto self = cast(Renderer)this;
+    synchronized( m_DebugLineLock )
+    {
+      self.m_DebugDrawLines ~= DebugDrawLine(box.min, box.min + vec3(size.x,  0.0f, 0.0f), color);
+      self.m_DebugDrawLines ~= DebugDrawLine(box.min + vec3(size.x,  0.0f, 0.0f), box.min + vec3(size.x,size.y, 0.0f), color);
+      self.m_DebugDrawLines ~= DebugDrawLine(box.min + vec3(size.x,size.y, 0.0f), box.min + vec3(  0.0f,size.y, 0.0f), color);
+      self.m_DebugDrawLines ~= DebugDrawLine(box.min + vec3(  0.0f,size.y, 0.0f), box.min, color);
+
+      self.m_DebugDrawLines ~= DebugDrawLine(box.min + vec3(  0.0f,  0.0f,size.z), box.min + vec3(size.x,  0.0f,size.z), color);
+      self.m_DebugDrawLines ~= DebugDrawLine(box.min + vec3(size.x,  0.0f,size.z), box.min + vec3(size.x,size.y,size.z), color);
+      self.m_DebugDrawLines ~= DebugDrawLine(box.min + vec3(size.x,size.y,size.z), box.min + vec3(  0.0f,size.y,size.z), color);
+      self.m_DebugDrawLines ~= DebugDrawLine(box.min + vec3(  0.0f,size.y,size.z), box.min + vec3(  0.0f,  0.0f,size.z), color);
+
+      self.m_DebugDrawLines ~= DebugDrawLine(box.min + vec3(  0.0f,  0.0f,  0.0f), box.min + vec3(  0.0f,  0.0f,size.z), color);
+      self.m_DebugDrawLines ~= DebugDrawLine(box.min + vec3(size.x,  0.0f,  0.0f), box.min + vec3(size.x,  0.0f,size.z), color);
+      self.m_DebugDrawLines ~= DebugDrawLine(box.min + vec3(size.x,size.y,  0.0f), box.min + vec3(size.x,size.y,size.z), color);
+      self.m_DebugDrawLines ~= DebugDrawLine(box.min + vec3(  0.0f,size.y,  0.0f), box.min + vec3(  0.0f,size.y,size.z), color);
+    }
 	}
 	
 	override void drawLine(ref const Position start, ref const Position end, ref const vec4 color){
