@@ -126,6 +126,10 @@ class GameSimulation : IGameThread, IGame {
                 if(pressed)
                   m_RunPhysics = !m_RunPhysics;
                 break;
+              case Keys.o: //O
+                if(pressed)
+                  m_StepPhysics = true;
+                break;
 							case Keys.e: //E
 								m_Controller.rotateRight(pressed);
 								break;
@@ -242,6 +246,7 @@ class GameSimulation : IGameThread, IGame {
 		GameInput m_InputHandler;
 		bool m_ExitGame = false;
     bool m_RunPhysics = false;
+    bool m_StepPhysics = true;
 		
 		IControllable m_Controller;
 		FreeCamUp m_FreeCamera;
@@ -501,7 +506,8 @@ class GameSimulation : IGameThread, IGame {
 					}
 				}
 
-        m_Physics.Simulate(m_RunPhysics ? timeDiff : 0.0f);
+        m_Physics.Simulate(m_RunPhysics ? timeDiff : (m_StepPhysics ? timeDiff : 0.0f));
+        m_StepPhysics = false;
 				
 				//Server game code
 				if(g_Env.isServer){

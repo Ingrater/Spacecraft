@@ -966,6 +966,7 @@ public:
 		
 		m_DebugState = New!StateObject();
 		m_DebugState.SetDepthTest(true);
+    //m_DebugState.SetDepthFunc(StateObject.Comparing.ALWAYS);
 		
     VertexBuffer.DataChannels[2] DebugBufferDataChannels;
     DebugBufferDataChannels[0] = VertexBuffer.DataChannels.POSITION;
@@ -1139,7 +1140,6 @@ public:
 			m_NumberOfShapeDrawCalls = 0;
 			
 			RenderSlice normalSlice = GetRenderSlice(0);
-			m_DebugGroup = normalSlice.AddRenderGroup();
 			
 			RenderSlice overlaySlice = GetRenderSlice(1);
       m_Group2D = overlaySlice.AddRenderGroup();
@@ -1632,6 +1632,7 @@ public:
 			auto hud3dGroup = slice0.AddRenderGroup();
 			hud3dGroup.SetRendertarget(m_HudRendertarget);
 			auto hudGroup = slice0.AddRenderGroup();
+      m_DebugGroup = slice0.AddRenderGroup();
 			
 			for(ObjectInfo* cur = data;cur !is null; cur = cur.next){
 				final switch(cast(ExtractType)cur.type){

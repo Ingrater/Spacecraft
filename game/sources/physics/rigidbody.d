@@ -42,6 +42,6 @@ class RigidBody
      */
     mat4 transformTo(RigidBody other)
     {
-      return other.rotation.toMat4().Inverse() * TranslationMatrix(this.position - other.position) * this.rotation.toMat4();
+      return other.rotation.toMat4().Inverse() * (TranslationMatrix(this.position - other.position) * this.rotation.toMat4());
     }
 }

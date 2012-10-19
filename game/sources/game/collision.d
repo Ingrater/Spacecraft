@@ -74,7 +74,7 @@ public:
     mat4 transform = loader.modelData.rootNode.transform;
     while(curNode !is null && curNode != loader.modelData.rootNode)
     {
-      transform = curNode.transform * transform;
+      transform = transform * curNode.transform;
       curNode = curNode.data.parent;
     }
 
@@ -91,7 +91,8 @@ public:
     }
 
 		
-		foreach(size_t i,ref face;m_Faces){			
+		foreach(size_t i,ref face;m_Faces)
+    {			
       for(size_t j=0; j<3; j++)
       {
 			  face.v[j] = vertices[mesh.faces[i].indices[j]];
@@ -246,13 +247,17 @@ public:
 	 *  renderer = the renderer to use for drawing
 	 *  color = the color to use (optional)
 	 */
-	void debugDraw(mat4 transformation, shared(IRenderer) renderer, vec4 color = vec4(1.0f,1.0f,1.0f,1.0f)){
-		foreach(ref f;m_Faces){
+	void debugDraw(Position position, Quaternion rotation, shared(IRenderer) renderer, vec4 color = vec4(1.0f,1.0f,1.0f,1.0f)) const {
+		mat4 transformation = rotation.toMat4();
+    foreach(ref f;m_Faces){
 			Triangle curFace = f.transform(transformation);
+      Position v0 = position + curFace.v[0];
+      Position v1 = position + curFace.v[1];
+      Position v2 = position + curFace.v[2];
 			
-			renderer.drawLine(Position(curFace.v[0]),Position(curFace.v[1]),color);
-			renderer.drawLine(Position(curFace.v[0]),Position(curFace.v[2]),color);
-			renderer.drawLine(Position(curFace.v[1]),Position(curFace.v[2]),color);
+			renderer.drawLine(v0, v1, color);
+			renderer.drawLine(v0, v2, color);
+			renderer.drawLine(v1, v2, color);
 		}
 	}
 	

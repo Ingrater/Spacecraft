@@ -110,6 +110,7 @@ public:
   */
 	void setPosition(float x, float y, float z){
 		m_Position = Position(vec3(x,y,z));
+    m_RigidBody.position = m_Position;
 	}
 
   override Object physicsComponent()

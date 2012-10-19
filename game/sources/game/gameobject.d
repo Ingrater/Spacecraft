@@ -348,9 +348,9 @@ abstract class GameObject : IGameObject {
 		renderer.drawLine(position, position + axis[1] * 50, vec4(0, 1, 0, 1));
 		renderer.drawLine(position, position + axis[2] * 50, vec4(0, 0, 1, 1));
 		
-		if (m_CollisionHull){
-			auto trans = this.transformation(Position(vec3(0, 0, 0)));
-			m_CollisionHull.debugDraw(trans, renderer);
+		if (m_CollisionHull)
+    {
+			m_CollisionHull.debugDraw(this.position, this.rotation, renderer);
 		}
 	}
 	

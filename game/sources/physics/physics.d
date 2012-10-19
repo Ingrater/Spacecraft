@@ -44,20 +44,25 @@ class PhysicsSimulation
         obj.velocity += gravity * secondDiff;
         auto nextPosition = obj.position + obj.velocity * secondDiff;
 
+        obj.collision.debugDraw(obj.position, obj.rotation, g_Env.renderer);
+
         float collisionRadius = obj.collision.boundingRadius;
         vec3 boundOffset = vec3(collisionRadius, collisionRadius, collisionRadius);
         auto queryBox = AlignedBox(nextPosition - boundOffset, nextPosition + boundOffset);
         auto query = m_octree.getObjectsInBox(queryBox);
-        if(!query.empty())
-        {
-          g_Env.renderer.drawBox(queryBox, vec4(0.0f, 1.0f, 0.0f, 1.0f));
-        }
+        uint numCollisions = 0;
         for(;!query.empty();query.popFront())
         {
           IGameObject colObj = query.front();
           if(colObj.physicsComponent !is null)
           {
             auto collidingRigidBody = static_cast!RigidBody(colObj.physicsComponent);
+            if(collidingRigidBody is obj)
+              continue;
+
+            collidingRigidBody.collision.debugDraw(collidingRigidBody.position, collidingRigidBody.rotation, g_Env.renderer);
+
+            numCollisions++;
             Ray[32] intersections = void;
             size_t numIntersections = obj.collision.getIntersections(collidingRigidBody.collision, collidingRigidBody.transformTo(obj), intersections);
 
@@ -69,6 +74,10 @@ class PhysicsSimulation
               }
             }
           }
+        }
+        if(numCollisions > 0)
+        {
+          g_Env.renderer.drawBox(queryBox, vec4(0.0f, 1.0f, 0.0f, 1.0f));
         }
 
         obj.position = nextPosition;
