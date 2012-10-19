@@ -50,6 +50,7 @@ interface IRendererExtractorAccess {
 	AlignedBox queryBox();
 	bool queryNeeded();
 	IGameObject camera();
+  void ExtractDebugGeometry(IRendererExtractor extractor);
 }
 
 class RendererExtractor : IRendererExtractor {
@@ -93,7 +94,8 @@ private:
 public:
 	enum size_t BUFFER_SIZE = 8*1024*1024; //8mb
 	
-	this(IRendererExtractorAccess renderer){
+	this(IRendererExtractorAccess renderer)
+  {
 		m_Renderer = renderer;
 		foreach(ref buf;m_Buffers){
 			buf.buffer = cast(byte*)(StdAllocator.globalInstance.AllocateMemory(BUFFER_SIZE).ptr);
@@ -171,6 +173,12 @@ public:
 					}	
 				}
 			}
+
+      //Debug geometry and text
+      {
+        auto profile2 = base.profiler.Profile("debug geom");
+        m_Renderer.ExtractDebugGeometry(this);
+      }
 			
 			//Extract all global renderables
 			{
@@ -207,7 +215,7 @@ public:
 		return cur;
 	}
 	
-	public override void[] alloc(size_t size)
+	public override void[] AllocateMemory(size_t size)
 	in {
 		assert(m_IsProducing, "not producing");
 	}
@@ -221,6 +229,16 @@ public:
 		assert(buf.cur < buf.buffer + BUFFER_SIZE,"not enough memory for renderer extractor");
 		return mem;
 	}
+
+  public override bool IsInBuffer(const(void*) ptr)
+  in {
+    assert(m_IsProducing, "not producing");
+  }
+  body
+  {
+    Buffer *buf = &m_Buffers[m_NextToProduce];
+    return (ptr >= buf.buffer) && (ptr < buf.cur);
+  }
 	
 	protected override void addObjectInfo(ObjectInfo* info)
 	in {

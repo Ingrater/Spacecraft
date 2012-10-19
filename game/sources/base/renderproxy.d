@@ -19,19 +19,24 @@ struct ObjectInfo {
 }
 
 interface IRendererExtractor {
-	protected ObjectInfo* CreateObjectInfo(size_t size)
+	ObjectInfo* CreateObjectInfo(size_t size)
 		out(obj){
 			assert(obj !is null);
 		}
 	
-	protected void addObjectInfo(ObjectInfo* info);
+	void addObjectInfo(ObjectInfo* info);
 	
 	Position origin();
 	
 	/**
 	 * allocate size_t bytes in the extractor pool (the allocated memory only lives until the next extraction is performed)
 	 */
-	void[] alloc(size_t size);
+	void[] AllocateMemory(size_t size);
+
+  /**
+   * checks if the given pointer is within the current buffer
+   */
+  bool IsInBuffer(const(void*) ptr);
 
   /**
    * waits for a buffer to write the extracted data to
@@ -76,7 +81,7 @@ protected:
 
   final T[] produceMultipleImpl(Type2Type!(T), size_t count)
   {
-    T[] objs = (cast(T*)extractor.alloc(T.sizeof * count))[0..count];
+    T[] objs = (cast(T*)extractor.AllocateMemory(T.sizeof * count))[0..count];
     T initHelper;
     foreach(ref obj;objs)
     {
@@ -109,7 +114,7 @@ protected:
 
   final T[] produceMultipleImpl(Type2Type!(T), size_t count)
   {
-    T[] objs = (cast(T*)extractor.alloc(T.sizeof * count))[0..count];
+    T[] objs = (cast(T*)extractor.AllocateMemory(T.sizeof * count))[0..count];
     T initHelper;
     foreach(ref obj;objs)
     {
@@ -178,7 +183,7 @@ protected:
 
   final T[] produceMultipleImpl(Type2Type!(T), size_t count)
   {
-    T[] objs = (cast(T*)extractor.alloc(T.sizeof * count))[0..count];
+    T[] objs = (cast(T*)extractor.AllocateMemory(T.sizeof * count))[0..count];
     T initHelper;
     foreach(ref obj;objs)
     {
@@ -211,7 +216,7 @@ protected:
 
   final T[] produceMultipleImpl(Type2Type!(T), size_t count)
   {
-    T[] objs = (cast(T*)extractor.alloc(T.sizeof * count))[0..count];
+    T[] objs = (cast(T*)extractor.AllocateMemory(T.sizeof * count))[0..count];
     T initHelper;
     foreach(ref obj;objs)
     {
@@ -223,14 +228,14 @@ protected:
   }
 	
 	final U[] copyArray(T : U[], U)(T ar){
-		void[] mem = extractor.alloc(U.sizeof * ar.length);
+		void[] mem = extractor.AllocateMemory(U.sizeof * ar.length);
 		U[] result = (cast(U*)mem.ptr)[0..ar.length];
 		memcpy(cast(void*)result.ptr,ar.ptr,U.sizeof * ar.length);
 		return result;
 	}
 	
 	final T[] allocArray(T)(size_t length){
-		void[] mem = extractor.alloc(T.sizeof * length);
+		void[] mem = extractor.AllocateMemory(T.sizeof * length);
 		T[] result = (cast(T*)mem.ptr)[0..length];
 		return result;
 	}
@@ -268,7 +273,9 @@ enum ExtractTypePublic : uint {
 	TEXTURED_SHAPE = 6,
 	SPRITE = 8,
 	ORIENTED_SPRITE = 9,
-	FIXED_SPRITE = 11
+	FIXED_SPRITE = 11,
+  RCTEXT = 12,
+  DEBUG_LINE = 13
 }
 
 enum HudTarget : uint {
@@ -282,8 +289,18 @@ struct ObjectInfoText {
 	uint font;
 	vec4 color;
 	vec2 pos;
-	rcstring text;
+	string text;
 	HudTarget target;
+}
+
+struct ObjectInfoRCText {
+  enum ExtractTypePublic TYPE = ExtractTypePublic.RCTEXT;
+  ObjectInfo info;
+  uint font;
+  vec4 color;
+  vec2 pos;
+  rcstring text;
+  HudTarget target;
 }
 
 struct ObjectInfoShape {
@@ -346,4 +363,12 @@ struct ObjectInfoFixedSprite {
 	vec3[4] vertices;
 	Sprite sprite;
 	Blending blending;
+}
+
+struct ObjectInfoDebugLine 
+{
+  enum ExtractTypePublic TYPE = ExtractTypePublic.DEBUG_LINE;
+  ObjectInfo info;
+  vec4 color;
+  Position start, end;
 }

@@ -38,11 +38,6 @@ interface IRenderer : IEventListener{
 	 */
 	IRenderProxy CreateRenderProxy3DHud(shared(IModel) model) shared;
 	
-	version(direct_draw){
-		protected void startDirectDrawBatch() shared;
-		protected void stopDirectDrawBatch() shared;
-	}
-	
 	void camera(IGameObject obj);
 	void camera(IGameObject obj) shared;
 	
@@ -69,23 +64,6 @@ interface IRenderer : IEventListener{
 	
 	void freezeCamera();
 	void loadAmbientSettings(rcstring path) shared;
-}
-
-version(direct_draw){
-	struct RendererDirectDrawBatch {
-		private shared(IRenderer) m_Renderer;
-		
-		this(shared(IRenderer) renderer){
-			assert(renderer !is null);
-			m_Renderer = renderer;
-			m_Renderer.startDirectDrawBatch();
-		}
-		
-		~this(){
-			assert(m_Renderer !is null);
-			m_Renderer.stopDirectDrawBatch();
-		}
-	}
 }
 
 interface IRendererFactory {

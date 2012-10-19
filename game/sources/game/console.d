@@ -12,7 +12,7 @@ import thBase.string;
 
 static import base.logger;
 
-class ConsoleRenderProxy : RenderProxyRenderable!(ObjectInfoText,ObjectInfoShape){
+class ConsoleRenderProxy : RenderProxyRenderable!(ObjectInfoRCText, ObjectInfoShape){
 private:
 	Console m_Console;
 	Zeitpunkt m_Last;
@@ -22,7 +22,7 @@ private:
 	int m_LineHeight = 0;
 	
 protected:		
-	override void initInfo(ref ObjectInfoText info){
+	override void initInfo(ref ObjectInfoRCText info){
 		if(m_Count == 0){
 			Zeitpunkt now = Zeitpunkt(g_Env.mainTimer);
 			m_BlinkTime += now - m_Last;
@@ -35,7 +35,7 @@ protected:
 			info.pos = vec2(10,m_Console.m_Height-m_LineHeight);
 			if(m_Blink)
 				m_Console.charIn('_');
-			info.text = format("%s", m_Console.m_InputBuffer.toArray());
+			info.text = formatBufferAllocator(extractor, "%s", m_Console.m_InputBuffer.toArray());
 			if(m_Blink)
 				m_Console.delLast();
 			info.color = vec4(1.0f,1.0f,1.0f,1.0f);
@@ -43,7 +43,7 @@ protected:
 		}
 		else {
 			info.pos = vec2(10,m_Console.m_Height - m_LineHeight * (m_Count+1));
-			info.text = m_Console.m_History[m_Console.m_History.length - (m_Count + m_Console.m_ScrollPos)];
+			info.text = m_Console.m_History[m_Console.m_History.length - (m_Count + m_Console.m_ScrollPos)][];
 			info.color = vec4(1.0f,1.0f,1.0f,1.0f);
 			info.font = 0;
 		}
@@ -66,9 +66,9 @@ protected:
 		produce!(ObjectInfoShape)();
 		
 		m_Count = 0;
-		produce!(ObjectInfoText)(); //input line
+		produce!(ObjectInfoRCText)(); //input line
 		for(m_Count=1;m_Count < m_Console.m_Height / m_LineHeight && m_Count <= m_Console.m_History.length - m_Console.m_ScrollPos;m_Count++){
-			produce!(ObjectInfoText)();
+			produce!(ObjectInfoRCText)();
 		}
 	}
 	
