@@ -5,6 +5,7 @@ import core.sync.semaphore;
 import core.vararg;
 
 import thBase.allocator;
+import thBase.policies.locking;
 import thBase.serialize.xmldeserializer;
 import thBase.math3d.all;
 import thBase.timer;
@@ -170,90 +171,26 @@ private:
   MessageQueue_t m_PreExtractMessageQueue;
   MessageQueue_t m_LoadingMessageQueue;
 
-  ReturnType!GetNewTemporaryAllocator m_FrameAllocator;
-	
-	version(direct_draw){
-		// variables for synchronizing direct draw batch commands
-		static int m_ThreadId = -1; //TLS
-		__gshared int m_ThreadCount = 0;
-		__gshared Mutex m_BatchStartMutex;
-		
-		struct BatchThread {
-			Semaphore full;
-			Semaphore empty;
-			Mutex producingMutex;
-			bool isProducing = false;
-		}
-		
-		struct MultipleLock {
-			BatchThread[] m_Batches;
-			bool[] lockMade;
-			this(BatchThread[] batches){
-				m_Batches = batches;
-				lockMade = new bool[m_Batches.length];
-				foreach(i,ref b;batches){
-					if(b.full !is null){
-						if(!b.full.wait( dur!("msecs")(5) )){
-							base.logger.warn("game did not produce direct draw calls");
-							lockMade[i] = false;
-						}
-						else {
-							lockMade[i] = true;
-						}
-          }
-				}
-			}
-			
-			~this(){
-				foreach(i,ref b;m_Batches){
-					if(b.full !is null && lockMade[i])
-						b.empty.notify();
-				}
-			}
-		}
-		
-		__gshared BatchThread[4] m_BatchThreads;
-		
-		bool isDirectDrawBatchWorking() shared {
-			assert(m_ThreadId >= 0);
-			return (m_BatchThreads[m_ThreadId].isProducing);
-		}
-		
-		Mutex producingMutex() shared {
-			return m_BatchThreads[m_ThreadId].producingMutex;
-		}
-	}
+  static struct DebugDrawText
+  {
+    vec4 textColor;
+    vec2 textPos;
+    string text;
+    uint font;
+    DebugDrawText* next;
+  }
 
-protected:
-	version(direct_draw){
-		override void startDirectDrawBatch() shared {
-			if(m_ThreadId == -1){
-				synchronized(m_BatchStartMutex){
-					m_ThreadId = m_ThreadCount++;
-					assert(m_ThreadId < m_BatchThreads.length);
-					m_BatchThreads[m_ThreadId].full = new Semaphore(0);
-					m_BatchThreads[m_ThreadId].empty = new Semaphore(1);
-					m_BatchThreads[m_ThreadId].producingMutex = new Mutex;
-				}
-			}
-			if(m_BatchThreads[m_ThreadId].empty.tryWait()){
-				synchronized(producingMutex){
-					m_BatchThreads[m_ThreadId].isProducing = true;
-				}
-			}
-		}
-		
-		override void stopDirectDrawBatch() shared {
-			assert(m_ThreadId >= 0);
-			synchronized(producingMutex){
-				if(m_BatchThreads[m_ThreadId].isProducing){
-					m_BatchThreads[m_ThreadId].isProducing = false;
-					m_BatchThreads[m_ThreadId].full.notify();
-				}
-			}
-		}
-	}
-	
+  static struct DebugDrawLine
+  {
+    Position start, end;
+    vec4 color;
+  }
+
+  ReturnType!GetNewTemporaryAllocator m_FrameAllocator;	
+  TemporaryAllocator!(NoLockPolicy, ThreadLocalChunkAllocator) m_DebugDrawAllocator;
+  Vector!DebugDrawLine m_DebugDrawLines;
+  DebugDrawText* m_FirstDebugDraw = null, m_LastDebugDraw = null;
+  Mutex m_DebugLineLock, m_DebugTextLock;
 	
 public:
 	this(){
@@ -271,10 +208,24 @@ public:
     m_MessageQueue = New!(typeof(m_MessageQueue))(16 * 1024); //Main message queue 16 kb
     m_PreExtractMessageQueue = New!(typeof(m_PreExtractMessageQueue))(1024); //Pre extract message queue 1 kb
     m_LoadingMessageQueue = New!(typeof(m_LoadingMessageQueue))(2 * 1024); //Loading message queue 2kb
+
+    //Stuff for debug drawing
+    m_DebugDrawAllocator = New!(typeof(m_DebugDrawAllocator))(64 * 1024, ThreadLocalChunkAllocator.globalInstance);
+    m_DebugDrawLines = New!(typeof(m_DebugDrawLines))();
+    m_DebugLineLock = New!Mutex();
+    m_DebugTextLock = New!Mutex();
 	}
 
   ~this()
   {
+    if(m_DebugDrawAllocator !is null)
+    {
+      m_DebugDrawAllocator.Reset(StillAllocated.Ignore);
+      Delete(m_DebugDrawAllocator);
+    }
+    Delete(m_DebugDrawLines);
+    Delete(m_DebugLineLock);
+    Delete(m_DebugTextLock);
     Delete(m_LoadingMessageQueue);
     Delete(m_PreExtractMessageQueue);
     Delete(m_MessageQueue);
@@ -288,12 +239,6 @@ public:
     Delete(m_Timer);
     Delete(m_ShaderConstants);
   }
-
-	version(direct_draw){
-		shared static this(){
-			m_BatchStartMutex = new Mutex;
-		}
-	}
 	
 	//---------------------------------------------------------------------------
 	// start IRendererInternal
@@ -508,6 +453,37 @@ public:
 	body {
 		return m_RenderSlices[pId];
 	}
+
+  override void ExtractDebugGeometry(IRendererExtractor extractor)
+  {
+    synchronized(m_DebugLineLock, m_DebugTextLock)
+    {
+      foreach(line; m_DebugDrawLines)
+      {
+        auto obj = cast(ObjectInfoDebugLine*)extractor.CreateObjectInfo(ObjectInfoDebugLine.sizeof);
+        *obj = ObjectInfoDebugLine.init;
+        obj.info.type = ObjectInfoDebugLine.TYPE;
+        obj.start = line.start;
+        obj.end = line.end;
+        obj.color = line.color;
+      }
+      m_DebugDrawLines.resize(0);
+
+      for(auto cur = m_FirstDebugDraw; cur !is null; cur = cur.next)
+      {
+        auto obj = cast(ObjectInfoText*)extractor.CreateObjectInfo(ObjectInfoText.sizeof);
+        *obj = ObjectInfoText.init;
+        obj.info.type = ObjectInfoText.TYPE;
+        obj.font = cur.font;
+        obj.color = cur.textColor;
+        obj.text = cur.text;
+        obj.pos = cur.textPos;
+      }
+      m_FirstDebugDraw = null;
+      m_LastDebugDraw = null;
+      m_DebugDrawAllocator.Reset(StillAllocated.Ignore); //we can ignore this because there are only POD types allocated
+    }
+  }
 	
 	private void DrawText(Font pFont, vec2 pPos, vec4 pColor, RenderGroup pGroup, VertexBuffer pVertexBuffer, const char[] pText)
 	in {
@@ -583,24 +559,31 @@ public:
     call.SetRange(cast(uint)start,cast(uint)(stop-start));
 	}
 	
-	private void DrawText(uint pFont, vec2 pPos, vec4 pColor, string fmt, TypeInfo[] arguments, va_list argptr) shared {
-	    version(direct_draw){
-			synchronized(producingMutex()){
-			if(!isDirectDrawBatchWorking())
-				return;
-			
-			char[] fmt;
-		
-			void putc(dchar c)
-			{
-	    		std.utf.encode(fmt, c);
-			}
-			std.format.doFormat(&putc, arguments, argptr);
-
-			//writefln("sending MsgDrawText");
-			send(GetTid(), MsgDrawText(pFont,pPos,pColor,to!string(fmt)) );	
-			}
-		}
+	private void DrawText(uint pFont, vec2 pPos, vec4 pColor, string fmt, TypeInfo[] arguments, va_list argptr) shared 
+  {
+    auto self = cast(Renderer)this;
+    synchronized(self.m_DebugTextLock)
+    {
+      DebugDrawText* cmd = AllocatorNew!DebugDrawText(self.m_DebugDrawAllocator);
+      if(self.m_FirstDebugDraw is null)
+      {
+        cmd = self.m_FirstDebugDraw;
+      }
+      if(self.m_LastDebugDraw is null)
+      {
+        cmd = self.m_LastDebugDraw;
+      }
+      else
+      {
+        self.m_LastDebugDraw.next = cmd;
+        self.m_LastDebugDraw = cmd;
+      }
+      cmd.textPos = pPos;
+      cmd.textColor = pColor;
+      cmd.font = pFont;
+      cmd.text = ""; //in case of exception during formatting
+      cmd.text = formatDoBufferAllocator(self.m_DebugDrawAllocator, fmt, arguments, argptr);
+    }
 	}
 	
 	override void DrawText(uint pFont, vec2 pPos, vec4 pColor, const(char)[] fmt, ...) shared {
@@ -1697,12 +1680,17 @@ public:
 						{
 							ObjectInfoText* info = cast(ObjectInfoText*)cur;
 							auto group = (info.target == HudTarget.SCREEN) ? hudGroup : hud3dGroup;
-							DrawText(Font.GetFont(info.font), info.pos, info.color, group, m_FontBuffer, info.text[]);
-              //TODO fix as soon as sturct.init does not allocate
-              rcstring init;
-              info.text = init;
+							DrawText(Font.GetFont(info.font), info.pos, info.color, group, m_FontBuffer, info.text);
 						}
 						break;
+          case ExtractType.RCTEXT:
+            {
+              ObjectInfoRCText* rctextInfo = cast(ObjectInfoRCText*)cur;
+              auto group = (rctextInfo.target == HudTarget.SCREEN) ? hudGroup : hud3dGroup;
+              DrawText(Font.GetFont(rctextInfo.font), rctextInfo.pos, rctextInfo.color, group, m_FontBuffer, rctextInfo.text[]);
+              rctextInfo.text = rcstring.init;
+            }
+            break;
 					case ExtractType.SHAPE:
 						{
 							ObjectInfoShape* info = cast(ObjectInfoShape*)cur;
@@ -1967,6 +1955,12 @@ public:
 							
 						}
 						break;
+          case ExtractType.DEBUG_LINE:
+            {
+              ObjectInfoDebugLine *debugLineInfo = cast(ObjectInfoDebugLine*)cur;
+              this.drawLine(debugLineInfo.start, debugLineInfo.end, debugLineInfo.color);
+            }
+            break;
 				}
 			}
 			
@@ -2181,13 +2175,11 @@ public:
 	}
 	
 	override void drawLine(Position start, Position end, vec4 color) shared {
-		version(direct_draw){
-			synchronized( producingMutex ){
-				if( isDirectDrawBatchWorking() ){
-					send(GetTid(),makeMsg!(Renderer,"drawLine")(start,end,color));
-				}
-			}
-		}
+    auto self = cast(Renderer)this;
+    synchronized( m_DebugLineLock )
+    {
+      self.m_DebugDrawLines ~= DebugDrawLine(start, end, color);
+    }
 	}
 	
 	override void RegisterCVars(ConfigVarsBinding* CVarStorage) shared {

@@ -518,11 +518,6 @@ class GameSimulation : IGameThread, IGame {
             auto renderbufferprofile = base.profiler.Profile("Wait for render buffer");
             m_Extractor.WaitForBuffer();
           }
-
-					//Takes care of starting and stopping the direct draw batch correctly
-					version(direct_draw){
-						auto directDrawBatch = RendererDirectDrawBatch(g_Env.renderer);
-					}
 					
 					//core.stdc.stdio.printf("Messages %d\n",getNumberOfMessages(thisTid()));
 					

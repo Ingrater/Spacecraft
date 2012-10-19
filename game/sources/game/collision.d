@@ -105,9 +105,10 @@ public:
 		foreach(ref f1;m_Faces){
 			Triangle lhTri = f1.transform(lhTrans);
 			
+      Ray dummy;
 			foreach(ref f2; transformed_other){
 				testcount++;
-				if(lhTri.intersects(f2)){
+				if(lhTri.intersects(f2, dummy)){
 					//base.logger.info("col: %d tests (hit)", testcount);
 					return true;
 				}

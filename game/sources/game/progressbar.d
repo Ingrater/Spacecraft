@@ -66,7 +66,7 @@ public:
 	
 	override void initInfo(ref ObjectInfoText info){
 		info.pos = vec2(20, g_Env.renderer.GetHeight()/2+35);
-		info.text = m_Status;
+		info.text = copyArray(m_Status[]);
 		info.color = vec4(1.0f,1.0f,1.0f,1.0f);
 		info.font = 0;
 	}	

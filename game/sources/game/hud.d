@@ -5,7 +5,7 @@ import core.memory, std.math;
 import game.gameobject;
 //import renderer.renderproxys: CameraProxy;
 
-class HUD : RenderProxyRenderable!(ObjectInfoText,ObjectInfoShape), IRenderable {
+class HUD : RenderProxyRenderable!(ObjectInfoText, ObjectInfoRCText, ObjectInfoShape), IRenderable {
 private:
 	Player m_LocalPlayer;
 	GameSimulation m_Game;
@@ -17,7 +17,8 @@ private:
   vec2[16] m_VerticesBuf;
 	vec2[] m_Vertices;
 	vec2 m_Position;
-	rcstring m_Text;
+	string m_Text;
+  rcstring m_RCText;
 	HudTarget m_Target;
 	
 public:
@@ -500,10 +501,20 @@ public:
 	private void text(in vec4 color, in vec2 pos, rcstring content, HudTarget target){
 		m_Color = color;
 		m_Position = pos;
-		m_Text = content;
+		m_RCText = content;
 		m_Target = target;
-		produce!ObjectInfoText();
+		produce!ObjectInfoRCText();
 	}
+
+  private void text(in vec4 color, in vec2 pos, string content, HudTarget target)
+  {
+    assert(extractor.IsInBuffer(content.ptr), "given buffer is not allocated by extractor");
+    m_Color = color;
+    m_Position = pos;
+    m_Text = content;
+    m_Target = target;
+    produce!ObjectInfoText();
+  }
 	
 	override void initInfo(ref ObjectInfoText info){
 		info.pos = m_Position;
@@ -512,6 +523,15 @@ public:
 		info.font = 0;
 		info.target = m_Target;
 	}
+
+  override void initInfo(ref ObjectInfoRCText info)
+  {
+    info.pos = m_Position;
+    info.text = m_RCText;
+    info.color = m_Color;
+    info.font = 0;
+    info.target = m_Target;
+  }
 	
 	
 	//

@@ -48,7 +48,7 @@
   <program>ErrorMessageDecoder.exe</program>
   <imppath>$(SolutionDir)\..\..\druntime\import;$(SolutionDir)\..\..\phobos;$(SolutionDir)\..\..\thBase\src;$(SolutionDir)\..\tools\ModelConverter\src</imppath>
   <fileImppath />
-  <outdir>../$(ConfigurationName)</outdir>
+  <outdir>..\$(ConfigurationName)</outdir>
   <objdir>$(OutDir)</objdir>
   <objname />
   <libname />
@@ -87,6 +87,7 @@
   <deffile />
   <resfile />
   <exefile>..\data\$(ProjectName).exe</exefile>
+  <useStdLibPath>1</useStdLibPath>
   <additionalOptions>-defaultlib=phobosnogcd -debuglib=phobosnogcd $(SolutionDir)\..\..\druntime\lib\gcstub.obj</additionalOptions>
   <preBuildCommand />
   <postBuildCommand />
@@ -179,6 +180,7 @@
   <deffile />
   <resfile />
   <exefile>..\data\$(ProjectName).exe</exefile>
+  <useStdLibPath>1</useStdLibPath>
   <additionalOptions>-defaultlib=phobosnogc -debuglib=phobosnogc $(SolutionDir)\..\..\druntime\lib\gcstub.obj</additionalOptions>
   <preBuildCommand />
   <postBuildCommand />
@@ -271,6 +273,7 @@
   <deffile />
   <resfile />
   <exefile>..\data\$(ProjectName).exe</exefile>
+  <useStdLibPath>1</useStdLibPath>
   <additionalOptions />
   <preBuildCommand />
   <postBuildCommand />
@@ -363,6 +366,7 @@
   <deffile />
   <resfile />
   <exefile>..\data\$(ProjectName).exe</exefile>
+  <useStdLibPath>1</useStdLibPath>
   <additionalOptions>-defaultlib=phobosnogcd -debuglib=phobosnogcd $(SolutionDir)\..\..\druntime\lib\gcstub.obj</additionalOptions>
   <preBuildCommand />
   <postBuildCommand />
@@ -455,6 +459,7 @@
   <deffile />
   <resfile />
   <exefile>..\data\$(ProjectName).exe</exefile>
+  <useStdLibPath>1</useStdLibPath>
   <additionalOptions>-d</additionalOptions>
   <preBuildCommand />
   <postBuildCommand />
@@ -547,6 +552,7 @@
   <deffile />
   <resfile />
   <exefile>..\data\$(ProjectName).exe</exefile>
+  <useStdLibPath>1</useStdLibPath>
   <additionalOptions />
   <preBuildCommand />
   <postBuildCommand />
@@ -639,6 +645,7 @@
   <deffile />
   <resfile />
   <exefile>..\data\$(ProjectName).exe</exefile>
+  <useStdLibPath>1</useStdLibPath>
   <additionalOptions>-v -O3</additionalOptions>
   <preBuildCommand />
   <postBuildCommand />
