@@ -24,7 +24,7 @@ interface IRendererExtractor {
 			assert(obj !is null);
 		}
 	
-	protected void addObjectInfo(ObjectInfo* info);
+	void addObjectInfo(ObjectInfo* info);
 	
 	Position origin();
 	

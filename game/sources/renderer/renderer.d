@@ -466,6 +466,7 @@ public:
         obj.start = line.start;
         obj.end = line.end;
         obj.color = line.color;
+        extractor.addObjectInfo(&(*obj).info);
       }
       m_DebugDrawLines.resize(0);
 
@@ -478,6 +479,7 @@ public:
         obj.color = cur.textColor;
         obj.text = cur.text;
         obj.pos = cur.textPos;
+        extractor.addObjectInfo(&(*obj).info);
       }
       m_FirstDebugDraw = null;
       m_LastDebugDraw = null;
