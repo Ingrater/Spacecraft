@@ -724,6 +724,7 @@
    <File path="game\turret.d" />
   </Folder>
   <Folder name="physics">
+   <File path="physics\cvars.d" />
    <File path="physics\physics.d" />
    <File path="physics\rigidbody.d" />
   </Folder>

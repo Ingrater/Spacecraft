@@ -2,6 +2,7 @@ module physics.physics;
 
 import base.all;
 import physics.rigidbody; 
+import physics.cvars;
 import base.octree;
 import thBase.container.vector;
 import thBase.math3d.all;
@@ -12,6 +13,7 @@ class PhysicsSimulation
   private:
     Vector!RigidBody m_simulated;
     Octree m_octree;
+    CVars m_CVars;
 
   public:
     this(Octree octree)
@@ -44,13 +46,11 @@ class PhysicsSimulation
         obj.velocity += gravity * secondDiff;
         auto nextPosition = obj.position + obj.velocity * secondDiff;
 
-        obj.collision.debugDraw(obj.position, obj.rotation, g_Env.renderer);
-
         float collisionRadius = obj.collision.boundingRadius;
         vec3 boundOffset = vec3(collisionRadius, collisionRadius, collisionRadius);
         auto queryBox = AlignedBox(nextPosition - boundOffset, nextPosition + boundOffset);
         auto query = m_octree.getObjectsInBox(queryBox);
-        uint numCollisions = 0;
+        uint numCollisions = 0, numChecks = 0;
         for(;!query.empty();query.popFront())
         {
           IGameObject colObj = query.front();
@@ -60,27 +60,42 @@ class PhysicsSimulation
             if(collidingRigidBody is obj)
               continue;
 
-            collidingRigidBody.collision.debugDraw(collidingRigidBody.position, collidingRigidBody.rotation, g_Env.renderer);
-
-            numCollisions++;
+            numChecks++;
+            
             Ray[32] intersections = void;
             size_t numIntersections = obj.collision.getIntersections(collidingRigidBody.collision, collidingRigidBody.transformTo(obj), intersections);
 
+            if(numIntersections > 0)
             {
-              mat4 rotation = obj.rotation.toMat4();
-              foreach(ref intersection; intersections[0..numIntersections])
-              {
-                g_Env.renderer.drawLine(obj.position + (rotation * intersection.pos), obj.position + (rotation * intersection.end), vec4(1.0f, 0.0f, 0.0f, 1.0f));
-              }
+              if(m_CVars.p_drawCollisionGeometry > 0)
+                collidingRigidBody.collision.debugDraw(collidingRigidBody.position, collidingRigidBody.rotation, g_Env.renderer);
+              numCollisions++;
+            }
+
+            mat4 rotation = obj.rotation.toMat4();
+            foreach(ref intersection; intersections[0..numIntersections])
+            {
+              g_Env.renderer.drawLine(obj.position + (rotation * intersection.pos), obj.position + (rotation * intersection.end), vec4(1.0f, 0.0f, 0.0f, 1.0f));
             }
           }
         }
-        if(numCollisions > 0)
+        if(numCollisions > 0 && m_CVars.p_drawCollisionGeometry > 0)
+        {
+          obj.collision.debugDraw(obj.position, obj.rotation, g_Env.renderer);
+        }
+        if(numChecks > 0 && m_CVars.p_drawCollisionGeometry > 0)
         {
           g_Env.renderer.drawBox(queryBox, vec4(0.0f, 1.0f, 0.0f, 1.0f));
         }
 
         obj.position = nextPosition;
       }
+    }
+
+    void RegisterCVars(ConfigVarsBinding* storage)
+    {
+      foreach(m;__traits(allMembers,typeof(m_CVars))){
+				storage.registerVariable(m,__traits(getMember,this.m_CVars,m));
+			}
     }
 }

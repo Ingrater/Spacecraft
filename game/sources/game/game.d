@@ -506,8 +506,11 @@ class GameSimulation : IGameThread, IGame {
 					}
 				}
 
-        m_Physics.Simulate(m_RunPhysics ? timeDiff : (m_StepPhysics ? timeDiff : 0.0f));
-        m_StepPhysics = false;
+        {
+          auto physicsprofile = base.profiler.Profile("physics");
+          m_Physics.Simulate(m_RunPhysics ? timeDiff : (m_StepPhysics ? timeDiff : 0.0f));
+          m_StepPhysics = false;
+        }
 				
 				//Server game code
 				if(g_Env.isServer){
@@ -1068,5 +1071,7 @@ class GameSimulation : IGameThread, IGame {
 			}
 			if (g_Env.renderer)
 				g_Env.renderer.RegisterCVars(m_CVarsStorage);
+      if(m_Physics)
+        m_Physics.RegisterCVars(m_CVarsStorage);
 		}
 }
