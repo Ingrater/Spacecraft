@@ -51,6 +51,8 @@ class PhysicsSimulation
         auto queryBox = AlignedBox(nextPosition - boundOffset, nextPosition + boundOffset);
         auto query = m_octree.getObjectsInBox(queryBox);
         uint numCollisions = 0, numChecks = 0;
+        vec3 collisionPoint;
+        float divisor = 0.0f;
         for(;!query.empty();query.popFront())
         {
           IGameObject colObj = query.front();
@@ -67,21 +69,49 @@ class PhysicsSimulation
 
             if(numIntersections > 0)
             {
+              divisor += cast(float)(numIntersections * 2);
+              if(numCollisions == 0)
+              {
+                collisionPoint = intersections[0].pos + intersections[0].end;
+                foreach(ref intersection; intersections[1..numIntersections])
+                {
+                  collisionPoint = collisionPoint + intersection.pos + intersection.end;
+                }
+              }
+              else
+              {
+                foreach(ref intersection; intersections[0..numIntersections])
+                {
+                  collisionPoint = collisionPoint + intersection.pos + intersection.end;
+                }
+              }
               if(m_CVars.p_drawCollisionGeometry > 0)
                 collidingRigidBody.collision.debugDraw(collidingRigidBody.position, collidingRigidBody.rotation, g_Env.renderer);
               numCollisions++;
             }
 
-            mat4 rotation = obj.rotation.toMat4();
-            foreach(ref intersection; intersections[0..numIntersections])
+            if(m_CVars.p_drawCollisionInfo > 0)
             {
-              g_Env.renderer.drawLine(obj.position + (rotation * intersection.pos), obj.position + (rotation * intersection.end), vec4(1.0f, 0.0f, 0.0f, 1.0f));
+              mat4 rotation = obj.rotation.toMat4();
+              foreach(ref intersection; intersections[0..numIntersections])
+              {
+                g_Env.renderer.drawLine(obj.position + (rotation * intersection.pos), obj.position + (rotation * intersection.end), vec4(1.0f, 0.0f, 0.0f, 1.0f));
+              }
             }
           }
         }
-        if(numCollisions > 0 && m_CVars.p_drawCollisionGeometry > 0)
+        if(numCollisions > 0)
         {
-          obj.collision.debugDraw(obj.position, obj.rotation, g_Env.renderer);
+          if(m_CVars.p_drawCollisionGeometry > 0)
+          {
+            obj.collision.debugDraw(obj.position, obj.rotation, g_Env.renderer);
+          }
+          collisionPoint = collisionPoint * (1.0f / divisor);
+          if(m_CVars.p_drawCollisionInfo > 0)
+          {
+            mat4 rotation = obj.rotation.toMat4();
+            g_Env.renderer.drawLine(obj.position + (rotation * collisionPoint), obj.position + (rotation * collisionPoint) - obj.velocity);
+          }
         }
         if(numChecks > 0 && m_CVars.p_drawCollisionGeometry > 0)
         {
