@@ -2174,6 +2174,33 @@ public:
       self.m_DebugDrawLines ~= DebugDrawLine(box.min + vec3(  0.0f,size.y,  0.0f), box.min + vec3(  0.0f,size.y,size.z), color);
     }
 	}
+
+  override void drawArrow(Position from, Position to, vec4 color) shared {
+    vec3 x,y;
+    vec3 dir = to - from;
+    float len = dir.length * 0.1;
+    Position arrowEnd = from + (dir * 0.9);
+    if( vec3(0,0,1).dot(dir) < 0.01 )
+    {
+      x = dir.cross(vec3(1,0,0)).normalize();
+      y = dir.cross(x).normalize();
+    }
+    else
+    {
+      x = dir.cross(vec3(0,0,1)).normalize();
+      y = dir.cross(x).normalize();
+    }
+
+    auto self = cast(Renderer)this;
+    synchronized( m_DebugLineLock )
+    {
+      self.m_DebugDrawLines ~= DebugDrawLine(from, to, color);
+      self.m_DebugDrawLines ~= DebugDrawLine(to, arrowEnd + (x *  len), color); 
+      self.m_DebugDrawLines ~= DebugDrawLine(to, arrowEnd + (x * -len), color);
+      self.m_DebugDrawLines ~= DebugDrawLine(to, arrowEnd + (y *  len), color);
+      self.m_DebugDrawLines ~= DebugDrawLine(to, arrowEnd + (y * -len), color);
+    }
+  }
 	
 	override void drawLine(ref const Position start, ref const Position end, ref const vec4 color){
 		m_UpdateDebugBuffer = true;

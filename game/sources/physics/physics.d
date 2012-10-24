@@ -51,8 +51,6 @@ class PhysicsSimulation
         auto queryBox = AlignedBox(nextPosition - boundOffset, nextPosition + boundOffset);
         auto query = m_octree.getObjectsInBox(queryBox);
         uint numCollisions = 0, numChecks = 0;
-        vec3 collisionPoint;
-        float divisor = 0.0f;
         for(;!query.empty();query.popFront())
         {
           IGameObject colObj = query.front();
@@ -65,26 +63,34 @@ class PhysicsSimulation
             numChecks++;
             
             Ray[32] intersections = void;
-            size_t numIntersections = obj.collision.getIntersections(collidingRigidBody.collision, collidingRigidBody.transformTo(obj), intersections);
+            mat4 collidingRigidyBodyTransform = collidingRigidBody.transformTo(obj);
+            size_t numIntersections = obj.collision.getIntersections(collidingRigidBody.collision, collidingRigidyBodyTransform, intersections);
 
             if(numIntersections > 0)
             {
-              divisor += cast(float)(numIntersections * 2);
-              if(numCollisions == 0)
+              vec3 collisionPoint = intersections[0].pos + intersections[0].end;
+              foreach(ref intersection; intersections[1..numIntersections])
               {
-                collisionPoint = intersections[0].pos + intersections[0].end;
-                foreach(ref intersection; intersections[1..numIntersections])
-                {
-                  collisionPoint = collisionPoint + intersection.pos + intersection.end;
-                }
+                collisionPoint = collisionPoint + intersection.pos + intersection.end;
               }
-              else
+
+              Ray normalFindRay = Ray.CreateFromPoints(vec3(0,0,0), collisionPoint);
+
+              float intersectionPosOther = 0.0f;
+              vec3 intersectionNormalOther;
+              collidingRigidBody.collision.intersects(normalFindRay, collidingRigidyBodyTransform, intersectionPosOther, intersectionNormalOther);
+
+              float intersectionPosCurrent = 0.0f;
+              vec3 intersectionNormalCurrent;
+              obj.collision.intersects(normalFindRay, mat4.Identity(), intersectionPosCurrent, intersectionNormalCurrent);
+
+              if(m_CVars.p_drawCollisionInfo > 0)
               {
-                foreach(ref intersection; intersections[0..numIntersections])
-                {
-                  collisionPoint = collisionPoint + intersection.pos + intersection.end;
-                }
+                mat4 rotation = obj.rotation.toMat4();
+                g_Env.renderer.drawArrow(obj.position + (rotation * normalFindRay.get(intersectionPosOther)), obj.position + (rotation * (normalFindRay.get(intersectionPosOther) + intersectionNormalOther)), vec4(1.0f, 0.0f, 0.0f, 1.0f));
+                g_Env.renderer.drawArrow(obj.position + (rotation * normalFindRay.get(intersectionPosCurrent)), obj.position + (rotation * (normalFindRay.get(intersectionPosCurrent) + intersectionNormalCurrent)), vec4(0.0f, 0.0f, 1.0f, 1.0f));
               }
+
               if(m_CVars.p_drawCollisionGeometry > 0)
                 collidingRigidBody.collision.debugDraw(collidingRigidBody.position, collidingRigidBody.rotation, g_Env.renderer);
               numCollisions++;
@@ -105,12 +111,6 @@ class PhysicsSimulation
           if(m_CVars.p_drawCollisionGeometry > 0)
           {
             obj.collision.debugDraw(obj.position, obj.rotation, g_Env.renderer);
-          }
-          collisionPoint = collisionPoint * (1.0f / divisor);
-          if(m_CVars.p_drawCollisionInfo > 0)
-          {
-            mat4 rotation = obj.rotation.toMat4();
-            g_Env.renderer.drawLine(obj.position + (rotation * collisionPoint), obj.position + (rotation * collisionPoint) - obj.velocity);
           }
         }
         if(numChecks > 0 && m_CVars.p_drawCollisionGeometry > 0)

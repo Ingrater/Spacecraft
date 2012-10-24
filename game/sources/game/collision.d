@@ -152,40 +152,6 @@ public:
     return false;
   }
 
-	/**
-  * Computes the intersection rays of this collision hull and another
-  * Params:
-  *  other = the other collision hull to intersect with
-  *  lhTrans = the transformation of this collision hull
-  *  rhTrans = the transformation of the other collision hull
-  *  results = a preallocated array where the results should be stored to
-  *
-  * Returns:
-  *  the number of intersections stored in results
-  */
-  size_t getIntersections(CollisionHull other, mat4 lhTrans, mat4 rhTrans, scope Ray[] results)
-  {
-		auto transformed_other = AllocatorNewArray!Triangle(ThreadLocalStackAllocator.globalInstance, other.m_Faces.length);
-    scope(exit) AllocatorDelete(ThreadLocalStackAllocator.globalInstance, transformed_other);
-		foreach(i, ref f2; other.m_Faces)
-			transformed_other[i] = f2.transform(rhTrans);
-
-    size_t i=0;
-		foreach(ref f1;m_Faces){
-			Triangle lhTri = f1.transform(lhTrans);
-
-			foreach(ref f2; transformed_other){
-        if(i >= results.length)
-          return i;
-				if(lhTri.intersects(f2, results[i])){
-					i++;
-				}
-			}
-		}
-
-		return i;
-  }
-
   /**
   * tests if two collision hulls intersect
   * Params:
@@ -204,7 +170,7 @@ public:
       Triangle rhTri = f1.transform(otherSpaceToThisSpace);
       foreach(ref lhTri; m_Faces)
       {
-        if(i > results.length)
+        if(i >= results.length)
           return i;
         if(rhTri.intersects(lhTri, results[i]))
         {
@@ -221,9 +187,10 @@ public:
 	 * Params:
 	 *  ray = the ray to test with
 	 *  lhTrans = the transformation to apply to this collision hull
-	 *  rayPos = the position on the ray where it did intersect
+	 *  rayPos = the position on the ray where it did intersect (in = start of the search, out = result)
+   *  normal = the normal at the intersection
 	 */
-	bool intersects(Ray ray,mat4 lhTrans,ref float rayPos, ref vec3 normal){
+	bool intersects(Ray ray,mat4 lhTrans,ref float rayPos, ref vec3 normal) const {
 		bool result = false;
 		rayPos = float.max;
 		foreach(ref f; m_Faces){
