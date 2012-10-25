@@ -75,20 +75,30 @@ class PhysicsSimulation
               }
 
               Ray normalFindRay = Ray.CreateFromPoints(vec3(0,0,0), collisionPoint);
+              //normalFindRay.pos = normalFindRay.pos - (normalFindRay.dir * 0.01f);
 
-              float intersectionPosOther = 0.0f;
+              float intersectionPosOther = -0.01f;
               vec3 intersectionNormalOther;
-              collidingRigidBody.collision.intersects(normalFindRay, collidingRigidyBodyTransform, intersectionPosOther, intersectionNormalOther);
+              if(!collidingRigidBody.collision.intersects(normalFindRay, collidingRigidyBodyTransform, intersectionPosOther, intersectionNormalOther))
+              {
+                intersectionPosOther = 0.0f;
+                intersectionNormalOther = -(normalFindRay.dir);
+              }
 
-              float intersectionPosCurrent = 0.0f;
+              float intersectionPosCurrent = -0.01f;
               vec3 intersectionNormalCurrent;
-              obj.collision.intersects(normalFindRay, mat4.Identity(), intersectionPosCurrent, intersectionNormalCurrent);
+              if(!obj.collision.intersects(normalFindRay, mat4.Identity(), intersectionPosCurrent, intersectionNormalCurrent))
+              {
+                intersectionPosCurrent = 0.0f;
+                intersectionNormalOther = normalFindRay.dir;
+              }
 
               if(m_CVars.p_drawCollisionInfo > 0)
               {
                 mat4 rotation = obj.rotation.toMat4();
                 g_Env.renderer.drawArrow(obj.position + (rotation * normalFindRay.get(intersectionPosOther)), obj.position + (rotation * (normalFindRay.get(intersectionPosOther) + intersectionNormalOther)), vec4(1.0f, 0.0f, 0.0f, 1.0f));
                 g_Env.renderer.drawArrow(obj.position + (rotation * normalFindRay.get(intersectionPosCurrent)), obj.position + (rotation * (normalFindRay.get(intersectionPosCurrent) + intersectionNormalCurrent)), vec4(0.0f, 0.0f, 1.0f, 1.0f));
+                g_Env.renderer.drawArrow(obj.position + (rotation * normalFindRay.pos), obj.position + (rotation * normalFindRay.end), vec4(0.0f, 1.0f, 1.0f, 1.0f));
               }
 
               if(m_CVars.p_drawCollisionGeometry > 0)

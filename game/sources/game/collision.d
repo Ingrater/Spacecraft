@@ -187,7 +187,7 @@ public:
 	 * Params:
 	 *  ray = the ray to test with
 	 *  lhTrans = the transformation to apply to this collision hull
-	 *  rayPos = the position on the ray where it did intersect (in = start of the search, out = result)
+	 *  rayPos = the position on the ray where it did intersect (out = result)
    *  normal = the normal at the intersection
 	 */
 	bool intersects(Ray ray,mat4 lhTrans,ref float rayPos, ref vec3 normal) const {
@@ -198,7 +198,7 @@ public:
 			float pos;
 			if( lhTri.intersects(ray,pos) ){
 				result = true;
-				if(pos < rayPos){
+				if(pos < rayPos && pos >= 0.0f){
 					rayPos = pos;
 					normal = lhTri.normal;
 				}
