@@ -277,6 +277,7 @@ public:
         DeleteSoundSystemFactory(soundFactory);
         soundFactory = null;
         this.soundSystem = null;
+        server.resources.unloadCollisions();
       }
 			
 			while(!m_Stop){				
