@@ -147,7 +147,8 @@ private:
 			gl.GetProgramiv(obj, gl.INFO_LOG_LENGTH, &infologLength);
 		
 		if(infologLength > 1){
-			char[] infoLog = new char[infologLength];
+			char[] infoLog = AllocatorNewArray!char(ThreadLocalStackAllocator.globalInstance, infologLength);
+      scope(exit) AllocatorDelete(ThreadLocalStackAllocator.globalInstance, infoLog);
 			if(pIsShader)
 				gl.GetShaderInfoLog(obj, infologLength, &charsWritten, infoLog.ptr);
 			else
