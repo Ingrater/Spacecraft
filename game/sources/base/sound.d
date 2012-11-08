@@ -121,6 +121,12 @@ interface ISoundSystem {
 	void Update();
 }
 
+enum SoundSystemType
+{
+  OpenAL,
+  None
+}
+
 interface ISoundSystemFactory {
 	ISoundSystem GetSoundSystem();
 }

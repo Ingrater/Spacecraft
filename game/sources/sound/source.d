@@ -501,3 +501,28 @@ public:
 	  return true;
 	}
 };
+
+class SoundSourceDummy : ISoundSource
+{
+  private:
+    bool m_bPlaying, m_bPaused;
+  public:
+    override void SetPitch(float value){}
+    override void SetPosition(float x, float y, float z){}
+    override void SetPosition(float[] array){}
+    override void SetPosition(vec4 position){}
+    override void SetVelocity(float x, float y, float z){}
+    override void SetVelocity(vec3 velocity){}
+    override void SetVelocity(float[] velocity){}
+    override void SetDirection(float* array){}
+    override void SetDirection(vec3 direction){}
+    override void SetRolloff(float value){}
+    override void SetRelative(bool value){}
+    override void SetRepeat(bool value){}
+    override void SetVolume(float value){}
+    override void Play(){ m_bPlaying = true; m_bPaused = false;}
+    override void Stop(){ m_bPlaying = false; }
+    override void Pause(){ m_bPaused = true; }
+    override void Rewind(){}
+    override bool IsPlaying(){ return m_bPlaying && !m_bPaused; }
+}
