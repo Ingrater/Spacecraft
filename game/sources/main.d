@@ -63,6 +63,9 @@ int main(string[] args){
 				case "-nomusic":
 					g_Env.music = false;
 					break;
+        case "-nosound":
+          g_Env.sound = false;
+          break;
 				case "-width":
 					i++;
 					if (i >= args.length){

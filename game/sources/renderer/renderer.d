@@ -1343,11 +1343,6 @@ public:
 				m_Frame++;
 			}
 			
-			{
-				auto profile = base.profiler.Profile("GC");
-				core.memory.GC.collect();
-			}
-			
 			m_LastTime = m_CurrentTime;
 		}
 	}
