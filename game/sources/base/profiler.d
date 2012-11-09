@@ -134,6 +134,7 @@ private:
 	struct Block {
 		Block* next = null;
 		Block* childs = null;
+    Block* lastChild = null;
 		
 		string name;
 		double time;
@@ -199,8 +200,18 @@ private:
 	}
 	
 	void startBlock(string name){
-		auto block = AllocatorNew!Block(m_blockAllocator, name, m_Infos.top().block.childs);
-		m_Infos.top().block.childs = block;
+		auto block = AllocatorNew!Block(m_blockAllocator, name, null);
+    auto topBlock = m_Infos.top().block;
+    if(topBlock.lastChild is null)
+    {
+      topBlock.childs = block;
+      topBlock.lastChild = block;
+    }
+    else
+    {
+      topBlock.lastChild.next = block;
+      topBlock.lastChild = block;
+    }
 		m_Infos.push(Info(Zeitpunkt(g_Env.mainTimer),block));
 	}
 	
