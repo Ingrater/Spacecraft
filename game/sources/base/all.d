@@ -34,6 +34,8 @@ struct Environment  {
 	
 	// Switch to disable music in the game
 	bool music = true;
+  // Switch to disable all sound in the game
+  bool sound = true;
 	
 	bool fullscreen = false;
   bool vsync = true;

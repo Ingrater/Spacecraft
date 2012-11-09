@@ -188,7 +188,7 @@ public:
 			  progressBar.status = _T("Initializing Sound System");
         game.RunExtractor();
 			  // Load and initialize the sound system
-			  soundFactory = NewSoundSystemFactory();
+			  soundFactory = NewSoundSystemFactory(g_Env.sound ? SoundSystemType.OpenAL : SoundSystemType.None);
 			  this.soundSystem = soundFactory.GetSoundSystem();
 			
 			  if(!g_Env.viewModel){

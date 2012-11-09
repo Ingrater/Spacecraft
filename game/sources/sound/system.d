@@ -55,3 +55,15 @@ public:
 		}
 	}
 }
+
+class SoundSystemDummy : ISoundSystem {
+
+  public:
+    override ISoundSource LoadOggSound(rcstring filename, bool stream = false)
+    {
+      return New!SoundSourceDummy();
+    }
+
+    override void RemoveStream(ISoundSource stream){}
+    override void Update(){}
+}

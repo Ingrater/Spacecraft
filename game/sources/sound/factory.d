@@ -42,8 +42,36 @@ class SoundSystemFactory : ISoundSystemFactory {
 		}
 }
 
-ISoundSystemFactory NewSoundSystemFactory(){
-	return New!SoundSystemFactory();
+class SoundSystemFactoryDummy: ISoundSystemFactory
+{
+	SoundSystemDummy m_SoundSystem = null;
+	bool m_IsInit = false;
+public:
+  this(){
+    m_IsInit = true;
+    base.logger.info("dummy sound init");
+  }
+
+  ~this()
+  {
+    Delete(m_SoundSystem);
+  }
+
+  ISoundSystem GetSoundSystem(){
+    if(m_SoundSystem is null)
+      m_SoundSystem = New!SoundSystemDummy();
+    return m_SoundSystem;
+  }
+}
+
+ISoundSystemFactory NewSoundSystemFactory(SoundSystemType type){
+  final switch(type)
+  {
+    case SoundSystemType.OpenAL:
+      return New!SoundSystemFactory();
+    case SoundSystemType.None:
+      return New!SoundSystemFactoryDummy();
+  }
 }
 
 void DeleteSoundSystemFactory(ISoundSystemFactory factory)
