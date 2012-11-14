@@ -88,7 +88,7 @@
   <resfile />
   <exefile>..\data\$(ProjectName).exe</exefile>
   <useStdLibPath>0</useStdLibPath>
-  <additionalOptions>-defaultlib=phobosnogcd -debuglib=phobosnogcd $(SolutionDir)\..\..\druntime\lib\gcstub.obj</additionalOptions>
+  <additionalOptions>-defaultlib=phobosnogcd -debuglib=phobosnogcd</additionalOptions>
   <preBuildCommand />
   <postBuildCommand />
   <filesToClean>*.obj;*.cmd;*.build;*.json;*.dep</filesToClean>
@@ -181,7 +181,7 @@
   <resfile />
   <exefile>..\data\$(ProjectName).exe</exefile>
   <useStdLibPath>1</useStdLibPath>
-  <additionalOptions>-defaultlib=phobosnogc -debuglib=phobosnogc $(SolutionDir)\..\..\druntime\lib\gcstub.obj</additionalOptions>
+  <additionalOptions>-defaultlib=phobosnogc -debuglib=phobosnogc</additionalOptions>
   <preBuildCommand />
   <postBuildCommand />
   <filesToClean>*.obj;*.cmd;*.build;*.json;*.dep</filesToClean>
@@ -367,7 +367,7 @@
   <resfile />
   <exefile>..\data\$(ProjectName).exe</exefile>
   <useStdLibPath>1</useStdLibPath>
-  <additionalOptions>-defaultlib=phobosnogcd -debuglib=phobosnogcd $(SolutionDir)\..\..\druntime\lib\gcstub.obj</additionalOptions>
+  <additionalOptions>-defaultlib=phobosnogcd -debuglib=phobosnogcd</additionalOptions>
   <preBuildCommand />
   <postBuildCommand />
   <filesToClean>*.obj;*.cmd;*.build;*.json;*.dep</filesToClean>
