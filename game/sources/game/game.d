@@ -246,7 +246,7 @@ class GameSimulation : IGameThread, IGame {
 		GameInput m_InputHandler;
 		bool m_ExitGame = false;
     bool m_RunPhysics = false;
-    bool m_StepPhysics = true;
+    bool m_StepPhysics = false;
 		
 		IControllable m_Controller;
 		FreeCamUp m_FreeCamera;

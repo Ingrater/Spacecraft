@@ -196,7 +196,7 @@ public:
 		rayPos = float.max;
 		foreach(ref f; m_Faces){
 			Triangle lhTri = f.transform(lhTrans);
-			float pos;
+			float pos = -1.0f;
 			if( lhTri.intersects(ray,pos) ){
 				result = true;
 				if(pos < rayPos && pos >= 0.0f){
