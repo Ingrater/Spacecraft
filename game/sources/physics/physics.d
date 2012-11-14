@@ -8,6 +8,8 @@ import thBase.container.vector;
 import thBase.math3d.all;
 import thBase.casts;
 
+import std.math;
+
 class PhysicsSimulation
 {
   private:
@@ -39,16 +41,20 @@ class PhysicsSimulation
 
     void Simulate(float timeDiff)
     {
+      FloatingPointControl fpctrl; 
+      fpctrl.enableExceptions(FloatingPointControl.severeExceptions);
+
       vec3 gravity = vec3(0, -9.81, 0);
       float secondDiff = timeDiff / 1000.0f;
       foreach(obj; m_simulated[])
       {
         obj.velocity += gravity * secondDiff;
-        auto nextPosition = obj.position + obj.velocity * secondDiff;
+        auto startPosition = obj.position;
+        obj.position = startPosition + obj.velocity * secondDiff;
 
         float collisionRadius = obj.collision.boundingRadius;
         vec3 boundOffset = vec3(collisionRadius, collisionRadius, collisionRadius);
-        auto queryBox = AlignedBox(nextPosition - boundOffset, nextPosition + boundOffset);
+        auto queryBox = AlignedBox(obj.position  - boundOffset, obj.position + boundOffset);
         auto query = m_octree.getObjectsInBox(queryBox);
         uint numCollisions = 0, numChecks = 0;
         for(;!query.empty();query.popFront())
@@ -104,6 +110,30 @@ class PhysicsSimulation
               if(m_CVars.p_drawCollisionGeometry > 0)
                 collidingRigidBody.collision.debugDraw(collidingRigidBody.position, collidingRigidBody.rotation, g_Env.renderer);
               numCollisions++;
+
+              
+
+              //Try finding the last point where they did not collide
+              float noCollisionTime = 0.0f;
+              float collisionTime = secondDiff;
+
+              for(int i=0; i<5; i++)
+              {
+                float searchDelta = (collisionTime - noCollisionTime) / 2.0f;
+                float searchTime = collisionTime - searchDelta;
+                obj.position = startPosition + obj.velocity * searchTime;
+                mat4 transform = collidingRigidBody.transformTo(obj);
+                if(obj.collision.intersectsFast(collidingRigidBody.collision, transform))
+                {
+                  collisionTime = searchTime;
+                }
+                else
+                {
+                  noCollisionTime = searchTime;
+                }
+              }
+              obj.position = startPosition + obj.velocity * noCollisionTime;
+              obj.velocity = vec3(0,0,0); //TODO real collision response
             }
 
             if(m_CVars.p_drawCollisionInfo > 0)
@@ -127,8 +157,6 @@ class PhysicsSimulation
         {
           g_Env.renderer.drawBox(queryBox, vec4(0.0f, 1.0f, 0.0f, 1.0f));
         }
-
-        obj.position = nextPosition;
       }
     }
 

@@ -508,7 +508,15 @@ class GameSimulation : IGameThread, IGame {
 
         {
           auto physicsprofile = base.profiler.Profile("physics");
-          m_Physics.Simulate(m_RunPhysics ? timeDiff : (m_StepPhysics ? timeDiff : 0.0f));
+          if(m_RunPhysics || m_StepPhysics)
+          {
+            enum int subdiv = 10;
+            float physicsTimeDiff = timeDiff / cast(float)subdiv;
+            for(int i=0; i<subdiv; i++)
+            {
+              m_Physics.Simulate(physicsTimeDiff);
+            }
+          }
           m_StepPhysics = false;
         }
 				

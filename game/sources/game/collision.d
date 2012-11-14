@@ -108,7 +108,8 @@ public:
 	 *  lhTrans = the transformation of this collision hull
 	 *  rhTrans = the transformation of the other collision hull
 	 */
-	bool intersects(CollisionHull other, mat4 lhTrans, mat4 rhTrans){
+	bool intersects(CollisionHull other, mat4 lhTrans, mat4 rhTrans)
+  {
 		auto transformed_other = AllocatorNewArray!Triangle(ThreadLocalStackAllocator.globalInstance, other.m_Faces.length);
     scope(exit) AllocatorDelete(ThreadLocalStackAllocator.globalInstance, transformed_other);
 		foreach(i, ref f2; other.m_Faces)
@@ -136,7 +137,7 @@ public:
    * Returns:
    *  true if the two intersect, false otherwise
    */
-  bool intersects(CollisionHull other, mat4 otherSpaceToThisSpace)
+  bool intersectsFast(const(CollisionHull) other, mat4 otherSpaceToThisSpace) const
   {
     Ray dummy;
     foreach(ref f1; other.m_Faces)
