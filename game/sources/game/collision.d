@@ -74,7 +74,7 @@ public:
     mat4 transform = loader.modelData.rootNode.transform;
     while(curNode !is null && curNode != loader.modelData.rootNode)
     {
-      transform = transform * curNode.transform;
+      transform = curNode.transform * transform;
       curNode = curNode.data.parent;
     }
 
@@ -198,8 +198,8 @@ public:
 			Triangle lhTri = f.transform(lhTrans);
 			float pos = -1.0f;
 			if( lhTri.intersects(ray,pos) ){
-				result = true;
 				if(pos < rayPos && pos >= 0.0f){
+          result = true;
 					rayPos = pos;
 					normal = lhTri.normal;
 				}
@@ -211,7 +211,8 @@ public:
 	/**
 	 * Draws a transformed version of the collision mesh
 	 * Pararms:
-	 *  transformation = the transformation to use
+	 *  position = position of the collision mesh
+   *  rotation = rotation of the collision mesh
 	 *  renderer = the renderer to use for drawing
 	 *  color = the color to use (optional)
 	 */
@@ -228,6 +229,27 @@ public:
 			renderer.drawLine(v1, v2, color);
 		}
 	}
+
+  /**
+  * Draws a transformed version of the collision mesh
+  * Pararms:
+  *  transformation = the transformation to use
+  *  renderer = the renderer to use for drawing
+  *  color = the color to use (optional)
+  */
+  void debugDraw(mat4 transform, shared(IRenderer) renderer, vec4 color  = vec4(1.0f,1.0f,1.0f,1.0f)) const 
+  {
+    foreach(ref f;m_Faces){
+			Triangle curFace = f.transform(transform);
+      Position v0 = Position(curFace.v[0]);
+      Position v1 = Position(curFace.v[1]);
+      Position v2 = Position(curFace.v[2]);
+
+			renderer.drawLine(v0, v1, color);
+			renderer.drawLine(v0, v2, color);
+			renderer.drawLine(v1, v2, color);
+		}
+  }
 	
 	/**
 	 * Computes the bounding box for this collision mesh

@@ -113,6 +113,14 @@ public:
     m_RigidBody.position = m_Position;
 	}
 
+  override void update(float timeDiff)
+  {
+    m_Position = m_RigidBody.position;
+    m_Rotation = m_RigidBody.rotation;
+
+    updateBoundingBox();
+  }
+
   override Object physicsComponent()
   {
     return m_RigidBody;

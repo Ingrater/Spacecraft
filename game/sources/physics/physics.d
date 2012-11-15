@@ -46,7 +46,7 @@ class PhysicsSimulation
 
       vec3 gravity = vec3(0, -9.81, 0);
       float secondDiff = timeDiff / 1000.0f;
-      foreach(obj; m_simulated[])
+      foreach(size_t objNum,obj; m_simulated.toArray())
       {
         obj.velocity += gravity * secondDiff;
         auto startPosition = obj.position;
@@ -88,7 +88,7 @@ class PhysicsSimulation
               if(!collidingRigidBody.collision.intersects(normalFindRay, collidingRigidyBodyTransform, intersectionPosOther, intersectionNormalOther))
               {
                 intersectionPosOther = 0.0f;
-                intersectionNormalOther = -(normalFindRay.dir);
+                intersectionNormalOther = -(normalFindRay.dir.normalize());
               }
 
               float intersectionPosCurrent = -0.01f;
@@ -96,7 +96,7 @@ class PhysicsSimulation
               if(!obj.collision.intersects(normalFindRay, mat4.Identity(), intersectionPosCurrent, intersectionNormalCurrent))
               {
                 intersectionPosCurrent = 0.0f;
-                intersectionNormalOther = normalFindRay.dir;
+                intersectionNormalOther = normalFindRay.dir.normalize();
               }
 
               if(m_CVars.p_drawCollisionInfo > 0)
@@ -107,9 +107,14 @@ class PhysicsSimulation
                 g_Env.renderer.drawArrow(obj.position + (rotation * normalFindRay.pos), obj.position + (rotation * normalFindRay.end), vec4(0.0f, 1.0f, 1.0f, 1.0f));
               }
 
-              if(m_CVars.p_drawCollisionGeometry > 0)
-                collidingRigidBody.collision.debugDraw(collidingRigidBody.position, collidingRigidBody.rotation, g_Env.renderer);
               numCollisions++;
+              if(m_CVars.p_drawCollisionGeometry > 0/* && numCollisions == 1 && objNum == 1*/)
+              {
+                collidingRigidBody.collision.debugDraw(collidingRigidBody.position, collidingRigidBody.rotation, g_Env.renderer);
+                //collidingRigidBody.collision.debugDraw(collidingRigidyBodyTransform * obj.rotation.toMat4() * TranslationMatrix(obj.position.toVec3()) , g_Env.renderer, vec4(0.0f, 1.0f, 0.0f, 1.0f));
+                //obj.collision.debugDraw(obj.rotation.toMat4() * TranslationMatrix(obj.position.toVec3()), g_Env.renderer, vec4(0.0f, 1.0f, 0.0f, 1.0f));
+              }
+              
 
               
 
@@ -126,7 +131,7 @@ class PhysicsSimulation
                 float searchPoint = 0.0f;
                 float searchDelta = 1.0f;
                 float stillSearchingMult = 2.0f;
-                for(int i=0; i<5; i++)
+                for(int i=0; i<10; i++)
                 {
                   searchPoint += searchDelta;
                   obj.position = startPosition + resolveDirection * searchPoint;
@@ -182,7 +187,7 @@ class PhysicsSimulation
                   }
                 }
                 obj.position = startPosition + obj.velocity * noCollisionTime;
-                obj.velocity = vec3(0,0,0); //TODO real collision response
+                obj.velocity = obj.velocity * -0.2; //TODO real collision response
               }
             }
 

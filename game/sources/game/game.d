@@ -22,7 +22,9 @@ import game.devobjects;
 import game.rules.base, game.rules.deathmatch;
 import thBase.container.queue;
 import thBase.container.hashmap;
+import thBase.container.vector;
 import physics.physics;
+import physics.rigidbody;
 
 import core.thread;
 
@@ -275,6 +277,8 @@ class GameSimulation : IGameThread, IGame {
 		float m_LastExplosion = 0.0f;
 
     IRendererExtractor m_Extractor;
+
+    Vector!IGameObject m_physicObjects;
 	
 	public:
 		this(){
@@ -286,10 +290,13 @@ class GameSimulation : IGameThread, IGame {
 			m_FirstPersonOffset = vec3(0,0.4f,-1.0f);
 			m_ThirdPersonOffset = vec3(0,10,50);
       m_Physics = New!PhysicsSimulation(m_Octree);
+      m_physicObjects = New!(typeof(m_physicObjects))();
 		}
 
     ~this()
     {
+      Delete(m_physicObjects); m_physicObjects = null;
+
       Delete(m_Physics);
       m_Physics = null;
 
@@ -510,7 +517,7 @@ class GameSimulation : IGameThread, IGame {
           auto physicsprofile = base.profiler.Profile("physics");
           if(m_RunPhysics || m_StepPhysics)
           {
-            enum int subdiv = 10;
+            enum int subdiv = 4;
             float physicsTimeDiff = timeDiff / cast(float)subdiv;
             for(int i=0; i<subdiv; i++)
             {
@@ -855,25 +862,45 @@ class GameSimulation : IGameThread, IGame {
     /**
      * Spawns a box in the model viewer
      */
-    void spawnBox(float x, float y, float z, float bounciness)
+    double spawnBox(float x, float y, float z, float inverseMass)
     {
-      base.logger.info("spawnBox %f %f %f %f", x, y, z, bounciness);
-      auto obj = New!Box(EntityId(2), this, bounciness);
+      base.logger.info("spawnBox %f %f %f %f", x, y, z, inverseMass);
+      auto obj = New!Box(EntityId(2), this, inverseMass);
       obj.setPosition(x,y,z);
       obj.update(1.0f);
       m_Octree.insert(obj);
+      m_physicObjects ~= obj;
+      return cast(double)(m_physicObjects.length - 1);
     }
 
     /**
     * Spawns a plane in the model viewer
     */
-    void spawnPlane(float x, float y, float z, float bounciness)
+    double spawnPlane(float x, float y, float z, float inverseMass)
     {
-      base.logger.info("spawnPlane %f %f %f %f", x, y, z, bounciness);
-      auto obj = New!(game.devobjects.Plane)(EntityId(2), this, bounciness);
+      base.logger.info("spawnPlane %f %f %f %f", x, y, z, inverseMass);
+      auto obj = New!(game.devobjects.Plane)(EntityId(2), this, inverseMass);
       obj.setPosition(x,y,z);
       obj.update(1.0f);
       m_Octree.insert(obj);
+      m_physicObjects ~= obj;
+      return cast(double)(m_physicObjects.length - 1);
+    }
+
+    /**
+     * rotates a physics object in the model viewer
+     */
+    void rotate(double id, float x, float y, float z, float degrees)
+    {
+      base.logger.info("rotate %f %f %f %f %f", id, x, y, z, degrees);
+      size_t index = cast(size_t)id;
+      if(index < m_physicObjects.length)
+      {
+        auto obj = m_physicObjects[index];
+        auto rigidBody = cast(RigidBody)obj.physicsComponent();
+        rigidBody.rotation = rigidBody.rotation * Quaternion(vec3(x,y,z), degrees);
+        obj.update(1.0f);
+      }
     }
 		
 		/**
@@ -1069,6 +1096,7 @@ class GameSimulation : IGameThread, IGame {
 				m_ScriptSystem.RegisterGlobal("startRotation",&startRotation);
         m_ScriptSystem.RegisterGlobal("spawnBox", &spawnBox);
         m_ScriptSystem.RegisterGlobal("spawnPlane", &spawnPlane);
+        m_ScriptSystem.RegisterGlobal("rotate", &rotate);
 			}
 		}
 		
