@@ -902,6 +902,19 @@ class GameSimulation : IGameThread, IGame {
         obj.update(1.0f);
       }
     }
+
+    /**
+     * rests the physics world
+     */
+    void resetWorld()
+    {
+      foreach(obj; m_physicObjects[])
+      {
+        m_Octree.remove(obj);
+        delete obj;
+      }
+      m_physicObjects.resize(0);
+    }
 		
 		/**
 		 * Spawns a new asteroid in the model viewer
@@ -1097,6 +1110,7 @@ class GameSimulation : IGameThread, IGame {
         m_ScriptSystem.RegisterGlobal("spawnBox", &spawnBox);
         m_ScriptSystem.RegisterGlobal("spawnPlane", &spawnPlane);
         m_ScriptSystem.RegisterGlobal("rotate", &rotate);
+        m_ScriptSystem.RegisterGlobal("resetWorld", &resetWorld);
 			}
 		}
 		

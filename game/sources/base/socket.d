@@ -1191,7 +1191,7 @@ class Socket
         {
                 sock = cast(socket_t)socket(af, type, protocol);
                 if(sock == socket_t.INVALID_SOCKET)
-                        throw new SocketException("Unable to create socket", _lasterr());
+                        throw New!SocketException("Unable to create socket", _lasterr());
                 _family = af;
         }
 
@@ -1280,7 +1280,7 @@ class Socket
                 return; // Success.
 
                 err:
-                throw new SocketException("Unable to set socket blocking", _lasterr());
+                throw New!SocketException("Unable to set socket blocking", _lasterr());
         }
 
 
@@ -1334,7 +1334,7 @@ class Socket
                                         static assert(0);
                                 }
                         }
-                        throw new SocketException("Unable to connect socket", err);
+                        throw New!SocketException("Unable to connect socket", err);
                 }
         }
 
@@ -1346,7 +1346,7 @@ class Socket
         void listen(int backlog)
         {
                 if(_SOCKET_ERROR == .listen(sock, backlog))
-                        throw new SocketException("Unable to listen on socket", _lasterr());
+                        throw New!SocketException("Unable to listen on socket", _lasterr());
         }
 
         /**
@@ -1492,7 +1492,7 @@ class Socket
          * buffer space left, send waits.
          */
         //returns number of bytes actually sent, or -1 on error
-        Select!(size_t.sizeof > 4, long, int)
+        sizediff_t
     send(const(void)[] buf, SocketFlags flags)
         {
         static if(is(typeof(MSG_NOSIGNAL)))
@@ -1504,7 +1504,7 @@ class Socket
         }
 
         /// ditto
-        Select!(size_t.sizeof > 4, long, int) send(const(void)[] buf)
+        sizediff_t send(const(void)[] buf)
         {
           static if(is(typeof(MSG_NOSIGNAL)))
           {
@@ -1519,7 +1519,7 @@ class Socket
         /**
          * Send data to a specific destination Address. If the destination address is not specified, a connection must have been made and that address is used. If the socket is blocking and there is no buffer space left, sendTo waits.
          */
-        Select!(size_t.sizeof > 4, long, int)
+        sizediff_t
     sendTo(const(void)[] buf, SocketFlags flags, Address to)
         {
         static if(is(typeof(MSG_NOSIGNAL)))
@@ -1530,7 +1530,7 @@ class Socket
         }
 
         /// ditto
-        Select!(size_t.sizeof > 4, long, int) sendTo(const(void)[] buf, Address to)
+        sizediff_t sendTo(const(void)[] buf, Address to)
         {
                 return sendTo(buf, SocketFlags.NONE, to);
         }
@@ -1538,7 +1538,7 @@ class Socket
 
         //assumes you connect()ed
         /// ditto
-        Select!(size_t.sizeof > 4, long, int) sendTo(const(void)[] buf, SocketFlags flags)
+        sizediff_t sendTo(const(void)[] buf, SocketFlags flags)
         {
           static if(is(typeof(MSG_NOSIGNAL)))
           {
@@ -1550,7 +1550,7 @@ class Socket
 
         //assumes you connect()ed
         /// ditto
-        Select!(size_t.sizeof > 4, long, int) sendTo(const(void)[] buf)
+        sizediff_t sendTo(const(void)[] buf)
         {
                 return sendTo(buf, SocketFlags.NONE);
         }
@@ -1563,7 +1563,7 @@ class Socket
          * to be received.
          */
         //returns number of bytes actually received, 0 on connection closure, or -1 on error
-    ptrdiff_t receive(void[] buf, SocketFlags flags)
+        sizediff_t receive(void[] buf, SocketFlags flags)
         {
         return buf.length
             ? .recv(sock, buf.ptr, buf.length, cast(int)flags)
@@ -1571,7 +1571,7 @@ class Socket
         }
 
         /// ditto
-        ptrdiff_t receive(void[] buf)
+        sizediff_t receive(void[] buf)
         {
                 return receive(buf, SocketFlags.NONE);
         }
@@ -1583,8 +1583,7 @@ class Socket
          * Returns: the number of bytes actually received,
          * 0 if the remote side has closed the connection, or ERROR on failure.
          */
-        Select!(size_t.sizeof > 4, long, int)
-    receiveFrom(void[] buf, SocketFlags flags, ref SmartPtr!Address from)
+        sizediff_t receiveFrom(void[] buf, SocketFlags flags, ref SmartPtr!Address from)
         {
                 if(!buf.length) //return 0 and don't think the connection closed
                         return 0;
@@ -1598,7 +1597,7 @@ class Socket
 
 
         /// ditto
-        ptrdiff_t receiveFrom(void[] buf, ref SmartPtr!Address from)
+        sizediff_t receiveFrom(void[] buf, ref SmartPtr!Address from)
         {
                 return receiveFrom(buf, SocketFlags.NONE, from);
         }
@@ -1606,8 +1605,7 @@ class Socket
 
         //assumes you connect()ed
         /// ditto
-        Select!(size_t.sizeof > 4, long, int)
-    receiveFrom(void[] buf, SocketFlags flags)
+        sizediff_t receiveFrom(void[] buf, SocketFlags flags)
         {
                 if(!buf.length) //return 0 and don't think the connection closed
                         return 0;
@@ -1619,7 +1617,7 @@ class Socket
 
         //assumes you connect()ed
         /// ditto
-        ptrdiff_t receiveFrom(void[] buf)
+        sizediff_t receiveFrom(void[] buf)
         {
                 return receiveFrom(buf, SocketFlags.NONE);
         }
@@ -1631,7 +1629,7 @@ class Socket
         {
                 socklen_t len = cast(socklen_t) result.length;
                 if(_SOCKET_ERROR == .getsockopt(sock, cast(int)level, cast(int)option, result.ptr, &len))
-                        throw new SocketException("Unable to get socket option", _lasterr());
+                        throw New!SocketException("Unable to get socket option", _lasterr());
                 return len;
         }
 
@@ -1655,7 +1653,7 @@ class Socket
         {
                 if(_SOCKET_ERROR == .setsockopt(sock, cast(int)level,
                         cast(int)option, value.ptr, cast(uint) value.length))
-                        throw new SocketException("Unable to set socket option", _lasterr());
+                        throw New!SocketException("Unable to set socket option", _lasterr());
         }
 
 
@@ -1765,7 +1763,7 @@ class Socket
                 }
 
                 if(_SOCKET_ERROR == result)
-                        throw new SocketException("Socket select error", _lasterr());
+                        throw New!SocketException("Socket select error", _lasterr());
 
                 return result;
         }

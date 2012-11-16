@@ -29,9 +29,9 @@ function pyramid()
   spawnBox(0.01,40,0.01, 1/1)
 end
 
-function rotatedChest()
+function rotatedChest(angel)
   local chestId = spawnBox(0,3,0, 1/1)
-  rotate(chestId, 1,0,0, -15)
+  rotate(chestId, 1,0,0, angel)
 end
 
 function oneChest()
@@ -51,19 +51,44 @@ function slope(angel)
 end
 
 function test1()
+  resetWorld()
   rotatedStack()
   spawnPlane(0,-1,0, 0)
 end
 
 function test2()
+  resetWorld()
   oneChest()
   slope(-30)
   spawnPlane(0,-1,0, 0)
 end
 
 function test3()
+  resetWorld()
   pyramid()
   spawnPlane(0,-1,0, 0)
+end
+
+function test4()
+  resetWorld()
+  spawnPlane(0,-1,0,0)
+  spawnBox(0,1,0,1/1)
+  spawnBox(0.01,1.6,0,1/1)
+end
+
+function test5()
+  resetWorld()
+  spawnPlane(0,-1,0,0)
+  spawnBox(0,0.5,0,1/1)
+  spawnBox(0.01,1.5,0,1/1)
+  spawnBox(-0.01,2.5,0,1/1)
+end
+
+function test6()
+  resetWorld()
+  spawnPlane(0,-1,0,0)
+  slope(-30)
+  rotatedChest(-30)
 end
 
 test3()
