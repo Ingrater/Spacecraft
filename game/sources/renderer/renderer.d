@@ -49,6 +49,12 @@ import renderer.sprite;
 import renderer.imagedata2d;
 public import renderer.internal;
 
+private struct DebugDrawLine
+{
+  Position start, end;
+  vec4 color;
+}
+
 /**
  * Renderer implementation
  * See: IRenderer for public methods
@@ -178,12 +184,6 @@ private:
     string text;
     uint font;
     DebugDrawText* next;
-  }
-
-  static struct DebugDrawLine
-  {
-    Position start, end;
-    vec4 color;
   }
 
   ReturnType!GetNewTemporaryAllocator m_FrameAllocator;	
@@ -2186,6 +2186,46 @@ public:
       self.m_DebugDrawLines ~= DebugDrawLine(start, end, color);
     }
 	}
+
+  override IDebugDrawRecorder createDebugDrawRecorder() shared
+  {
+    return New!DebugDrawRecorder(this);
+  }
+
+  override void destroyDebugDrawRecorder(IDebugDrawRecorder recorder) shared
+  {
+    Delete(recorder);
+  }
+
+  override void startDebugDrawRecording(IDebugDrawRecorder recorder) shared
+  {
+    auto recorderImpl = cast(DebugDrawRecorder)recorder;
+    assert(recorderImpl !is null);
+    synchronized(m_DebugLineLock)
+    {
+      recorderImpl.startRecording(cast(Vector!DebugDrawLine)m_DebugDrawLines);
+    }
+  }
+
+  override void stopDebugDrawRecording(IDebugDrawRecorder recorder) shared
+  {
+    auto recorderImpl = cast(DebugDrawRecorder)recorder;
+    assert(recorderImpl !is null);
+    synchronized(m_DebugLineLock)
+    {
+      recorderImpl.stopRecording( cast(Vector!DebugDrawLine)m_DebugDrawLines );
+    }
+  }
+
+  private void drawLineBatch(const(DebugDrawLine)[] data) shared
+  {
+    assert(data !is null);
+    synchronized( m_DebugLineLock )
+    {
+      auto localStorage = cast(Vector!DebugDrawLine)m_DebugDrawLines;
+      localStorage ~= data;
+    }
+  }
 	
 	override void RegisterCVars(ConfigVarsBinding* CVarStorage) shared {
 		auto self = cast(Renderer)this;
@@ -2235,4 +2275,50 @@ public:
   {
     return m_FrameAllocator;
   }
+}
+
+class DebugDrawRecorder : IDebugDrawRecorder
+{
+  private:
+    uint m_debugBufferStart = uint.max;
+    composite!(Vector!DebugDrawLine) m_recordedData;
+    shared(Renderer) m_renderer;
+
+    void startRecording(Vector!DebugDrawLine data)
+    {
+      assert(data !is null);
+      m_debugBufferStart = data.length;
+    }
+
+    void stopRecording(Vector!DebugDrawLine data)
+    {
+      assert(data !is null && m_debugBufferStart != uint.max, "recording has not been started yet");
+      uint debugBufferEnd = data.length;
+      assert(debugBufferEnd > m_debugBufferStart, "invalid recording");
+      uint numVertices = debugBufferEnd - m_debugBufferStart;
+      m_recordedData.resize(0);
+      if(numVertices > 0)
+      {
+        m_recordedData ~= data[m_debugBufferStart..debugBufferEnd];
+      }
+      m_debugBufferStart = uint.max;
+    }
+
+  public:
+    this(shared(Renderer) renderer)
+    {
+      m_recordedData = typeof(m_recordedData)();
+      m_recordedData.construct();
+      m_renderer = renderer;
+    }
+
+    ~this()
+    {
+    }
+
+    override void Replay()
+    {
+      assert(m_debugBufferStart == uint.max, "replay while recording is not possible");
+      m_renderer.drawLineBatch(m_recordedData.toArray());
+    }
 }

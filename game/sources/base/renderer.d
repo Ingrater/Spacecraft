@@ -4,8 +4,14 @@ public import base.eventlistener;
 public import base.game;
 public import base.renderproxy;
 import base.messages;
+import base.all;
 
 alias void delegate() destroyFunc;
+
+interface IDebugDrawRecorder
+{
+  void Replay();
+}
 
 interface IRenderer : IEventListener{
 	void Init(shared(IGame) game);
@@ -56,6 +62,12 @@ interface IRenderer : IEventListener{
 	void setSPS(float sps) shared;
 	
 	///Debug drawing functions
+  IDebugDrawRecorder createDebugDrawRecorder() shared;
+  void destroyDebugDrawRecorder(IDebugDrawRecorder recorder) shared;
+
+  void startDebugDrawRecording(IDebugDrawRecorder recorder) shared;
+  void stopDebugDrawRecording(IDebugDrawRecorder recorder) shared;
+
 	void drawBox(ref const(AlignedBox) box, ref const(vec4) color);
 	void drawBox(AlignedBox box, vec4 color = vec4(1.0f,0.0f,0.0f,1.0f)) shared;
 	
@@ -64,6 +76,24 @@ interface IRenderer : IEventListener{
 	
 	void freezeCamera();
 	void loadAmbientSettings(rcstring path) shared;
+}
+
+struct ScopedDebugDrawRecording
+{
+  private IDebugDrawRecorder m_recorder;
+
+  @disable this();
+
+  this(IDebugDrawRecorder recorder)
+  {
+    m_recorder = recorder;
+    g_Env.renderer.startDebugDrawRecording(recorder);
+  }
+
+  ~this()
+  {
+    g_Env.renderer.stopDebugDrawRecording(m_recorder);
+  }
 }
 
 interface IRendererFactory {
