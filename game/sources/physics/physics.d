@@ -47,6 +47,9 @@ class PhysicsSimulation
         fpctrl.enableExceptions(FloatingPointControl.severeExceptions);
       }
 
+      if(m_CVars.p_fixedTimestep > 0)
+        timeDiff = cast(float)m_CVars.p_fixedTimestep;
+
       vec3 gravity = vec3(0, -9.81, 0);
       float secondDiff = timeDiff / 1000.0f;
       foreach(size_t objNum,objA; m_simulated.toArray())

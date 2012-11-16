@@ -279,6 +279,7 @@ class GameSimulation : IGameThread, IGame {
     IRendererExtractor m_Extractor;
 
     Vector!IGameObject m_physicObjects;
+    IDebugDrawRecorder m_debugDrawRecorder;
 	
 	public:
 		this(){
@@ -295,6 +296,7 @@ class GameSimulation : IGameThread, IGame {
 
     ~this()
     {
+      g_Env.renderer.destroyDebugDrawRecorder(m_debugDrawRecorder); m_debugDrawRecorder = null;
       Delete(m_physicObjects); m_physicObjects = null;
 
       Delete(m_Physics);
@@ -355,6 +357,8 @@ class GameSimulation : IGameThread, IGame {
 				
 				RegisterScriptFunctions();
 				RegisterCVars();
+
+        m_debugDrawRecorder = g_Env.renderer.createDebugDrawRecorder();
 				
 				if (g_Env.viewModel) {
 					// Model was given on command line so create a model viewer world
@@ -515,16 +519,25 @@ class GameSimulation : IGameThread, IGame {
 
         {
           auto physicsprofile = base.profiler.Profile("physics");
-          if(m_RunPhysics || m_StepPhysics)
+          enum int subdiv = 4;
+          float physicsTimeDiff = timeDiff / cast(float)subdiv;
+          if(m_StepPhysics)
           {
-            enum int subdiv = 4;
-            float physicsTimeDiff = timeDiff / cast(float)subdiv;
+            m_StepPhysics = false;
+            auto scopedRecording = ScopedDebugDrawRecording(m_debugDrawRecorder);
+            m_Physics.Simulate(physicsTimeDiff);
+          }
+          else if(m_RunPhysics)
+          {
             for(int i=0; i<subdiv; i++)
             {
               m_Physics.Simulate(physicsTimeDiff);
             }
           }
-          m_StepPhysics = false;
+          else
+          {
+            m_debugDrawRecorder.Replay();
+          }
         }
 				
 				//Server game code
