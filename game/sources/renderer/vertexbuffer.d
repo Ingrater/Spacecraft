@@ -499,7 +499,7 @@ public:
 		//Create Vertexbuffer
 		if(m_Dynamic){
 			if(BufferSize > m_UploadedDataSize || m_VertexBufferId == 0){
-        base.logger.info("Increasing vertex buffer size to %d", BufferSize);
+        //base.logger.info("Increasing vertex buffer size to %d", BufferSize);
 				m_Renderer.addVertexBufferMemoryAmount(BufferSize - m_UploadedDataSize);
 				if(m_VertexBufferId == 0){
 					gl.GenBuffers(1, &m_VertexBufferId);

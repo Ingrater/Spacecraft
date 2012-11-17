@@ -54,7 +54,8 @@ class PhysicsSimulation
       float secondDiff = timeDiff / 1000.0f;
       foreach(size_t objNum,objA; m_simulated.toArray())
       {
-        objA.velocity += gravity * secondDiff;
+        if(m_CVars.p_gravity > 0)
+          objA.velocity += gravity * secondDiff;
         auto startPosition = objA.position;
         objA.position = startPosition + objA.velocity * secondDiff;
 
@@ -66,7 +67,7 @@ class PhysicsSimulation
 
         //information about the collision that has been found
         float timeOfImpact = float.max;
-        vec3 velocityDiffA, velocityDiffB;
+        vec3 newVelocityA, newVelocityB;
         RigidBody objB;
         for(;!query.empty();query.popFront())
         {
@@ -90,6 +91,7 @@ class PhysicsSimulation
               {
                 collisionPoint = collisionPoint + intersection.pos + intersection.end;
               }
+              collisionPoint = collisionPoint * (1.0f / cast(float)numIntersections);
 
               Ray normalFindRay = Ray.CreateFromPoints(vec3(0,0,0), collisionPoint);
               //normalFindRay.pos = normalFindRay.pos - (normalFindRay.dir * 0.01f);
@@ -203,19 +205,35 @@ class PhysicsSimulation
                       noCollisionTime = searchTime;
                     }
                   }
+                  debug 
+                  {
+                    objA.position = startPosition + objA.velocity * noCollisionTime;
+                    transform = collidingRigidBody.transformTo(objA);
+                    assert(objA.collision.intersectsFast(collidingRigidBody.collision, transform) == false);
+                  }
                   if(timeOfImpact > noCollisionTime)
                   {
                     timeOfImpact = noCollisionTime;
                     objB = collidingRigidBody;
                     //TODO real collision response
-                   // velocityDiffA = (objA.velocity * -0.2) - objA.velocity; 
-                    //velocityDiffB = vec3(0,0,0);
+                    newVelocityA = objA.velocity * -0.2;
+                    newVelocityB = vec3(0,0,0);
 
-                    /*vec3 collisionNormal = (intersectionNormalCurrent - intersectionNormalOther).normalize();
-                    float bounciness = 0.1f;
+                    /*mat4 rotation = objA.rotation.toMat4();
+
+                    vec3 collisionNormal = rotation.transformDirection((intersectionNormalOther - intersectionNormalCurrent).normalize());
+                    
+                    float bounciness = 0.4f;
                     vec3 impulseDiff = (1.0f + bounciness) * collisionNormal * ((objA.velocity - objB.velocity).dot(collisionNormal)) / ( objA.inverseMass + objB.inverseMass );
-                    velocityDiffA = -impulseDiff * objA.inverseMass;
-                    velocityDiffB = impulseDiff * objB.inverseMass;*/
+                    newVelocityA = (objA.velocity - (impulseDiff * objA.inverseMass)) * 0.99f;
+                    newVelocityB = (objB.velocity + (impulseDiff * objB.inverseMass)) * 0.99f;
+
+                    if(m_CVars.p_drawCollisionInfo > 0)
+                    {
+                      
+                      g_Env.renderer.drawArrow(objA.position + (rotation * collisionPoint), objA.position + (rotation * (collisionPoint + collisionNormal)), vec4(1.0f, 1.0f, 1.0f, 1.0f));
+                      g_Env.renderer.drawArrow(objA.position + (rotation * collisionPoint), objA.position + (rotation * (collisionPoint + impulseDiff)), vec4(0.0f, 0.0f, 0.0f, 1.0f));
+                    }*/
                   }
                 }
               }
@@ -235,8 +253,13 @@ class PhysicsSimulation
         if(objB !is null) //did we find a collision?
         {
           objA.position = startPosition + objA.velocity * timeOfImpact;
-          objA.velocity += velocityDiffA;
-          objB.velocity += velocityDiffB;
+          objA.velocity = newVelocityA;
+          objB.velocity = newVelocityB;
+        }
+        else if(numCollisions > 0)
+        {
+          static int counter = 0;
+          base.logger.info("Collision ignored because resolving intersection %d", counter++);
         }
         if(numCollisions > 0)
         {

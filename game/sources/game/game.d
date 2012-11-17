@@ -521,7 +521,14 @@ class GameSimulation : IGameThread, IGame {
           auto physicsprofile = base.profiler.Profile("physics");
           enum int subdiv = 4;
           float physicsTimeDiff = timeDiff / cast(float)subdiv;
-          if(m_StepPhysics)
+          if(m_CVars.p_doSteps > 0.0)
+          {
+            uint max = cast(uint)m_CVars.p_doSteps;
+            for(uint i=0; i<max; i++)
+              m_Physics.Simulate(physicsTimeDiff);
+            m_CVars.p_doSteps = 0.0;
+          }
+          else if(m_StepPhysics)
           {
             m_StepPhysics = false;
             auto scopedRecording = ScopedDebugDrawRecording(m_debugDrawRecorder);
@@ -928,6 +935,20 @@ class GameSimulation : IGameThread, IGame {
       }
       m_physicObjects.resize(0);
     }
+
+    /**
+     * sets the velocity of a physics object
+     */
+    void setVelocity(double id, float x, float y, float z)
+    {
+      size_t index = cast(size_t)id;
+      if(index < m_physicObjects.length)
+      {
+        auto obj = m_physicObjects[index];
+        auto rigidBody = cast(RigidBody)obj.physicsComponent();
+        rigidBody.velocity = vec3(x,y,z);
+      }
+    }
 		
 		/**
 		 * Spawns a new asteroid in the model viewer
@@ -1124,6 +1145,7 @@ class GameSimulation : IGameThread, IGame {
         m_ScriptSystem.RegisterGlobal("spawnPlane", &spawnPlane);
         m_ScriptSystem.RegisterGlobal("rotate", &rotate);
         m_ScriptSystem.RegisterGlobal("resetWorld", &resetWorld);
+        m_ScriptSystem.RegisterGlobal("setVelocity", &setVelocity);
 			}
 		}
 		

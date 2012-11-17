@@ -6,11 +6,10 @@ cvars.p_drawCollisionInfo = 0
 --spawnBox(-1.1,2,0, 1/0.1)
 --spawnBox(1.1,2,0, 1/0.1)
 
-function stack4()
-  spawnBox(0, 4, 0, 1/1)
-  spawnBox(0.01, 7, 0.01, 1/1)
-  spawnBox(0., 10, 0, 1/1)
-  spawnBox(0.01, 13, 0.01, 1/1)
+function stack(height)
+  for i=1,height do
+    spawnBox(0, 4 + i * 3, 0.01 * i, 1/1)
+  end
 end
 
 function diagonalStack()
@@ -36,6 +35,11 @@ end
 
 function oneChest()
    spawnBox(0,3,0, 1/1)
+end
+
+function throwChest()
+  local boxId = spawnBox(0,3,10, 1/10)
+  setVelocity(boxId, 0,0,-20)
 end
 
 function rotatedStack()
@@ -88,7 +92,23 @@ function test6()
   resetWorld()
   spawnPlane(0,-1,0,0)
   slope(-30)
-  rotatedChest(-30)
+  local chestId = spawnBox(0,11,-10, 1/1)
+  rotate(chestId, 1,0,0, -30)
+end
+
+function test7()
+  cvars.p_gravity = 0
+  resetWorld()
+  spawnPlane(0,-1,0,0)
+  spawnBox(0,3,0, 1/1)
+  local boxId = spawnBox(0, 3.01, 3, 1/1)
+  setVelocity(boxId, 0,0,-10)
+end
+
+function test8()
+  resetWorld()
+  spawnPlane(0,-1,0,0)
+  stack(2)
 end
 
 test3()

@@ -2322,7 +2322,7 @@ class DebugDrawRecorder : IDebugDrawRecorder
     {
       assert(data !is null && m_debugBufferStart != uint.max, "recording has not been started yet");
       uint debugBufferEnd = data.length;
-      assert(debugBufferEnd > m_debugBufferStart, "invalid recording");
+      assert(debugBufferEnd >= m_debugBufferStart, "invalid recording");
       uint numVertices = debugBufferEnd - m_debugBufferStart;
       m_recordedData.resize(0);
       if(numVertices > 0)
