@@ -609,12 +609,6 @@ class GameSimulation : IGameThread, IGame {
 						auto profile = base.profiler.Profile("camera update");
 						m_FreeCamera.update(timeDiff);
 					}
-
-          //collect garbage
-          /*{
-            auto profile = base.profiler.Profile("GC");
-            core.memory.GC.collect();
-          }*/
 					
 					//This should not be removed as soon as the network is working
 					{

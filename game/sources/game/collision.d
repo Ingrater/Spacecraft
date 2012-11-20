@@ -93,11 +93,10 @@ public:
 		
 		foreach(size_t i,ref face;m_Faces)
     {			
-      for(size_t j=0; j<3; j++)
-      {
-			  face.v[j] = vertices[mesh.faces[i].indices[j]];
-			}
-      face.plane = Plane(face.v[0], face.v[1], face.v[2]);
+			face.v0 = vertices[mesh.faces[i].indices[0]];
+      face.v1 = vertices[mesh.faces[i].indices[1]];
+      face.v2 = vertices[mesh.faces[i].indices[2]];
+      face.plane = Plane(face.v0, face.v1, face.v2);
 		}
 	}
 
@@ -224,9 +223,9 @@ public:
       Position v1 = position + curFace.v[1];
       Position v2 = position + curFace.v[2];
 			
-			renderer.drawLine(v0, v1, color);
-			renderer.drawLine(v0, v2, color);
-			renderer.drawLine(v1, v2, color);
+			renderer.drawLine(Position(curFace.v0),Position(curFace.v1),color);
+			renderer.drawLine(Position(curFace.v0),Position(curFace.v2),color);
+			renderer.drawLine(Position(curFace.v1),Position(curFace.v2),color);
 		}
 	}
 
@@ -259,15 +258,32 @@ public:
 		vec3 min = vec3(float.max);
 		vec3 max = vec3(-float.max);
 		foreach(ref f;m_Faces){
-			foreach(ref v;f.v){
-				if(v.x < min.x) min.x = v.x;
-				if(v.y < min.y) min.y = v.y;
-				if(v.z < min.z) min.z = v.z;
+			auto v = f.v0;
+			if(v.x < min.x) min.x = v.x;
+			if(v.y < min.y) min.y = v.y;
+			if(v.z < min.z) min.z = v.z;
 				
-				if(v.x > max.x) max.x = v.x;
-				if(v.y > max.y) max.y = v.y;
-				if(v.z > max.z) max.z = v.z;
-			}
+			if(v.x > max.x) max.x = v.x;
+			if(v.y > max.y) max.y = v.y;
+			if(v.z > max.z) max.z = v.z;
+
+			v = f.v1;
+			if(v.x < min.x) min.x = v.x;
+			if(v.y < min.y) min.y = v.y;
+			if(v.z < min.z) min.z = v.z;
+
+			if(v.x > max.x) max.x = v.x;
+			if(v.y > max.y) max.y = v.y;
+			if(v.z > max.z) max.z = v.z;
+
+			v = f.v2;
+			if(v.x < min.x) min.x = v.x;
+			if(v.y < min.y) min.y = v.y;
+			if(v.z < min.z) min.z = v.z;
+
+			if(v.x > max.x) max.x = v.x;
+			if(v.y > max.y) max.y = v.y;
+			if(v.z > max.z) max.z = v.z;
 		}
 		return AlignedBox(min,max);
 	}

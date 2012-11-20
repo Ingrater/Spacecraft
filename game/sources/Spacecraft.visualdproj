@@ -87,7 +87,7 @@
   <deffile />
   <resfile />
   <exefile>..\data\$(ProjectName).exe</exefile>
-  <useStdLibPath>0</useStdLibPath>
+  <useStdLibPath>1</useStdLibPath>
   <additionalOptions>-defaultlib=phobosnogcd -debuglib=phobosnogcd</additionalOptions>
   <preBuildCommand />
   <postBuildCommand />
