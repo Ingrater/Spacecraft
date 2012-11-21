@@ -144,6 +144,7 @@ class PhysicsSimulation
                 float searchPoint = 0.0f;
                 float searchDelta = 1.0f;
                 float stillSearchingMult = 2.0f;
+                float noIntersectionTime = 0.0f;
                 for(int i=0; i<10; i++)
                 {
                   searchPoint += searchDelta;
@@ -164,6 +165,7 @@ class PhysicsSimulation
                   else
                   {
                     //not intersecting anymore
+                    noIntersectionTime = searchPoint;
                     stillSearchingMult = 0.5f;
                     if(searchDelta < 0.0f)
                     {
@@ -175,12 +177,14 @@ class PhysicsSimulation
                     }
                   }
                 }
+                if(noIntersectionTime == 0.0f)
+                  noIntersectionTime = searchPoint;
                 float inverseTotalMass = 1.0f / (objA.inverseMass + collidingRigidBody.inverseMass);
                 float ratioA = inverseTotalMass * objA.inverseMass; //how much the first object will be affected by the intersection correction
                 float ratioB = inverseTotalMass * collidingRigidBody.inverseMass; //how much the second object will be affected by the intersection correction
-                objA.position = startPosition + resolveDirection * (searchPoint * ratioA);
+                objA.position = startPosition + resolveDirection * (noIntersectionTime * ratioA);
                 startPosition = objA.position;
-                collidingRigidBody.position = collidingRigidBody.position + resolveDirection * (-searchPoint * ratioB);
+                collidingRigidBody.position = collidingRigidBody.position + resolveDirection * (-noIntersectionTime * ratioB);
 
                 objB = null;
                 timeOfImpact = 0.0f;

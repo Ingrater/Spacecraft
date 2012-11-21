@@ -219,13 +219,10 @@ public:
 		mat4 transformation = rotation.toMat4();
     foreach(ref f;m_Faces){
 			Triangle curFace = f.transform(transformation);
-      Position v0 = position + curFace.v[0];
-      Position v1 = position + curFace.v[1];
-      Position v2 = position + curFace.v[2];
 			
-			renderer.drawLine(Position(curFace.v0),Position(curFace.v1),color);
-			renderer.drawLine(Position(curFace.v0),Position(curFace.v2),color);
-			renderer.drawLine(Position(curFace.v1),Position(curFace.v2),color);
+			renderer.drawLine(position + curFace.v0,position + curFace.v1,color);
+			renderer.drawLine(position + curFace.v0,position + curFace.v2,color);
+			renderer.drawLine(position + curFace.v1,position + curFace.v2,color);
 		}
 	}
 
@@ -240,9 +237,9 @@ public:
   {
     foreach(ref f;m_Faces){
 			Triangle curFace = f.transform(transform);
-      Position v0 = Position(curFace.v[0]);
-      Position v1 = Position(curFace.v[1]);
-      Position v2 = Position(curFace.v[2]);
+      Position v0 = Position(curFace.v0);
+      Position v1 = Position(curFace.v1);
+      Position v2 = Position(curFace.v2);
 
 			renderer.drawLine(v0, v1, color);
 			renderer.drawLine(v0, v2, color);
