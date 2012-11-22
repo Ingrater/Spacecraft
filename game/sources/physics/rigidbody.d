@@ -12,6 +12,7 @@ class RigidBody
     Position position;
     Quaternion rotation;
     vec3 velocity;
+    float remainingTime;
 
     @property float inverseMass() const
     {

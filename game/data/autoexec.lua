@@ -1,10 +1,15 @@
-cvars.p_drawCollisionGeometry = 0
-cvars.p_drawCollisionInfo = 0
+cvars.p_drawCollisionGeometry = 1
+cvars.p_drawCollisionInfo = 1
+cvars.p_iterations = 2
 --spawnBox(0,0,0, 1/0.1)
 --spawnBox(2.1,0,0, 1/0.1)
 --spawnBox(-2.1,0,0, 1/0.1)
 --spawnBox(-1.1,2,0, 1/0.1)
 --spawnBox(1.1,2,0, 1/0.1)
+
+function plane()
+  spawnPlane(0,-1,0, 0)
+end
 
 function stack(height)
   for i=1,height do
@@ -111,6 +116,6 @@ function test8()
   stack(2)
 end
 
-test3()
+test7()
 
 

@@ -519,7 +519,7 @@ class GameSimulation : IGameThread, IGame {
 
         {
           auto physicsprofile = base.profiler.Profile("physics");
-          enum int subdiv = 4;
+          enum int subdiv = 1;
           float physicsTimeDiff = timeDiff / cast(float)subdiv;
           if(m_CVars.p_doSteps > 0.0)
           {

@@ -200,7 +200,7 @@ public:
 				if(pos < rayPos && pos >= 0.0f){
           result = true;
 					rayPos = pos;
-					normal = lhTri.normal;
+					normal = lhTri.plane.normal;
 				}
 			}
 		}
