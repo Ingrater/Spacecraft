@@ -214,6 +214,24 @@ private:
 	  Lua.pushstring(L, toCString(errorMessage));
 	  return 1;
 	}
+
+  private bool isUserDataWithTypename(int index, const(char)[] typename)
+  {
+		int top = Lua.gettop(c.L);
+		scope(exit) Lua.settop(c.L,top);
+
+    mixin(stackCString("typename", "cstr"));
+    Lua.getfield(c.L, Lua.REGISTRYINDEX, cstr.ptr);
+    assert(Lua.type(c.L, -1) != Lua.Types.NONE && Lua.type(c.L, -1) != Lua.Types.NIL, "type does not exist in registry");
+    if( Lua.getmetatable(c.L, index) == 0)
+      return false;
+    return (Lua.equal(c.L, -1, -2) != 0);
+  }
+
+  private bool isUserDataType(T)(int index)
+  {
+    return isUserDataWithTypename(index, T.stringof);
+  }
 	
 protected:
 	override void RegisterGlobalStart(string name){
@@ -280,4 +298,86 @@ public:
 	override IScriptContext context(){
 		return c;
 	}
+
+  override size_t autocomplete(const(char)[] command, rcstring[] buffers)
+  {
+    sizediff_t scopeEndIndex = command.indexOf('.');
+    if(scopeEndIndex == 0) //invalid syntax
+      return 0;
+
+    const(char)[] cmdEnd = command[scopeEndIndex+1..$];
+    const(char)[] remainingScope = command;
+
+    //make sure we clean the lua c-api scope correctly
+    int top = Lua.gettop(c.L);
+    scope(exit) Lua.settop(c.L, top);
+
+
+    int tableIndex = Lua.GLOBALSINDEX;
+
+    while(scopeEndIndex > 0)
+    {
+      const(char)[] scopeName = remainingScope[0..scopeEndIndex];
+      Lua.pushlstring(c.L, scopeName.ptr, scopeName.length);
+      Lua.gettable(c.L, tableIndex);
+      auto type = Lua.type(c.L, -1);
+      //is there no such entry in the current table?
+      if(type == Lua.Types.NONE || type == Lua.Types.NIL)
+        return 0;
+
+      tableIndex = Lua.gettop(c.L);
+      remainingScope = remainingScope[scopeEndIndex+1..$];
+      scopeEndIndex = remainingScope.indexOf('.');
+      if(scopeEndIndex > 0)
+        cmdEnd = remainingScope[scopeEndIndex+1..$];
+      else
+        cmdEnd = remainingScope;
+    }
+
+    int scopeType = Lua.type(c.L, tableIndex);
+    if(scopeType == Lua.Types.TABLE)
+    {
+      Lua.pushnil(c.L);
+      size_t i=0;
+      while(Lua.next(c.L, tableIndex) && i < buffers.length)
+      {
+        Lua.pushvalue(c.L, -2); //make a copy of the key
+        size_t len = 0;
+        const(char)* keyptr = Lua.tolstring(c.L, -1, &len); //convert copy to string
+        auto key = keyptr[0..len];
+        if(cmdEnd.length == 0)
+        {
+          buffers[i++] = format("%s%s", command, key);
+        }
+        else if(startsWith(key, cmdEnd, CaseSensitive.no))
+        {
+          buffers[i++] = format("%s%s", command[0..$-cmdEnd.length], key);
+        }
+        Lua.pop(c.L, 2); //pop value and copy of key
+      }
+      Lua.pop(c.L, 1); //pop key
+      return i;
+    }
+    else if(scopeType == Lua.Types.USERDATA)
+    {
+      if(isUserDataType!ConfigVarsBinding(tableIndex))
+      {
+        size_t i=0;
+        ConfigVarsBinding* cvars = cast(ConfigVarsBinding*)Lua.touserdata(c.L, tableIndex);
+        foreach(string key, double* value; cvars.cvars)
+        {
+          if(cmdEnd.length == 0)
+          {
+            buffers[i++] = format("%s%s", command, key);
+          }
+          else if(startsWith(key, cmdEnd, CaseSensitive.no))
+          {
+            buffers[i++] = format("%s%s", command[0..$-cmdEnd.length], key);
+          }
+        }
+        return i;
+      }
+    }
+    return 0;
+  }
 }

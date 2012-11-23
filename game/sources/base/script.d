@@ -73,6 +73,15 @@ public:
 		RegisterGlobalEnd();
 		return inst;
 	}
+
+  /**
+   * tries to autocomplete a given command
+   * Params:
+   *  command = the command to auto complete
+   *  buffers = a preallocated array of rcstrings which will contain the results of the autocompletion
+   * Returns: The number of results found and written to buffers
+   */
+  size_t autocomplete(const(char)[] command, rcstring[] buffers);
 }
 
 enum Bind : ushort {
@@ -398,7 +407,7 @@ struct ConfigVarsBinding {
 private:
 	IScriptContext c;
 
-	Hashmap!(string, double*, StringHashPolicy) variables;
+  Hashmap!(string, double*, StringHashPolicy) variables;
 	
 	/**
 	 * creates a new lua usderdata and pushes it onto the stack
@@ -448,6 +457,9 @@ private:
 	}
 
 public:
+
+  auto cvars() { return variables; } //TODO make const correct
+
 	void registerVariable(string name, ref double value){
 		variables[name] = &value;
 	}

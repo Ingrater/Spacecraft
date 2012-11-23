@@ -97,6 +97,23 @@ class GameSimulation : IGameThread, IGame {
 								case Keys.PAGEDOWN:
 									m_Console.scrollDown();
 									break;
+                case Keys.UP:
+                  m_Console.prevCommand();
+                  break;
+                case Keys.DOWN:
+                  m_Console.nextCommand();
+                  break;
+                case Keys.ESCAPE:
+                  m_Console.abort();
+                  break;
+                case Keys.SPACE:
+                  if(mod & ModKeys.LCTRL)
+                  {
+                    m_Console.autocomplete();
+                    break;
+                  }
+                  else
+                    goto default;
 								default:
 									if(unicode != 0)
 										m_Console.charIn(unicode);
