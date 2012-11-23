@@ -135,7 +135,7 @@ public:
 				result = true;
 				if(pos < rayPos){
 					rayPos = pos;
-					normal = lhTri.normal;
+					normal = lhTri.plane.normal;
 				}
 			}
 		}
