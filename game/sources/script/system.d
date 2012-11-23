@@ -366,6 +366,8 @@ public:
         ConfigVarsBinding* cvars = cast(ConfigVarsBinding*)Lua.touserdata(c.L, tableIndex);
         foreach(string key, double* value; cvars.cvars)
         {
+          if(i >= buffers.length)
+            return i;
           if(cmdEnd.length == 0)
           {
             buffers[i++] = format("%s%s", command, key);
