@@ -5,6 +5,7 @@ import thBase.metatools;
 import base.renderer;
 import core.stdc.string;
 import core.refcounted;
+import thBase.traits;
 
 interface IRenderable {
 	/**
@@ -52,6 +53,16 @@ interface IRendererExtractor {
    * Tells the extractor to stop
    */
   void stop();
+
+  /**
+   * duplicates an array into the internal buffer
+   */
+  final T[] duplicate(T)(T[] ar)
+  {
+    StripModifier!T[] result = (cast(StripModifier!T*)AllocateMemory(T.sizeof * ar.length))[0..ar.length];
+    uninitializedCopy(result, ar);
+    return cast(T[])result;
+  }
 }
 
 abstract class IRenderProxy : RefCounted {

@@ -488,7 +488,7 @@ public:
           obj.info.type = ObjectInfoText.TYPE;
           obj.font = cur.font;
           obj.color = cur.textColor;
-          obj.text = cur.text;
+          obj.text = extractor.duplicate(cur.text);
           obj.pos = cur.textPos;
           extractor.addObjectInfo(&(*obj).info);
         }
@@ -496,10 +496,10 @@ public:
         {
           auto obj = cast(ObjectInfoTextWorldspace*)extractor.CreateObjectInfo(ObjectInfoTextWorldspace.sizeof);
           *obj = ObjectInfoTextWorldspace.init;
-          obj.info.type = ObjectInfoText.TYPE;
+          obj.info.type = ObjectInfoTextWorldspace.TYPE;
           obj.font = cur.font;
           obj.color = cur.textColor;
-          obj.text = cur.text;
+          obj.text = extractor.duplicate(cur.text);
           obj.pos = cur.worldPos;
           extractor.addObjectInfo(&(*obj).info);
         }
@@ -1737,11 +1737,11 @@ public:
               screenPos = screenPos * (1.0f / screenPos.w);
               if(screenPos.x > -1.0f && screenPos.x < 1.0f &&
                  screenPos.y > -1.0f && screenPos.y < 1.0f &&
-                 screenPos.z < 0.0f)
+                 clipSpace.z < 0.0f)
               { 
                 DrawText(Font.GetFont(info.font), 
                          vec2((screenPos.x * 0.5f + 0.5f) * m_Width, 
-                              (screenPos.y * 0.5f + 0.5f) * m_Height),
+                              (screenPos.y * -0.5f + 0.5f) * m_Height),
                          info.color, hudGroup, m_FontBuffer, info.text);
               }
             }
