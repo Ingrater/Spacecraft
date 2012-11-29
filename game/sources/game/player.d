@@ -667,6 +667,14 @@ class Player : HitableGameObject, ISerializeable, IControllable {
 		auto game = cast(GameSimulation) m_Game;
 		game.hud.showScore(pressed);
 	}
+
+  enum TeamRelation
+  {
+    Friend,
+    Enemy,
+    Neutral,
+    All
+  }
 	
 	void select(){
 		auto viewDir = orientation()[2].normalize();
@@ -677,6 +685,10 @@ class Player : HitableGameObject, ISerializeable, IControllable {
 		foreach(entity; m_Game.rules.client.hitables){
 			vec3 toEntityDir = (entity.position - this.position).normalize();
 			float proj = viewDir.dot(toEntityDir);
+      if(m_Game.cvars.debugAiming > 0.0)
+      {
+        g_Env.renderer.DrawTextWorldspace(0, entity.position, vec4(1.0f, 1.0f, 1.0f, 1.0f), "%f", proj);
+      }
 			if (proj > bestProj){
 				bestProj = proj;
 				bestEntity = entity;

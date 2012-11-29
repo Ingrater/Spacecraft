@@ -128,7 +128,7 @@ void client_main(){
 }
 
 void append_to_console(string msg) {
-	writefln(msg);
+	writefln("%s", msg);
 }
 
 

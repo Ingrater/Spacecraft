@@ -275,7 +275,8 @@ enum ExtractTypePublic : uint {
 	ORIENTED_SPRITE = 9,
 	FIXED_SPRITE = 11,
   RCTEXT = 12,
-  DEBUG_LINE = 13
+  DEBUG_LINE = 13,
+  TEXT_WORLDSPACE = 14
 }
 
 enum HudTarget : uint {
@@ -291,6 +292,16 @@ struct ObjectInfoText {
 	vec2 pos;
 	string text;
 	HudTarget target;
+}
+
+struct ObjectInfoTextWorldspace
+{
+  enum ExtractTypePublic TYPE = ExtractTypePublic.TEXT_WORLDSPACE;
+  ObjectInfo info;
+  uint font;
+  vec4 color;
+  Position pos;
+  string text;
 }
 
 struct ObjectInfoRCText {

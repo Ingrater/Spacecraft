@@ -102,6 +102,9 @@ class GameSimulation : IGameThread, IGame {
                 case Keys.ESCAPE:
                   m_Console.abort();
                   break;
+                case Keys.TAB:
+                  m_Console.useAutocompleteSuggestion();
+                  break;
                 case Keys.SPACE:
                   if(mod & ModKeys.LCTRL)
                   {
@@ -1029,4 +1032,9 @@ class GameSimulation : IGameThread, IGame {
 			if (g_Env.renderer)
 				g_Env.renderer.RegisterCVars(m_CVarsStorage);
 		}
+
+    @property CVars cvars()
+    {
+      return m_CVars;
+    }
 }

@@ -73,6 +73,8 @@ interface IRenderer : IEventListener{
 	
 	void drawLine(ref const Position start, ref const Position end, ref const vec4 color);
 	void drawLine(Position start, Position end, vec4 color = vec4(1.0f,0.0f,0.0f,1.0f)) shared;
+
+  void DrawTextWorldspace(uint font, Position pos, vec4 color, const(char)[] fmt, ...) shared;
 	
 	void freezeCamera();
 	void loadAmbientSettings(rcstring path) shared;

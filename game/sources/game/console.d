@@ -236,12 +236,7 @@ public:
 	void execute(){
     if(m_numAutocompletes != 0)
     {
-      m_InputBuffer.resize(0);
-      foreach(char c; m_autocompleteBuffer[m_selectedAutocomplete][])
-      {
-        m_InputBuffer ~= c;
-      }
-      m_numAutocompletes = 0;
+      useAutocompleteSuggestion();
     }
     else
     {
@@ -351,5 +346,18 @@ public:
   void abort()
   {
     m_numAutocompletes = 0;
+  }
+
+  void useAutocompleteSuggestion()
+  {
+    if(m_numAutocompletes > 0)
+    {
+      m_InputBuffer.resize(0);
+      foreach(char c; m_autocompleteBuffer[m_selectedAutocomplete][])
+      {
+        m_InputBuffer ~= c;
+      }
+      m_numAutocompletes = 0;
+    }
   }
 }

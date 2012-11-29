@@ -179,8 +179,17 @@ private:
 
   static struct DebugDrawText
   {
+    enum Type {
+      ScreenSpace,
+      WorldSpace
+    }
+    Type type;
     vec4 textColor;
-    vec2 textPos;
+    union
+    {
+      vec2 textPos;
+      Position worldPos;
+    }
     string text;
     uint font;
     DebugDrawText* next;
@@ -472,14 +481,28 @@ public:
 
       for(auto cur = m_FirstDebugDraw; cur !is null; cur = cur.next)
       {
-        auto obj = cast(ObjectInfoText*)extractor.CreateObjectInfo(ObjectInfoText.sizeof);
-        *obj = ObjectInfoText.init;
-        obj.info.type = ObjectInfoText.TYPE;
-        obj.font = cur.font;
-        obj.color = cur.textColor;
-        obj.text = cur.text;
-        obj.pos = cur.textPos;
-        extractor.addObjectInfo(&(*obj).info);
+        if(cur.type == DebugDrawText.Type.ScreenSpace)
+        {
+          auto obj = cast(ObjectInfoText*)extractor.CreateObjectInfo(ObjectInfoText.sizeof);
+          *obj = ObjectInfoText.init;
+          obj.info.type = ObjectInfoText.TYPE;
+          obj.font = cur.font;
+          obj.color = cur.textColor;
+          obj.text = cur.text;
+          obj.pos = cur.textPos;
+          extractor.addObjectInfo(&(*obj).info);
+        }
+        else
+        {
+          auto obj = cast(ObjectInfoTextWorldspace*)extractor.CreateObjectInfo(ObjectInfoTextWorldspace.sizeof);
+          *obj = ObjectInfoTextWorldspace.init;
+          obj.info.type = ObjectInfoText.TYPE;
+          obj.font = cur.font;
+          obj.color = cur.textColor;
+          obj.text = cur.text;
+          obj.pos = cur.worldPos;
+          extractor.addObjectInfo(&(*obj).info);
+        }
       }
       m_FirstDebugDraw = null;
       m_LastDebugDraw = null;
@@ -569,17 +592,18 @@ public:
       DebugDrawText* cmd = AllocatorNew!DebugDrawText(self.m_DebugDrawAllocator);
       if(self.m_FirstDebugDraw is null)
       {
-        cmd = self.m_FirstDebugDraw;
+        self.m_FirstDebugDraw = cmd;
       }
       if(self.m_LastDebugDraw is null)
       {
-        cmd = self.m_LastDebugDraw;
+        self.m_LastDebugDraw = cmd;
       }
       else
       {
         self.m_LastDebugDraw.next = cmd;
         self.m_LastDebugDraw = cmd;
       }
+      cmd.type = DebugDrawText.Type.ScreenSpace;
       cmd.textPos = pPos;
       cmd.textColor = pColor;
       cmd.font = pFont;
@@ -626,6 +650,34 @@ public:
 	override void DrawText(uint pFont, vec2 pPos, const(char)[] fmt, ...) {
 		this.DrawText(pFont, pPos, vec4(1.0f,1.0f,1.0f,1.0f), fmt, _arguments, _argptr);
 	}
+
+  override void DrawTextWorldspace(uint font, Position pos, vec4 color, const(char)[] fmt, ...) shared
+  {
+    auto self = cast(Renderer)this;
+    synchronized(self.m_DebugTextLock)
+    {
+      DebugDrawText* cmd = AllocatorNew!DebugDrawText(self.m_DebugDrawAllocator);
+      if(self.m_FirstDebugDraw is null)
+      {
+        self.m_FirstDebugDraw = cmd;
+      }
+      if(self.m_LastDebugDraw is null)
+      {
+        self.m_LastDebugDraw = cmd;
+      }
+      else
+      {
+        self.m_LastDebugDraw.next = cmd;
+        self.m_LastDebugDraw = cmd;
+      }
+      cmd.type = DebugDrawText.Type.WorldSpace;
+      cmd.worldPos = pos;
+      cmd.textColor = color;
+      cmd.font = font;
+      cmd.text = ""; //in case of exception during formatting
+      cmd.text = formatDoBufferAllocator(self.m_DebugDrawAllocator, fmt, _arguments, _argptr);
+    }
+  }
 
   override void DrawRect(vec2 pos, float width, float height, vec4 color)
   {
@@ -1676,6 +1728,24 @@ public:
 							DrawText(Font.GetFont(info.font), info.pos, info.color, group, m_FontBuffer, info.text);
 						}
 						break;
+          case ExtractType.TEXT_WORLDSPACE:
+            {
+              ObjectInfoTextWorldspace* info = cast(ObjectInfoTextWorldspace*)cur;
+              vec3 worldPos = info.pos - m_FrameOrigin;
+              auto clipSpace = m_ViewMatrix.Get() * worldPos;
+              vec4 screenPos = m_ProjectionMatrix.Get() * vec4(clipSpace, 1.0f);
+              screenPos = screenPos * (1.0f / screenPos.w);
+              if(screenPos.x > -1.0f && screenPos.x < 1.0f &&
+                 screenPos.y > -1.0f && screenPos.y < 1.0f &&
+                 screenPos.z < 0.0f)
+              { 
+                DrawText(Font.GetFont(info.font), 
+                         vec2((screenPos.x * 0.5f + 0.5f) * m_Width, 
+                              (screenPos.y * 0.5f + 0.5f) * m_Height),
+                         info.color, hudGroup, m_FontBuffer, info.text);
+              }
+            }
+            break;
           case ExtractType.RCTEXT:
             {
               ObjectInfoRCText* rctextInfo = cast(ObjectInfoRCText*)cur;
