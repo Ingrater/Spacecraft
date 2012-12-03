@@ -678,12 +678,14 @@ class Player : HitableGameObject, ISerializeable, IControllable {
   }
 	
 	void select(){
-		auto viewDir = orientation()[2].normalize();
+		auto viewDir = -orientation()[2].normalize();
 		
-		IGameObject bestEntity;
+		IHitable bestEntity;
 		float bestProj = -1;
 		
 		foreach(entity; m_Game.rules.client.hitables){
+      if( m_Game.rules.client.getRelation(m_EntityId, entity.entityId) != ICommonRules.Relation.Enemy )
+        continue;
 			vec3 toEntityDir = (entity.position - this.position).normalize();
 			float proj = viewDir.dot(toEntityDir);
       if(m_Game.cvars.debugAiming > 0.0)
@@ -696,11 +698,8 @@ class Player : HitableGameObject, ISerializeable, IControllable {
 			}
 		}
 		
-		float angle = acos(bestProj) / PI * 180;
-		if (angle < 45)
-			m_Selected = cast(IHitable) bestEntity;
-		else
-			m_Selected = null;
+    if(bestEntity !is null)
+      m_Selected = bestEntity;
 	}
 	
 	void toggleFirstPerson(){

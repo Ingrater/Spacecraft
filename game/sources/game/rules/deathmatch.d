@@ -10,7 +10,7 @@ import thBase.scoped;
 
 import thBase.logging;
 
-class DeathmatchRulesBase : RulesBase, ISerializeable {
+abstract class DeathmatchRulesBase : RulesBase, ISerializeable {
 	
 	private static {
 		const float maxRoundTime = 15 * 60;
@@ -148,6 +148,26 @@ class ServerRules : IServerRules {
 		logInfo("game: starting...");
 		loadLevel(g_Env.level);
 	}
+
+  override Relation getRelation(EntityId ent1, EntityId ent2)
+  {
+    HitableGameObject obj1,obj2;
+    m_Hitables.ifExists(ent1,(ref obj){ obj1 = obj;});
+    m_Hitables.ifExists(ent2,(ref obj){ obj2 = obj;});
+    if(obj1 is null || obj2 is null)
+      return Relation.Unkown;
+    if(obj1 is obj2)
+      return Relation.Friend;
+    if(obj1.team < 0 || obj2.team < 0)
+      return Relation.Neutral;
+    if(obj1.team == obj2.team)
+    {
+      if(obj1.team == 0)
+        return Relation.Enemy;
+      return Relation.Friend;
+    }
+    return Relation.Enemy;
+  }
 	
 	override void onUpdate(float timeDiff){
 		float dt_sec = timeDiff / 1_000;
@@ -578,7 +598,26 @@ class ClientRules : IClientRules {
 	float roundTimeLeft(){
 		return relay.maxRoundTime - roundTime;
 	}
-	
+
+  override Relation getRelation(EntityId ent1, EntityId ent2)
+  {
+    HitableGameObject obj1,obj2;
+    m_Hitables.ifExists(ent1,(ref obj){ obj1 = obj;});
+    m_Hitables.ifExists(ent2,(ref obj){ obj2 = obj;});
+    if(obj1 is null || obj2 is null)
+      return Relation.Unkown;
+    if(obj1 is obj2)
+      return Relation.Friend;
+    if(obj1.team < 0 || obj2.team < 0)
+      return Relation.Neutral;
+    if(obj1.team == obj2.team)
+    {
+      if(obj1.team == 0)
+        return Relation.Enemy;
+      return Relation.Friend;
+    }
+    return Relation.Enemy;
+  }
 	
 	//
 	// Lua functions to initialize the client

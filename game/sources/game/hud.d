@@ -191,16 +191,6 @@ public:
 		
 		auto center2d = transformToScreen(Position(center3d), projectionMatrix, currentDepth);
 		
-		/+
-		if(depth2d > 0){
-			auto pos = transformToScreen(target.position, projectionMatrix, currentDepth);
-			rect(pos + vec2(-5, -5), vec4(1, 0, 1, 0.5), 10, 10, HudTarget.SCREEN);
-			rect(center2d + vec2(-5, -5), vec4(1, 0, 0, 0.25), 10, 10, HudTarget.SCREEN);
-			foreach(p; points2d)
-				rect(p + vec2(-5, -5), vec4(0, 1, 0, 0.25), 10, 10, HudTarget.SCREEN);
-		}
-		+/
-		
 		if (depth2d > 0 && (center2d.x > 0 && center2d.x < winWidth && center2d.y > 0 && center2d.y < winHeight)) {
 			// Player sees the center, draw the target markers and aiming position on
 			// the screen.
@@ -249,7 +239,7 @@ public:
 			auto dist = center2d - screenCenter;
 			auto angle = (depth2d > 0) ? atan2(dist.y, dist.x) : atan2(-dist.y, -dist.x);
 			
-			void drawArraow(float distFromScreenCenter, vec4 color, vec2[] vertecies){
+			void drawArrow(float distFromScreenCenter, vec4 color, vec2[] vertecies){
 				// Translate and rotate the vertecies
 				auto s = sin(angle), c = cos(angle);
 				foreach(ref v; vertecies){
@@ -263,9 +253,13 @@ public:
 			}
 			
 			auto arrowColor = teamColor;
-			drawArraow(200, arrowColor, [vec2(0, -10), vec2(4, -10), vec2(4, 0), vec2(8, 0), vec2(0, 10), vec2(4, 10)]);
-			drawArraow(210, arrowColor, [vec2(0, -10), vec2(4, -10), vec2(4, 0), vec2(8, 0), vec2(0, 10), vec2(4, 10)]);
-			//shapeAt(pos + vec2(110, 0), color, [vec2(0, -10), vec2(4, -10), vec2(4, 0), vec2(8, 0), vec2(0, 10), vec2(4, 10)], HudTarget.SCREEN);
+      vec2[6] arrowData;
+      arrowData[0] = vec2(0, -10); arrowData[1] = vec2(4, -10); arrowData[2] = vec2(4, 0);
+      arrowData[3] = vec2(8, 0); arrowData[4] = vec2(0, 10); arrowData[5] = vec2(4, 10);
+			drawArrow(200, arrowColor, arrowData);
+      arrowData[0] = vec2(0, -10); arrowData[1] = vec2(4, -10); arrowData[2] = vec2(4, 0);
+      arrowData[3] = vec2(8, 0); arrowData[4] = vec2(0, 10); arrowData[5] = vec2(4, 10);
+			drawArrow(210, arrowColor, arrowData);
 		}
 	}
 	
@@ -288,18 +282,20 @@ public:
 	}
 	
 	private void drawTargetMarker(vec2 pos, vec4 color, HudTarget target){
-		//rect(pos + vec2(-20, -20), vec4(0, 1, 1, 0.25), 40, 40, HudTarget.SCREEN);
+    vec2[4] axis;
+    axis[0] = vec2(1.0f, 1.0f);
+    axis[1] = vec2(-1.0f, 1.0f);
+    axis[2] = vec2(-1.0f, -1.0f);
+    axis[3] = vec2(1.0f, -1.0f);
 		
-		foreach(axis; [[1.0f, 1.0f], [-1.0f, 1.0f], [-1.0f, -1.0f], [1.0f, -1.0f]]){
-			vec2[4] points = [vec2(10, 10), vec2(20, 20), vec2(10, 10), vec2(20, 20)];
-			points[0] = (points[0] + vec2(1, -1)) * vec2(axis[0], axis[1]);
-			points[1] = (points[1] + vec2(1, -1)) * vec2(axis[0], axis[1]);
-			points[2] = (points[2] + vec2(-1, 1)) * vec2(axis[0], axis[1]);
-			points[3] = (points[3] + vec2(-1, 1)) * vec2(axis[0], axis[1]);
+		foreach(a; axis){
+			vec2[4] points;
+			points[0] = (vec2(10, 10) + vec2(1, -1)) * a;
+			points[1] = (vec2(20, 20) + vec2(1, -1)) * a;
+			points[2] = (vec2(10, 10) + vec2(-1, 1)) * a;
+			points[3] = (vec2(20, 20) + vec2(-1, 1)) * a;
 			shapeAt(pos, color, points, target);
 		}
-		
-		//rect(pos + vec2(-40, -40), vec4(1, 0, 1, 0.25), 80, 80, HudTarget.SCREEN);
 	}
 	
 	private void drawScoreBoard(vec2 pos){
@@ -394,9 +390,12 @@ public:
 			text(vec4(1, 0.1, 0.1, 1), pos, _T("Next round will start in a few seconds"), HudTarget.SCREEN);
 		} else {
 			auto timeLeft = game.rules.client.roundTimeLeft;
-			auto minutes = floor(timeLeft / 60);
-			auto seconds = timeLeft % 60;
-			text(vec4(1, 1, 1, 1), pos, format("Round ends in %.0f:%02.0f", minutes, seconds), HudTarget.SCREEN);
+			float minutes = floor(timeLeft / 60);
+			float seconds = timeLeft % 60;
+      string fill = "";
+      if(seconds < 10)
+        fill = "0";
+			text(vec4(1, 1, 1, 1), pos, format("Round ends in %.0f:%s%.0f", minutes, fill, seconds), HudTarget.SCREEN);
 		}
 	}
 	
