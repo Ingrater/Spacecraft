@@ -11,6 +11,7 @@ import game.effects.bigexplosion, game.deco;
 import game.rules.deathmatch;
 import thBase.container.hashmap;
 import thBase.container.vector;
+import thBase.logging;
 
 class GameObjectFactory : IGameObject, IGameObjectFactory {
 	private:
@@ -41,7 +42,7 @@ class GameObjectFactory : IGameObject, IGameObjectFactory {
 			 * spawns a new object on the client side
 			 */
 			void SpawnObject(int type, EntityId id){
-				//base.logger.info("game: factory received spawn object message for entity %d of type %d", id, type);
+				//logInfo("game: factory received spawn object message for entity %d of type %d", id, type);
 				IGameObject obj = m_Creators[type](id,m_Game);
 				m_Objects[id] = obj;
 				m_Types[id] = type;
@@ -52,7 +53,7 @@ class GameObjectFactory : IGameObject, IGameObjectFactory {
 			 * triggers the post spawn event on the client side
 			 */
 			void PostSpawnObject(EntityId id){
-				//base.logger.info("game: factory received post spawn message for entity %s", id);
+				//logInfo("game: factory received post spawn message for entity %s", id);
 				IGameObject obj = m_Objects[id];
 				obj.postSpawn();
 			}
@@ -110,7 +111,7 @@ class GameObjectFactory : IGameObject, IGameObjectFactory {
         if(id > 2) //all ids > 2 are actual spawned objects
         {
           auto result = m_Game.octree.remove(gameObject);
-          //base.logger.info("deleted %x %s => %s", cast(void*)cast(Object)gameObject, gameObject.inspect()[], result);
+          //logInfo("deleted %x %s => %s", cast(void*)cast(Object)gameObject, gameObject.inspect()[], result);
           gameObject.onDeleteRequest();
           Delete(gameObject);
         }
@@ -118,7 +119,7 @@ class GameObjectFactory : IGameObject, IGameObjectFactory {
       m_Objects.clear();
       foreach(obj; m_Game.octree.allObjects)
       {
-        base.logger.info("remaining object %s", obj.inspect()[]);
+        logInfo("remaining object %s", obj.inspect()[]);
       }
       m_Game.octree.deleteAllRemainingObjects();
     }
@@ -136,7 +137,7 @@ class GameObjectFactory : IGameObject, IGameObjectFactory {
           assert(0, msg[]);
         }
       }
-			//base.logger.info("factory: registering id %s: %s", id, &entity);
+			//logInfo("factory: registering id %s: %s", id, &entity);
 			m_Objects[id] = entity;
 			m_Types[id] = -1;
 		}
@@ -155,7 +156,7 @@ class GameObjectFactory : IGameObject, IGameObjectFactory {
 			m_Types[id] = objectTypeId;
 			m_Game.octree.insert(obj);
 			
-			//base.logger.info("Spawning object SpawnGameObject typeId = %d, entityId = %d",objectTypeId,id);
+			//logInfo("Spawning object SpawnGameObject typeId = %d, entityId = %d",objectTypeId,id);
 			toClient.SpawnObject(objectTypeId, id, EventType.preSync);
 			toClient.PostSpawnObject(id, EventType.postSync);
 		}
@@ -167,7 +168,7 @@ class GameObjectFactory : IGameObject, IGameObjectFactory {
 			foreach(EntityId id,int objectTypeId;m_Types){
 				//Make shure to not try to create the factory
 				if(objectTypeId >= 0){
-					//base.logger.info("Spawning object typeId = %d, entityId = %d",objectTypeId,id);
+					//logInfo("Spawning object typeId = %d, entityId = %d",objectTypeId,id);
 					toClient.SpawnObject(objectTypeId, id, EventType.preSync, clientId);
 					toClient.PostSpawnObject(id, EventType.postSync, clientId);
 				}
@@ -180,7 +181,7 @@ class GameObjectFactory : IGameObject, IGameObjectFactory {
 		 *  func = the creation function
 		 */
 		void RegisterCreationFunc(T)(creatorFunc func){
-			base.logger.info("Registering creation func for " ~ T.stringof);
+			logInfo("Registering creation func for " ~ T.stringof);
 			int objectTypeId = staticIndexOf!(T,ObjectList);
 			m_Creators[objectTypeId] = func;
 		}
@@ -193,7 +194,7 @@ class GameObjectFactory : IGameObject, IGameObjectFactory {
 		 */
 		IGameObject getGameObject(EntityId id){			
 			if (!m_Objects.exists(id)){
-				base.logger.warn("factory: someone asked for id %s, but got null", id);
+				logWarning("factory: someone asked for id %s, but got null", id);
         return null;
 			}
 			
@@ -244,12 +245,12 @@ class GameObjectFactory : IGameObject, IGameObjectFactory {
 		 */
 		void cleanDeadGameObjects(){
 			foreach(entity; m_DeadEntities[]){
-				//base.logger.info("game: cleaning up entity %d", entity.entityId);
+				//logInfo("game: cleaning up entity %d", entity.entityId);
         auto id = entity.entityId; //Workaround dmd 6799
 				m_Objects.remove(id);
 				m_Types.remove(id);
 				bool result = m_Game.octree.remove(entity);
-        //base.logger.info("deleted %x %s => %s", cast(void*)cast(Object)entity, entity.inspect()[], result);
+        //logInfo("deleted %x %s => %s", cast(void*)cast(Object)entity, entity.inspect()[], result);
         Delete(entity);
 			}
 			m_DeadEntities.resize(0);
@@ -257,7 +258,7 @@ class GameObjectFactory : IGameObject, IGameObjectFactory {
       foreach(entity; m_DeadClientEntities[])
       {
         auto result = m_Game.octree.remove(entity);
-        //base.logger.info("deleted %x %s => %s", cast(void*)cast(Object)entity, entity.inspect()[], result);
+        //logInfo("deleted %x %s => %s", cast(void*)cast(Object)entity, entity.inspect()[], result);
         Delete(entity);
       }
       m_DeadClientEntities.resize(0);

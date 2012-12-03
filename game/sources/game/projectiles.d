@@ -105,17 +105,17 @@ class MgProjectile : GameObject, ISerializeable {
 		auto proj_ray = Ray(this.position.toVec3(), this.velocity * dt_sec);
 		auto candidates = m_Game.octree.getObjectsInBox(this.boundingBox);
 		foreach(candidate; candidates){
-			//base.logger.info("game: octree collision with %s", hit.inspect);
+			//logInfo("game: octree collision with %s", hit.inspect);
 			if (candidate !is this && candidate !is m_Owner){
 				auto other = cast(GameObject) candidate;
 				
 				if (other !is null && other.collisionHull !is null){
-					//base.logger.info("game: projectile collision with a collision hull");
+					//logInfo("game: projectile collision with a collision hull");
 					mat4 other_transform = other.transformation(Position(vec3(0, 0, 0)));
 					float hit_pos;
 					vec3 hit_normal;
 					if ( other.collisionHull.intersects(proj_ray, other_transform, hit_pos, hit_normal) ){
-						//base.logger.info("col: hit_pos: %s", hit_pos);
+						//logInfo("col: hit_pos: %s", hit_pos);
 						if (hit_pos >= -0.1 && hit_pos < 1.1){
 							bool impacted = false;
 							

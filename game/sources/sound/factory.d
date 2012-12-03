@@ -7,6 +7,7 @@ import sound.vorbisfile;
 import sound.alut;
 import base.utilsD2;
 import thBase.string;
+import thBase.logging;
 
 class SoundSystemFactory : ISoundSystemFactory {
 	SoundSystem m_SoundSystem = null;
@@ -20,17 +21,17 @@ class SoundSystemFactory : ISoundSystemFactory {
 			
 			if(!alut.Init(null,null)){
 				auto error = fromCString(alut.GetErrorString(alut.GetError()));
-				base.logger.error(error[]);
+				logError(error[]);
 				throw New!RCException(error);
 			}
 			m_IsInit = true;
-			base.logger.info("alut init");
+			logInfo("alut init");
 		}
 	
 		~this(){
       Delete(m_SoundSystem);
 			if(m_IsInit){
-				//base.logger.info("alut deinit");
+				//logInfo("alut deinit");
 				alut.Exit();
 			}
 		}
@@ -49,7 +50,7 @@ class SoundSystemFactoryDummy: ISoundSystemFactory
 public:
   this(){
     m_IsInit = true;
-    base.logger.info("dummy sound init");
+    logInfo("dummy sound init");
   }
 
   ~this()

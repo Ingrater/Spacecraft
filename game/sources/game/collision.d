@@ -108,13 +108,13 @@ public:
 			foreach(ref f2; transformed_other){
 				testcount++;
 				if(lhTri.intersects(f2, dummy)){
-					//base.logger.info("col: %d tests (hit)", testcount);
+					//logInfo("col: %d tests (hit)", testcount);
 					return true;
 				}
 			}
 		}
 		
-		//base.logger.info("col: %d tests (no hit)", testcount);
+		//logInfo("col: %d tests (no hit)", testcount);
 		return false;
 	}
 	

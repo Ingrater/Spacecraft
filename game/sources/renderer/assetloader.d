@@ -16,6 +16,7 @@ import core.thread;
 import modeltypes;
 import thBase.dds;
 import thBase.conv;
+import thBase.logging;
 
 
 class AssetLoader : IAssetLoader {
@@ -222,7 +223,7 @@ public:
 			foreach(ref t; matInfo.textures){
         auto filename = rcstring(t.file);
 				if(t.semantic == TextureType.DIFFUSE){
-					debug base.logger.info("Adding diffuse map %s", t.file);
+					debug logInfo("Adding diffuse map %s", t.file);
 					if(!m_modelTextures.exists(filename)){
 						auto texture = m_Renderer.CreateTexture2D(filename, ImageCompression.AUTO);
 						texture.GetImageData().LoadFromFile(filename, ImageCompression.AUTO);
@@ -235,7 +236,7 @@ public:
 				}
 				
 				if(t.semantic == TextureType.HEIGHT){
-					debug base.logger.info("Adding bump map %s", t.file);
+					debug logInfo("Adding bump map %s", t.file);
 					if(!m_modelTextures.exists(filename)){
 						auto texture = m_Renderer.CreateTexture2D(filename, ImageCompression.AUTO);
 						texture.GetImageData().LoadFromFile(filename, ImageCompression.AUTO);
@@ -254,7 +255,7 @@ public:
 				}
 				
 				if(t.semantic == TextureType.SPECULAR){
-					debug base.logger.info("Adding specular map %s", t.file);
+					debug logInfo("Adding specular map %s", t.file);
 					if(!m_modelTextures.exists(filename)){
 						auto texture = m_Renderer.CreateTexture2D(filename, ImageCompression.AUTO);
 						texture.GetImageData().LoadFromFile(filename, ImageCompression.AUTO);
@@ -271,7 +272,7 @@ public:
 				}
 				
 				if(t.semantic == TextureType.EMISSIVE){
-					debug base.logger.info("Adding self illu map %s", t.file);
+					debug logInfo("Adding self illu map %s", t.file);
 					if(!m_modelTextures.exists(filename)){
 						auto texture = m_Renderer.CreateTexture2D(filename, ImageCompression.AUTO);
 						texture.GetImageData().LoadFromFile(filename, ImageCompression.AUTO);
@@ -291,7 +292,7 @@ public:
 						mat.SetShader(m_TextureIlluShader.GetShader());
 				}
 			}
-			debug base.logger.info("final shader %s", mat.GetShader().GetName()[]);
+			debug logInfo("final shader %s", mat.GetShader().GetName()[]);
 		}
 		model.GenerateMeshes();
     m_Models.push_back(model);

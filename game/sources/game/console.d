@@ -10,7 +10,7 @@ import thBase.string;
 
 
 
-static import base.logger;
+import thBase.logging;
 
 class ConsoleRenderProxy : RenderProxyRenderable!(ObjectInfoRCText, ObjectInfoShape){
 private:
@@ -196,12 +196,12 @@ public:
     m_CommandHistory = New!(typeof(m_CommandHistory))();
 		
 		//auto self = cast(shared(Console))this;
-		base.logger.hook(&this.log);
+		RegisterLogHandler(&this.log);
 	}
 
   ~this()
   {
-    base.logger.unhook(&this.log);
+    UnregisterLogHandler(&this.log);
     Delete(m_CommandHistory);
     Delete(m_autocompleteBuffer);
     Delete(m_History);
@@ -261,7 +261,7 @@ public:
 		visible = value;
 	}
 	
-	void log(string str){
+	void log(LogLevel level, ulong subsystem, scope string str){
 		foreach(line; splitLines(rcstring(str))){
 			this.appendToHistory(line);
 		}

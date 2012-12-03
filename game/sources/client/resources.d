@@ -4,6 +4,7 @@ import base.all, base.renderer, game.progressbar;
 import thBase.format;
 import core.refcounted, core.allocator, core.hashmap;
 import core.stdc.stdio;
+import thBase.logging;
 
 struct resource {
 	shared(IModel) model;
@@ -55,7 +56,7 @@ public void unloadModels()
  * anywhere with the `model()` function.
  */
 public resource loadModel(rcstring name, rcstring path){
-	base.logger.info("resources: loading %s from %s...", name[], path[]);
+	logInfo("resources: loading %s from %s...", name[], path[]);
 	
 	resource res;
 	res.model = g_Env.renderer.assetLoader.LoadModel(path);

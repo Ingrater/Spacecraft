@@ -8,6 +8,7 @@ import core.refcounted;
 import thBase.format;
 import thBase.allocator;
 import thBase.policies.locking;
+import thBase.logging;
 
 
 class NetworkConnection : IEventSink {
@@ -123,12 +124,12 @@ class NetworkConnection : IEventSink {
 					auto eventId = buffer.reader.shift!EventId();
 					auto entity = game.factory.getGameObject(entityId);
 					if (entity is null) {
-						base.logger.warn("net: received an pre sync event for an unknown game object (id %d)", entityId);
+						logWarning("net: received an pre sync event for an unknown game object (id %d)", entityId);
 					} else {
 						auto event = entity.constructEvent(eventId, m_eventAllocator);
             scope(exit) AllocatorDelete(m_eventAllocator, event);
 						if (event is null) {
-							base.logger.warn("net: pre sync event: game object (id %d) was unable to construct the requested event object (event id: %d)", entityId, eventId);
+							logWarning("net: pre sync event: game object (id %d) was unable to construct the requested event object (event id: %d)", entityId, eventId);
 						} else {
 							debug(net) base.logger.test("net: fireing event...");
 							event.serialize(buffer.reader, true);
@@ -157,7 +158,7 @@ class NetworkConnection : IEventSink {
 					  // handle sync data for game objects
 					  auto entity = game.factory.getGameObject(entityId);
 					  if (entity is null) {
-						  base.logger.warn("net: received sync data for an unknown game object (id %d)", entityId);
+						  logWarning("net: received sync data for an unknown game object (id %d)", entityId);
 					  } else {
 						  entity.serialize(buffer.reader, true);
 					  }
@@ -188,12 +189,12 @@ class NetworkConnection : IEventSink {
 					  auto eventId = buffer.reader.shift!EventId();
 					  auto entity = game.factory.getGameObject(entityId);
 					  if (entity is null) {
-						  base.logger.warn("net: received an post sync event for an unknown game object (id %d)", entityId);
+						  logWarning("net: received an post sync event for an unknown game object (id %d)", entityId);
 					  } else {
 						  auto event = entity.constructEvent(eventId, m_eventAllocator);
               scope(exit) AllocatorDelete(m_eventAllocator, event);
 						  if (event is null) {
-							  base.logger.warn("net: post sync event: game object (id %d) was unable to construct the requested event object (event id: %d)", entityId, eventId);
+							  logWarning("net: post sync event: game object (id %d) was unable to construct the requested event object (event id: %d)", entityId, eventId);
 						  } else {
 							  debug(net) base.logger.test("net: fireing event...");
                 auto preCallEvent = Zeitpunkt(g_Env.mainTimer);
@@ -204,7 +205,7 @@ class NetworkConnection : IEventSink {
                 numEvents++;
                 if(callEventLength > 2.0f)
                 {
-                  base.logger.info("Very long event %s", event.description());
+                  logInfo("Very long event %s", event.description());
                 }
 						  }
 					  }
@@ -216,7 +217,7 @@ class NetworkConnection : IEventSink {
 
         if(callEventSum > 5.0f)
         {
-          base.logger.info("Very long post sync event execution %d", numEvents);
+          logInfo("Very long post sync event execution %d", numEvents);
         }
 
         {

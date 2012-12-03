@@ -1,7 +1,7 @@
 module client.main;
 
 import base.all;
-static import base.logger;
+import thBase.logging;
 import game.factory, base.game, renderer.factory, base.renderer, script.factory, game.progressbar;
 import base.sound, sound.factory;
 import client.net;
@@ -28,7 +28,7 @@ void client_main(){
 	
 	// Print all messages on stdout
 	debug {
-		base.logger.hook(&append_to_console);
+		RegisterLogHandler(&appendToConsole);
 	}
 
 	// Load and initialize the renderer factory
@@ -58,7 +58,7 @@ void client_main(){
 	g_Env.renderer = cast(shared(IRenderer)) renderer;
 	renderer.OnResize(g_Env.screenWidth, g_Env.screenHeight);
 	renderer.Init(cast(shared(IGameThread))game);
-	base.logger.info("loaded renderer");
+	logInfo("loaded renderer");
 	
 	// Build the event handler
 	EventHandler eventHandler = New!EventHandler();
@@ -104,7 +104,7 @@ void client_main(){
 	}
 	catch(Exception e){
     auto msg = format("Exception in main loop %s", e.toString()[]);
-		base.logger.error("%s", msg[]);
+		logError("%s", msg[]);
 		DebugOutput(msg[]);
 		auto datei = RawFile("error.log","a");
 		datei.writeArray(msg);
@@ -113,7 +113,7 @@ void client_main(){
 	}
 	catch(Error e){
     auto msg = format("Error in main loop %s", e.toString()[]);
-		base.logger.error("%s", msg[]);
+		logError("%s", msg[]);
 		DebugOutput(msg[]);
 		auto datei = RawFile("error.log","a");
 		datei.writeArray(msg[]);
@@ -127,8 +127,8 @@ void client_main(){
   }
 }
 
-void append_to_console(string msg) {
-	writefln("%s", msg);
+void appendToConsole(LogLevel level, ulong subsystem, scope string msg) {
+	writefln("%s%s", level.prefix(), msg);
 }
 
 
@@ -154,7 +154,7 @@ public:
 	
 	void run()
   {
-		base.logger.info("game thread started");
+		logInfo("game thread started");
     scope(exit)
     {
       if(connection !is null)
@@ -164,7 +164,7 @@ public:
         connection = null;
       }
       game.StopExtractor();
-      base.logger.info("game thread ended");
+      logInfo("game thread ended");
     }
 		try {
       {
@@ -195,7 +195,7 @@ public:
 				  // Load the resources required by the client. We do this before the network
 				  // connection because this can take some seconds. If many game objects are
 				  // flying around this can be enought to fill the network buffers.
-				  base.logger.info("Loading resources...");
+				  logInfo("Loading resources...");
 
           auto resourceData = [
 					  [_T("nothing"), _T("models/weapons/flak_cannon.thModel")], // This model is used as a placeholder if the real model is still unknown (pending from network)
@@ -231,7 +231,7 @@ public:
 			
 			  // Connect to server if a non-empty IP was given
 			  if (g_Env.serverIp != "" && !g_Env.viewModel) {
-				  base.logger.info("Connecting to server...");
+				  logInfo("Connecting to server...");
 				  progressBar.status = _T("Connecting to server ...");
           game.RunExtractor();
 				  this.connection = New!NetworkConnection(g_Env.serverIp, g_Env.serverPort);
@@ -287,7 +287,7 @@ public:
 		}
 		catch(Exception e){
       auto msg = format("Exception in game thread %s", e.toString()[]);
-			base.logger.error("%s", msg[]);
+			logError("%s", msg[]);
 			auto datei = RawFile("error.log", "a");
 			datei.writeArray(msg[]);
 			datei.write('\n');
@@ -295,14 +295,14 @@ public:
 		}
 		catch(Error e){
       auto msg = format("Error in game thread %s", e.toString()[]);
-			base.logger.error("%s", msg[]);
+			logError("%s", msg[]);
 			auto datei = RawFile("error.log", "a");
 			datei.writeArray(msg[]);
 			datei.write('\n');
       Delete(e);
 		} 
 		catch(Throwable e){
-			base.logger.error("unexpected error %s", e.toString()[]);
+			logError("unexpected error %s", e.toString()[]);
       Delete(e);
 		}
 	}

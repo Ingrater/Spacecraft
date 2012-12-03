@@ -4,7 +4,7 @@ import thBase.container.vector;
 import thBase.math3d.vecs;
 import renderer.opengl;
 
-static import base.logger;
+import thBase.logging;
 import core.stdc.stdlib;
 import base.all;
 import renderer.internal;
@@ -412,7 +412,7 @@ public:
 			return false;
 		}
 		/*if(m_Data.size() > 131072*4){
-			base.logger.warn("Warning: VertexBuffer is really huge %s",m_Data.size());
+			logWarning("Warning: VertexBuffer is really huge %s",m_Data.size());
 		}*/
 		return true;
 	}
@@ -499,7 +499,7 @@ public:
 		//Create Vertexbuffer
 		if(m_Dynamic){
 			if(BufferSize > m_UploadedDataSize || m_VertexBufferId == 0){
-        base.logger.info("Increasing vertex buffer size to %d", BufferSize);
+        logInfo("Increasing vertex buffer size to %d", BufferSize);
 				m_Renderer.addVertexBufferMemoryAmount(BufferSize - m_UploadedDataSize);
 				if(m_VertexBufferId == 0){
 					gl.GenBuffers(1, &m_VertexBufferId);

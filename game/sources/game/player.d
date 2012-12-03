@@ -4,8 +4,9 @@ import game.gameobject, game.game, base.all, base.renderer, game.multiproxy;
 import game.projectiles, game.objectfactory;
 import game.effects.enginetrail, game.effects.dirtcloud, game.effects.bigexplosion;
 import game.scheibe, game.turret;
-static import base.logger, client.resources, server.resources;
+static import client.resources, server.resources;
 import std.math, std.random;
+import thBase.logging;
 
 /**
  * Object for the player ship.
@@ -209,14 +210,14 @@ class Player : HitableGameObject, ISerializeable, IControllable {
 		
 		foreach(hit; m_Game.octree.getObjectsInBox(this.boundingBox)){
 			auto other = cast(GameObject) hit;
-			//base.logger.info("game: player collision via octree with %s", other.inspect());
+			//logInfo("game: player collision via octree with %s", other.inspect());
 			if (other !is null && other !is this && other.collisionHull !is null){
 				auto hitable = cast(IHitable)other;
 				if(hitable is null || (hitable !is null && !hitable.isDead)){
 					mat4 other_transform = other.transformation(Position(vec3(0, 0, 0)));
 					//auto intersect_start = Zeitpunkt(g_Env.mainTimer);
 					if ( this.m_CollisionHull.intersects(other.collisionHull, own_transform, other_transform) ){
-						//base.logger.info("game: player collision with %s", other.inspect());
+						//logInfo("game: player collision with %s", other.inspect());
 						// Impact, push the player back and hurt him depending on the speed
 						// difference between him and the object. We need to reset the player
 						// position to the value before the intersection occured. Otherwise we
@@ -227,13 +228,13 @@ class Player : HitableGameObject, ISerializeable, IControllable {
 						m_Hitpoints = m_Hitpoints - (other.velocity - this.velocity).length * 0.5;
 					}
 					//auto intersect_duration = Zeitpunkt(g_Env.mainTimer) - intersect_start;
-					//base.logger.info("> intersection took %s", intersect_duration);
+					//logInfo("> intersection took %s", intersect_duration);
 				}
 			}
 		}
 		
 		//auto duration = Zeitpunkt(g_Env.mainTimer) - start;
-		//base.logger.info("game: player collision took %s for %d entities", duration, hitcount);
+		//logInfo("game: player collision took %s for %d entities", duration, hitcount);
 		
 		// Current orientation axis of the player: x (right), y (top) and negative z
 		// (view vector)
@@ -367,7 +368,7 @@ class Player : HitableGameObject, ISerializeable, IControllable {
 	}
 	
 	override void killedBy(HitableGameObject killer){
-		base.logger.info("player %s: killedBy %s", this.entityId.id, (killer) ? killer.entityId.id : -1);
+		logInfo("player %s: killedBy %s", this.entityId.id, (killer) ? killer.entityId.id : -1);
 		m_Deaths = m_Deaths + 1;
 		
 		//Spawn explosion
@@ -378,7 +379,7 @@ class Player : HitableGameObject, ISerializeable, IControllable {
 	
 	override void killedOne(HitableGameObject other){
 		m_Kills = m_Kills + 1;
-		base.logger.info("player %s: killedOne %s, kills: %s", this.entityId.id, (other) ? other.entityId.id : -1, m_Kills.value);
+		logInfo("player %s: killedOne %s, kills: %s", this.entityId.id, (other) ? other.entityId.id : -1, m_Kills.value);
 		toClient.killedOne(other.entityId, EventType.preSync, clientId);
 	}
 	
@@ -557,7 +558,7 @@ class Player : HitableGameObject, ISerializeable, IControllable {
 				//other.collisionHull.debugDraw(other_transform, g_Env.renderer, vec4(1, 1, 0, 1));
 				/+
 				if ( this.m_CollisionHull.intersects(other.collisionHull, own_transform, other_transform) ){
-					base.logger.info("game: projectile collision with %s", other.inspect());
+					logInfo("game: projectile collision with %s", other.inspect());
 				}
 				+/
 			}

@@ -12,13 +12,14 @@ import thBase.timer;
 import thBase.container.queue;
 import thBase.container.hashmap;
 import thBase.container.vector;
+import thBase.logging;
 
 import std.traits;
 
 import base.eventlistener;
 import base.renderer;
 import base.messages;
-static import base.logger, base.profiler;
+static import base.profiler;
 
 import renderer.rendertarget;
 import renderer.xmlshader;
@@ -754,7 +755,7 @@ public:
 	}
 	
 	override void camera(IGameObject obj){
-		//base.logger.info("renderer: setting camera to %s", obj.inspect());
+		//logInfo("renderer: setting camera to %s", obj.inspect());
 		m_Camera = obj;
 	}
 	
@@ -1495,7 +1496,7 @@ public:
         auto msg = m_LoadingMessageQueue.tryGet!MsgLoadModel();
         assert(msg !is null);
         scope(exit) m_LoadingMessageQueue.skip!MsgLoadModel();
-        debug base.logger.info("Loading model '%s'", msg.path[]);
+        debug logInfo("Loading model '%s'", msg.path[]);
         try {
           IModel model = m_AssetLoader.DoLoadModel(msg.path);
           msg.answerQueue.enqueue(MsgLoadingModelDone(model));
@@ -1510,7 +1511,7 @@ public:
         auto msg = m_LoadingMessageQueue.tryGet!MsgLoadCubeMap();
         assert(msg !is null);
         scope(exit) m_LoadingMessageQueue.skip!MsgLoadCubeMap();
-        debug base.logger.info("loading cube map '%s'", msg.path[]);
+        debug logInfo("loading cube map '%s'", msg.path[]);
         try {
           ITexture texture = 
             m_AssetLoader.DoLoadCubeMap(msg.path);
@@ -1526,7 +1527,7 @@ public:
         auto msg = m_LoadingMessageQueue.tryGet!MsgLoadSpriteAtlas();
         assert(msg !is null);
         scope(exit) m_LoadingMessageQueue.skip!MsgLoadSpriteAtlas();
-        debug base.logger.info("Loading sprite atlas '%s'", msg.path[]);
+        debug logInfo("Loading sprite atlas '%s'", msg.path[]);
         try {
           ISpriteAtlas atlas =
             m_AssetLoader.DoLoadSpriteAtlas(msg.path);
@@ -1542,7 +1543,7 @@ public:
         auto amsg = m_LoadingMessageQueue.tryGet!MsgLoadAmbientSettings();
         assert(amsg !is null && (cast(void*)amsg == cast(void*)bmsg));
         scope(exit) m_LoadingMessageQueue.skip!MsgLoadAmbientSettings();
-        debug base.logger.info("Loading ambient settings '%s'", amsg.path[]);
+        debug logInfo("Loading ambient settings '%s'", amsg.path[]);
         doLoadAmbientSettings(amsg.path);
       }
       else if(bmsg.type == typeid(MsgSetup3DHudGeom))
@@ -1550,7 +1551,7 @@ public:
         auto msg = m_LoadingMessageQueue.tryGet!MsgSetup3DHudGeom();
         assert(msg !is null);
         scope(exit) m_LoadingMessageQueue.skip!MsgSetup3DHudGeom();
-        debug base.logger.info("Creating render proxy %x", msg.model);
+        debug logInfo("Creating render proxy %x", msg.model);
         try {
           doCreateRenderProxy3DHud(msg.model);
           msg.answerQueue.enqueue(MsgSetup3DHudGeomDone(true));
@@ -2038,7 +2039,7 @@ public:
 			//shadowMin = shadowMin - vec3(50,50,50);
 			//shadowMax = shadowMax + vec3(50,50,50);
 			camPos = floor(camPos / 50.0f) * 50.0f;
-			//base.logger.info("%s",camPos.f);
+			//logInfo("%s",camPos.f);
 			float shadowSize = m_ShadowMaxDistanceConstant.Get() + 50.0f;
 			shadowMin = vec3(-shadowSize,-shadowSize,-shadowSize);
 			shadowMax = vec3(shadowSize,shadowSize,shadowSize);

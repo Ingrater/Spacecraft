@@ -1,10 +1,11 @@
 module server.main;
 
 import base.all, server.net;
-static import base.logger, server.resources;
+static import server.resources;
 import console = server.console;
 import game.factory, script.factory;
 import core.thread;
+import thBase.logging;
 
 void server_main(){
 	assert(g_Env.isServer);
@@ -12,10 +13,10 @@ void server_main(){
 	// Setup the server console
 	console.init();
 	scope(exit) console.shutdown();
-	base.logger.hook(&writeToConsole);
+	RegisterLogHandler(&writeToConsole);
 	
 	// Start up the scripting system for the console
-	base.logger.info("Starting scripting...");
+	logInfo("Starting scripting...");
 	auto factory = NewScriptSystemFactory();
 	factory.Init();
 	auto scriptSystem = factory.NewScriptSystem();
@@ -49,7 +50,7 @@ void server_main(){
   }
 	
 	// Start up network and close it if we're done
-	base.logger.info("Starting network...");
+	logInfo("Starting network...");
 	auto netServer = New!NetworkServer(g_Env.serverIp, g_Env.serverPort);
 	scope(exit)
   {
@@ -58,7 +59,7 @@ void server_main(){
   }
 	
 	// Setup the game
-	base.logger.info("Starting game...");
+	logInfo("Starting game...");
   auto gameFactory = NewGameFactory();
 	auto game = gameFactory.GetGame();
   scope(exit) 
@@ -70,7 +71,7 @@ void server_main(){
 	game.Init(scriptSystem, netServer, null);
 	scope(exit) game.Deinit();
 	
-	base.logger.info("Startup complete, running main loop");
+	logInfo("Startup complete, running main loop");
 	Zeitpunkt cycle_start;
 	console.write("> ");
 	
@@ -107,7 +108,7 @@ void server_main(){
 				try {
 					scriptSystem.execute(command);
 				} catch(ScriptError e) {
-					base.logger.warn("Command line error: %s", e.toString()[]);
+					logWarning("Command line error: %s", e.toString()[]);
           Delete(e);
 				}
 				
@@ -137,19 +138,20 @@ void server_main(){
 				Thread.getThis().sleep( dur!("msecs")(remaining_ms) );
 		}
 	} catch(Exception e) {
-		base.logger.error("Exception in server main loop %s", e.toString()[]);
+		logError("Exception in server main loop %s", e.toString()[]);
     Delete(e);
 	} catch(Error e) {
-		base.logger.error("Error in server main loop %s", e.toString()[]);
+		logError("Error in server main loop %s", e.toString()[]);
     Delete(e);
 	}
 }
 
-void writeToConsole(string message) {
+void writeToConsole(LogLevel level, ulong subsystem, scope string message) {
+  console.write(level.prefix());
 	console.writeln(message);
 }
 
 void say(uint client_id, string text){
-	console.writeln("server says: " ~ text);
-	//base.blocknet.server.enqueue_for_client(client_id, text.dup);
+  console.write("server says: ");
+	console.writeln(text);
 }

@@ -372,7 +372,7 @@ public:
 		}
 		
 		//foreach(i, t; teams){
-		//	base.logger.info("team %s: count %s, kills %s, deaths %s", i, t.playerCount, t.kills, t.deaths);
+		//	logInfo("team %s: count %s, kills %s, deaths %s", i, t.playerCount, t.kills, t.deaths);
 		//}
 		
 		// Draw the free for all team if someone is in there

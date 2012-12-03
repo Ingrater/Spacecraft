@@ -10,7 +10,7 @@ import core.stdc.string;
 
 public import base.renderproxy;
 import base.all;
-static import base.logger;
+import thBase.logging;
 import base.game;
 import thBase.container.linkedlist;
 import thBase.math3d.position;
@@ -76,7 +76,7 @@ private:
 	private ObjectInfo* GetBufferStart(ref bool success){
 		Buffer *cur = &m_Buffers[m_NextToConsume];
 		if( !m_FullSemaphore.wait( dur!("msecs")(20) ) ){
-			//debug base.logger.warn("waiting because not procued %d",m_NextToConsume);
+			//debug logWarning("waiting because not procued %d",m_NextToConsume);
 			//Avoid deadlocks
 			success = false;
 			return null;
@@ -122,7 +122,7 @@ public:
 			auto profile = base.profiler.Profile("waiting");
 			//start
 			while( !m_EmptySemaphore.wait( dur!("msecs")(10) ) && !m_Stop ){
-				//debug base.logger.info("waiting for renderer");
+				//debug logInfo("waiting for renderer");
 			}
 		}
 		Zeitpunkt waitEnd = Zeitpunkt(g_Env.mainTimer);

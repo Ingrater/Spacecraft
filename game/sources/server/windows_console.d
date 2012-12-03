@@ -1,6 +1,6 @@
 module server.windows_console;
 
-static import base.logger;
+import thBase.logging;
 
 import std.uni;
 
