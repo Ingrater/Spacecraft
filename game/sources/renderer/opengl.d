@@ -8,7 +8,7 @@ import base.utilsD2;
 import core.stdc.string : strlen;
 import thBase.string;
 
-static import base.logger;
+import thBase.logging;
 
 version(NO_OPENGL)
 {
@@ -20,12 +20,12 @@ private void* GetProcAddress(string name){
   if(proc is null){
     proc = SDL.GL.GetProcAddress(toCString(name ~ "ARB"));
     if(proc !is null){
-      base.logger.info("Falling back to ARB for '" ~ name ~"'");
+      logInfo("Falling back to ARB for '" ~ name ~"'");
     }
     else {
       proc = SDL.GL.GetProcAddress(toCString(name ~ "EXT"));
       if(proc !is null){
-        base.logger.info("Falling back to EXT for '" ~ name ~"'");
+        logInfo("Falling back to EXT for '" ~ name ~"'");
       }
     }
   }
@@ -1062,10 +1062,10 @@ class gl {
 		
 		supportedExtensions[Extensions.GL_ARB_texture_compression] = (indexOf(extensions, "GL_ARB_texture_compression") != -1);
 		if(supportedExtensions[Extensions.GL_ARB_texture_compression])
-			base.logger.info("GL_ARB_texture_compression is supported");
+			logInfo("GL_ARB_texture_compression is supported");
 		supportedExtensions[Extensions.GL_EXT_texture_compression_s3tc] = (indexOf(extensions, "GL_EXT_texture_compression_s3tc") != -1);
 		if(supportedExtensions[Extensions.GL_EXT_texture_compression_s3tc])
-			base.logger.info("GL_EXT_texture_compression_s3tc is supported");
+			logInfo("GL_EXT_texture_compression_s3tc is supported");
 	}
 	
 	static bool isSupported(Extensions ext){

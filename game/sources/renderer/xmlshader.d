@@ -3,11 +3,10 @@ module renderer.xmlshader;
 import renderer.shader;
 import renderer.shaderconstants;
 import renderer.vertexbuffer;
-import thBase.tinyxml;
 import renderer.exceptions;
-
-
 import renderer.openglex;
+
+import thBase.tinyxml;
 import thBase.container.vector;
 import thBase.container.hashmap;
 import thBase.policies.hashing;
@@ -15,6 +14,7 @@ import thBase.format;
 import thBase.file;
 import thBase.allocator;
 import thBase.string;
+import thBase.logging;
 
 /**
  * loads a shader from a xml file
@@ -149,7 +149,7 @@ private:
 				if(m_Uniforms[j].m_Name == Info.m_Name){
 					if(m_Uniforms[j].m_ShaderConstant !is null){
 						if(m_Uniforms[j].m_ShaderConstant.GetType() != Info.m_Type){
-							base.logger.warn("The uniform '%s' of the shader '%s'"  
+							logWarning("The uniform '%s' of the shader '%s'"  
 							         ~ " (%s) does not match in type with the given constant '%s'" 
 							         ~ " (%s)"
                        , Info.m_Name[], m_Name[], Shader.ToString(Info.m_Type), m_Uniforms[j].m_Name[], Shader.ToString(m_Uniforms[j].m_ShaderConstant.GetType()));
@@ -363,7 +363,7 @@ public:
 			foreach(ref a;m_Attributes){
 				auto location = m_Shader.GetAttrib(a.m_Name[]);
 				if(location < 0){
-					base.logger.warn("vertex attribute '%s' was optimized out of shader '%s'", a.m_Name[], m_Name[]);
+					logWarning("vertex attribute '%s' was optimized out of shader '%s'", a.m_Name[], m_Name[]);
 				}
 				else if(VertexBuffer.DataChannelLocation(a.m_Type) != location){
 					throw New!OpenGLException(format("vertex attribute '%s' is not bound to where it should be in shader '%s'", a.m_Name[], m_Name[]));
@@ -450,7 +450,7 @@ public:
 	}
 	body {
 		if(pInit < 0 && pConstant == null){
-			base.logger.warn("The uniform '%s' of the shader '%s' remains without data because it has no init value and is not bound to a constant!", pName[], m_Name[]);
+			logWarning("The uniform '%s' of the shader '%s' remains without data because it has no init value and is not bound to a constant!", pName[], m_Name[]);
 		}
 		
 		UniformInfo info;

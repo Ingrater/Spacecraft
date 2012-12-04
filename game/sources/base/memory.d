@@ -158,7 +158,7 @@ mixin template SameSizePool(T,size_t startSize) {
 			//this free operation crashes for whatever reason
 			if(stackStart !is null)
 				free(stackStart);
-			base.logger.info("Total pool size of " ~ __traits(identifier,T) ~ " was %d taking %dkb", numElems, numElems * ELEMENT_SIZE / 1024);
+			logInfo("Total pool size of " ~ __traits(identifier,T) ~ " was %d taking %dkb", numElems, numElems * ELEMENT_SIZE / 1024);
 			} catch(Throwable e){ asm { int 3; } }
 		}
 		
@@ -176,7 +176,7 @@ mixin template SameSizePool(T,size_t startSize) {
 					assert(pool !is null);
 					memSize *= 2;
 					//writefln("pool = %x, start = %x, allocating %d",pool,pool.start,memSize);
-					debug base.logger.info("new pool for " ~ T.stringof);
+					debug logInfo("new pool for " ~ T.stringof);
 					pool.start = cast(byte*)malloc(memSize);
 					memset(pool.start,0,memSize);
 					//writefln("new pool %x %d",pool.start,memSize);

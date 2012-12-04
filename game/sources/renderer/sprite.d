@@ -2,6 +2,7 @@ module renderer.sprite;
 
 import base.renderer;
 import renderer.texture2d;
+import thBase.logging;
 
 class SpriteAtlas : ISpriteAtlas {
 private:
@@ -23,7 +24,7 @@ public:
 							 cast(float)y / cast(float)img.GetHeight() + halfPixelSize.y);
 		result.size = vec2(cast(float)(width-1) / cast(float)img.GetWidth(),
 						   cast(float)(height-1) / cast(float)img.GetHeight());
-		base.logger.info("sprite %s %s",result.offset.f,result.size.f);
+		logInfo("sprite %s %s",result.offset.f,result.size.f);
 		result.atlas = m_Id;
 		return result;
 	}

@@ -11,7 +11,7 @@ import thBase.container.vector;
 import renderer.exceptions;
 import renderer.uniformtype;
 
-static import base.logger;
+import thBase.logging;
 import core.stdc.stdlib;
 import base.all;
 import thBase.string;
@@ -157,7 +157,7 @@ private:
 				return;
 			
 			auto ErrorMessage = format("Warning in shader '%s' in '%s'\n%s", m_Name[], title, infoLog);
-			base.logger.warn("%s\n",ErrorMessage[]);
+			logWarning("%s\n",ErrorMessage[]);
 			
 			if(indexOf(ErrorMessage,"software") != -1 || indexOf(ErrorMessage,"Software") != -1){
 				throw New!OpenGLException(format("Shader '%s' seems to be running in software emulation", m_Name[]), false);
@@ -409,7 +409,7 @@ public:
  	int GetAttrib(const(char)[] name){
  		int temp = gl.GetAttribLocation(m_ShaderProgram, toCString(name));
  		if(temp == -1){
- 			base.logger.warn("Shader '%s'\nCouldn't find attribute '%s' in shader context", m_Name[], name);
+ 			logWarning("Shader '%s'\nCouldn't find attribute '%s' in shader context", m_Name[], name);
  		}
  		return temp;
  	}
@@ -423,7 +423,7 @@ public:
  	int GetUniform(string name){
  		int temp = gl.GetUniformLocation(m_ShaderProgram, toCString(name));
  		if(temp == -1){
- 			base.logger.warn("Shader '%s':\nCouldn't find Uniform Var '%s' in Shader Context", m_Name[], name);
+ 			logWarning("Shader '%s':\nCouldn't find Uniform Var '%s' in Shader Context", m_Name[], name);
  		}
  		return temp;
  	}

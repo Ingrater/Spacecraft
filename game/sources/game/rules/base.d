@@ -57,11 +57,29 @@ interface ICommonRules {
 	void registerHitable(HitableGameObject entity);
 	void removeHitable(HitableGameObject entity);
 	Hashmap!(EntityId, HitableGameObject) hitables();
+
+  enum Relation
+  {
+    Friend,
+    Enemy,
+    Neutral,
+    Unkown
+  }
+  /**
+   * Checks the relation between two entities
+   * Params:
+   *  ent1 = the first entity
+   *  ent2 = the second entity
+   * Returns: The relation between the two entities
+   */
+  Relation getRelation(EntityId ent1, EntityId ent2);
 }
 
 interface IRulesBase : ICommonRules {
 	IServerRules server();
 	IClientRules client();
+
+  alias ICommonRules.getRelation getRelation;
 }
 
 interface IServerRules : ICommonRules {

@@ -251,11 +251,11 @@ class TurretBase(ProjectileClass) : HitableGameObject, ISerializeable {
 				// it and avoids funny orientations of the cannons.
 				if (cannonAngle > PI_2){
 					cannonAngle = PI - cannonAngle;
-					//base.logger.info("turret: cannon angle fixed to %s", cannonAngle);
+					//logInfo("turret: cannon angle fixed to %s", cannonAngle);
 				}
 				
 				if (mountToTarget.y > 0 && cannonAngle < m_TargetMaxCannonAngle){
-					//base.logger.info("turret %s: to target %s: %9s, plane angle: %.2f PI, cannonAngle: %.2f PI",
+					//logInfo("turret %s: to target %s: %9s, plane angle: %.2f PI, cannonAngle: %.2f PI",
 					//	this.entityId, hitable.entityId, mountToTarget.f, planeAngle / PI, cannonAngle / PI);
 					auto distance = mountToTarget.length;
 					bool betterTarget = false;
@@ -299,7 +299,7 @@ class TurretBase(ProjectileClass) : HitableGameObject, ISerializeable {
 	
 		if (selectedEntity){
 			// If the turret found a target, get it!
-			//base.logger.info("turret %s: to target %s: %9s, plane angle: %.2f PI, cannonAngle: %.2f PI",
+			//logInfo("turret %s: to target %s: %9s, plane angle: %.2f PI, cannonAngle: %.2f PI",
 			//	this.entityId, selectedEntity.entityId, selectedTargetVector.f, selectedPlaneAngle / PI, selectedCannonAngle / PI);
 		
 			bool fire = rotateTo(selectedPlaneAngle, selectedCannonAngle, timeDiff);
@@ -450,7 +450,7 @@ class TurretCannon(ProjectileClass) : GameObject, ISerializeable, IHitable {
 	}
 
 	override Quaternion rotation() const {
-		//base.logger.info("cannon angle: %s", m_Base.m_CannonAngleDeg.value);
+		//logInfo("cannon angle: %s", m_Base.m_CannonAngleDeg.value);
 		if (m_Base)
 			return m_Rotation.value * Quaternion(vec3(1, 0, 0), -m_Base.cannonAngleDeg());
 		else

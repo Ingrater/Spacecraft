@@ -135,9 +135,15 @@ public:
 			loadXml();
 		m_RenderProxy = New!Proxy(this);
 		m_TimeToLive =  m_Params.ring.timeToLive;
-		m_Explosions = new Vector!(Explosion)();
+		m_Explosions = New!(Vector!Explosion)();
 		m_Explosions.resize(m_Params.explosion.count);
 	}
+
+  ~this()
+  {
+    Delete(m_Params.explosion.sprites);
+    Delete(m_Explosions);
+  }
 	
 	static void loadXml(){
 		m_Loaded = true;
@@ -148,13 +154,18 @@ public:
 												 m_Params.ring.sprite.y,
 												 m_Params.ring.sprite.width,
 												 m_Params.ring.sprite.height);
-			m_ExplosionSprites = new Sprite[m_Params.explosion.sprites.length];
+			m_ExplosionSprites = NewArray!Sprite(m_Params.explosion.sprites.length);
 			foreach(uint i,ref param;m_Params.explosion.sprites){
 				m_ExplosionSprites[i] = spriteAtlas.GetSprite(param.x,param.y,
 															  param.width,param.height);
 			}
 		}
 	}
+
+  shared static ~this()
+  {
+    Delete(m_ExplosionSprites);
+  }
 	
 	override void update(float timeDiff){
 		m_TimeToLive -= timeDiff;

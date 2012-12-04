@@ -1,6 +1,7 @@
 module game.demomodel;
 
 import base.all, base.gameobject, base.net, base.game;
+import thBase.logging;
 
 
 /**
@@ -30,7 +31,7 @@ class DemoModel : IGameObject {
 		
 		vec3 minBounds, maxBounds;
 		model.FindMinMax(minBounds, maxBounds);
-		base.logger.info("min bounds %f %f %f\nmax bounds %f %f %f\nsize %f %f %f",
+		logInfo("min bounds %f %f %f\nmax bounds %f %f %f\nsize %f %f %f",
 						 minBounds.x,minBounds.y,minBounds.z,
 						 maxBounds.x,maxBounds.y,maxBounds.z,
 						 maxBounds.x-minBounds.x,maxBounds.y-minBounds.y,maxBounds.z-minBounds.z);

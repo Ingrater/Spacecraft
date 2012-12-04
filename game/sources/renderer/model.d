@@ -14,6 +14,7 @@ import renderer.rendergroup;
 import renderer.rendercall;
 import thBase.constref;
 import thBase.enumbitfield;
+import thBase.logging;
 
 import renderer.exceptions;
 import thBase.container.vector;
@@ -615,7 +616,7 @@ public:
 	
 	private void DoPrintNodes(const(ModelLoader.NodeDrawData*) node, int depth = 0){
     static string empty = "                                    ";
-		base.logger.info("%s%s", empty[0..depth], node.data.name);
+		logInfo("%s%s", empty[0..depth], node.data.name);
 		foreach(child; node.children)
 			DoPrintNodes(child, depth+1);
 	}

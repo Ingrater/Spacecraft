@@ -4,6 +4,7 @@ import game.collision;
 import core.hashmap;
 import core.refcounted;
 import thBase.format;
+import thBase.logging;
 
 //private CollisionHull[string] loadedResources;
 private Hashmap!(rcstring, CollisionHull) loadedResources;
@@ -26,7 +27,7 @@ public void loadCollisions(rcstring[2][] nameFilePairs){
 }
 
 public CollisionHull loadCollision(rcstring name, rcstring path){
-	base.logger.info("resources: loading %s from %s...", name[], path[]);
+	logInfo("resources: loading %s from %s...", name[], path[]);
   if(loadedResources is null)
   {
     loadedResources = New!(typeof(loadedResources))();
