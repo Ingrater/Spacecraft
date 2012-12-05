@@ -1,9 +1,10 @@
 module physics.rigidbody;
 
+import base.physics;
 import thBase.math3d.all;
 import game.collision;
 
-class RigidBody
+class RigidBody : IRigidBody
 {
   CollisionHull m_collision;
   float m_inverseMass;

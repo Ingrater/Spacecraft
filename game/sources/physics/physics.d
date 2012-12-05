@@ -1,6 +1,7 @@
 module physics.physics;
 
 import base.all;
+import base.physics;
 import physics.rigidbody; 
 import physics.cvars;
 import base.octree;
@@ -11,7 +12,7 @@ import thBase.math;
 
 import std.math;
 
-class PhysicsSimulation
+class PhysicsSimulation : IPhysics
 {
   private:
     Vector!RigidBody m_simulated;
@@ -30,17 +31,17 @@ class PhysicsSimulation
       Delete(m_simulated);
     }
 
-    void AddSimulatedBody(RigidBody obj)
+    override void AddSimulatedBody(IRigidBody obj)
     {
-      m_simulated ~= obj;
+      m_simulated ~= static_cast!RigidBody(obj);
     }
 
-    void RemoveSimulatedBody(RigidBody obj)
+    override void RemoveSimulatedBody(IRigidBody obj)
     {
-      m_simulated.remove(obj);
+      m_simulated.remove(static_cast!RigidBody(obj));
     }
 
-    void Simulate(float timeDiff)
+    override void Simulate(float timeDiff)
     {
       debug 
       {
@@ -301,7 +302,7 @@ class PhysicsSimulation
       }
     }
 
-    void RegisterCVars(ConfigVarsBinding* storage)
+    override void RegisterCVars(ConfigVarsBinding* storage)
     {
       foreach(m;__traits(allMembers,typeof(m_CVars))){
 				storage.registerVariable(m,__traits(getMember,this.m_CVars,m));

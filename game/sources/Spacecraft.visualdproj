@@ -666,6 +666,7 @@
    <File path="base\modelloader.d" />
    <File path="base\net.d" />
    <File path="base\octree.d" />
+   <File path="base\physics.d" />
    <File path="base\profiler.d" />
    <File path="base\renderer.d" />
    <File path="base\renderproxy.d" />
