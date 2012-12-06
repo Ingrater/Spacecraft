@@ -4,11 +4,11 @@ import game.gameobject, base.all;
 import game.collision;
 static import client.resources, server.resources;
 import game.game;
-import physics.rigidbody;
+import base.physics;
 
 class Box : GameObject, ISerializeable {
 private:
-  RigidBody m_RigidBody;
+  IRigidBody m_RigidBody;
 
 public:
 	// Stuff for network integration
@@ -32,14 +32,14 @@ public:
 		auto res = client.resources.model(_T("box"));
 		m_RenderProxy = res.proxy;
 		super(entityId, game, res.boundingBox, null);
-    m_RigidBody = New!RigidBody(server.resources.col(_T("box")), bounciness);
+    m_RigidBody = g_Env.physicsPlugin.CreateRigidBody(server.resources.col(_T("box")), bounciness);
     game.physics.AddSimulatedBody(m_RigidBody);
 	}
 
   ~this()
   {
     m_Game.physics.RemoveSimulatedBody(m_RigidBody);
-    Delete(m_RigidBody);
+    g_Env.physicsPlugin.DeleteRigidBody(m_RigidBody);
   }
 
 	/**
@@ -73,7 +73,7 @@ public:
 
 class Plane : GameObject, ISerializeable {
 private:
-  RigidBody m_RigidBody;
+  IRigidBody m_RigidBody;
 
 public:
 	// Stuff for network integration
@@ -97,12 +97,12 @@ public:
 		auto res = client.resources.model(_T("plane"));
 		m_RenderProxy = res.proxy;
 		super(entityId, game, res.boundingBox, null);
-    m_RigidBody = New!RigidBody(server.resources.col(_T("plane")), bounciness);
+    m_RigidBody = g_Env.physicsPlugin.CreateRigidBody(server.resources.col(_T("plane")), bounciness);
 	}
 
   ~this()
   {
-    Delete(m_RigidBody);
+    g_Env.physicsPlugin.DeleteRigidBody(m_RigidBody);
   }
 
 	/**

@@ -5,7 +5,6 @@ import base.gameobject;
 import thBase.container.linkedlist;
 import thBase.container.stack;
 import thBase.container.vector;
-import base.memory;
 import base.renderer;
 import core.allocator;
 import core.hashmap;
@@ -439,7 +438,7 @@ public:
 	void insert(IGameObject obj){
 		//object is outside of our octree
 		while( !(obj.boundingBox in m_Root.m_BoundingBox) ){
-			debug printf("extending octree");
+			logInfo("extending octree");
 			m_Root = new Node(m_Root,m_ExtendDirection);
       m_ExtendDirection = (m_ExtendDirection == ExtendDirection.NEGATIVE) ? ExtendDirection.POSITIVE : ExtendDirection.NEGATIVE;
 		}

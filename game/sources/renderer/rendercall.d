@@ -9,8 +9,6 @@ import renderer.shaderconstants;
 import renderer.renderer;
 import thBase.container.vector;
 
-import base.memory;
-
 /**
  * Represents a render call
  * RenderCall class. Contains all necessary information to do a render call.

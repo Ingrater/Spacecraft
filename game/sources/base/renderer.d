@@ -1,9 +1,7 @@
 module base.renderer;
 
-public import base.eventlistener;
 public import base.game;
-public import base.renderproxy;
-import base.messages;
+public import base.windowevents;
 import base.all;
 
 alias void delegate() destroyFunc;
@@ -13,7 +11,7 @@ interface IDebugDrawRecorder
   void Replay();
 }
 
-interface IRenderer : IEventListener{
+interface IRenderer : IWindowEventListener{
 	void Init(shared(IGame) game);
 	void RegisterCVars(ConfigVarsBinding* CVarStorage) shared;
 	void Deinit();

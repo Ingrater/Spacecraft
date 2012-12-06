@@ -9,6 +9,7 @@ import thBase.container.vector;
 import thBase.math3d.all;
 import thBase.casts;
 import thBase.math;
+import thBase.logging;
 
 import std.math;
 
@@ -281,7 +282,7 @@ class PhysicsSimulation : IPhysics
           else if(numCollisions > 0)
           {
             static int counter = 0;
-            base.logger.info("Collision ignored because resolving intersection %d", counter++);
+            logInfo("Collision ignored because resolving intersection %d", counter++);
           }
           else //no collision and no resolving -> step complete
           {

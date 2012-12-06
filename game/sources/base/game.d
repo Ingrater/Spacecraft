@@ -4,7 +4,6 @@ public import base.octree;
 public import core.sync.mutex;
 public import base.script;
 public import base.events;
-public import client.net;
 public import base.gameobject;
 public import base.sound;
 

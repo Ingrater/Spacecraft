@@ -4,7 +4,6 @@ version(Posix){
 	
 	import core.stdc.errno, core.stdc.stdio;
 	import core.sys.posix.fcntl, unistd = core.sys.posix.unistd, core.sys.posix.poll;
-	import base.c_types;
 	
 	// Redefine for 64bit compatibility, core.sys.posix.fcntl only contains 32bit
 	// compatible definitions

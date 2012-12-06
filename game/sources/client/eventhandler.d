@@ -1,15 +1,15 @@
 module client.eventhandler;
 
 import renderer.sdl.main;
-import base.eventlistener;
-import client.inputlistener;
+import base.windowevents;
+import base.inputlistener;
 import thBase.container.vector;
 
 
 /**
  * event handler, handles input and window events
  */
-class EventHandler {
+class EventHandler : IWindowEventHandler {
 private:
 	struct InputListenerInfo {
 		shared(IInputListener) sharedRef;
@@ -26,7 +26,7 @@ private:
 	}
 	
 	Vector!InputListenerInfo m_InputListeners;
-	Vector!IEventListener m_EventListeners;
+	Vector!IWindowEventListener m_EventListeners;
 public:
 
   this()
@@ -46,16 +46,16 @@ public:
 	 * Params:
 	 *  listener = new listener to add
 	 */
-	void RegisterInputListener(IInputListener listener){
+	override void RegisterInputListener(IInputListener listener){
 		m_InputListeners ~= InputListenerInfo(null,listener);
 	}
 
 	///ditto
-	void RegisterInputListener(shared(IInputListener) listener) shared {
+	override void RegisterInputListener(shared(IInputListener) listener) shared {
 		(cast(Vector!InputListenerInfo)m_InputListeners) ~= InputListenerInfo(listener,null);
 	}
 
-  void DeregisterInputListener(shared(IInputListener) listener) shared {
+  override void DeregisterInputListener(shared(IInputListener) listener) shared {
     (cast(Vector!InputListenerInfo)m_InputListeners).remove(InputListenerInfo(listener,null));
   }
 	
@@ -64,7 +64,7 @@ public:
    * Params:
    *  listener = new listener to add
    */
-	void RegisterEventListener(IEventListener listener){
+	override void RegisterEventListener(IWindowEventListener listener){
 		m_EventListeners ~= listener;
 	}
 
@@ -73,7 +73,7 @@ public:
    * Params:
    *  listener = the listener to remove
    */
-  void DeregisterEventListener(IEventListener listener)
+  override void DeregisterEventListener(IWindowEventListener listener)
   {
     m_EventListeners.remove(listener);
   }

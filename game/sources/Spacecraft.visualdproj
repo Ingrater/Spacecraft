@@ -654,14 +654,12 @@
  <Folder name="Spacecraft">
   <Folder name="base">
    <File path="base\all.d" />
-   <File path="base\c_types.d" />
    <File path="base\debughelper.d" />
-   <File path="base\eventlistener.d" />
    <File path="base\events.d" />
    <File path="base\game.d" />
    <File path="base\gameobject.d" />
+   <File path="base\inputlistener.d" />
    <File path="base\logger.d" />
-   <File path="base\memory.d" />
    <File path="base\messages.d" />
    <File path="base\modelloader.d" />
    <File path="base\net.d" />
@@ -675,10 +673,10 @@
    <File path="base\socket.d" />
    <File path="base\sound.d" />
    <File path="base\utilsD2.d" />
+   <File path="base\windowevents.d" />
   </Folder>
   <Folder name="client">
    <File path="client\eventhandler.d" />
-   <File path="client\inputlistener.d" />
    <File path="client\main.d" />
    <File path="client\net.d" />
    <File path="client\resources.d" />
@@ -723,11 +721,6 @@
    <File path="game\scheibe.d" />
    <File path="game\skybox.d" />
    <File path="game\turret.d" />
-  </Folder>
-  <Folder name="physics">
-   <File path="physics\cvars.d" />
-   <File path="physics\physics.d" />
-   <File path="physics\rigidbody.d" />
   </Folder>
   <Folder name="renderer">
    <Folder name="freetype">

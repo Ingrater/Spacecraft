@@ -1,4 +1,4 @@
-module client.inputlistener;
+module base.inputlistener;
 
 import base.messages : BaseMessage;
 import thBase.container.queue;

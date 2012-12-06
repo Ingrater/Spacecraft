@@ -12,6 +12,7 @@ import thBase.file;
 import thBase.io;
 import core.allocator;
 import core.refcounted;
+import client.eventhandler;
 
 import base.debughelper;
 import core.thread;
@@ -234,7 +235,7 @@ public:
 				  // Load the resources required by the client. We do this before the network
 				  // connection because this can take some seconds. If many game objects are
 				  // flying around this can be enought to fill the network buffers.
-				  base.logger.info("Loading resources...");
+				  logInfo("Loading resources...");
 
           auto resourceData = [
 					  [_T("box"), _T("models/chest1.thModel")],

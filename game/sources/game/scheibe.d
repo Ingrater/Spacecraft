@@ -1,6 +1,7 @@
 module game.scheibe;
 
 import base.all, game.gameobject;
+static import client.resources;
 
 
 

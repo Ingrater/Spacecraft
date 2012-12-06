@@ -3,7 +3,6 @@ module base.profiler;
 import base.all;
 import thBase.container.stack;
 import core.sync.mutex;
-import base.memory;
 import thBase.container.vector;
 import thBase.format;
 import thBase.allocator;

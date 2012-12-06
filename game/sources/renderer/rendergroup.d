@@ -1,7 +1,6 @@
 module renderer.rendergroup;
 
 import renderer.rendercall;
-import base.memory;
 import renderer.uniformtype;
 import renderer.shaderconstants;
 import thBase.container.vector;

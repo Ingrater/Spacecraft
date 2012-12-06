@@ -3,17 +3,20 @@ module base.all;
 public import thBase.timer;
 public import base.renderer;
 public import base.game;
-public import client.eventhandler;
-public import base.c_types;
+public import base.windowevents;
 public import core.allocator;
 public import core.refcounted;
+import base.physics;
 
 struct Environment  {
 	bool isServer = false;
 	shared(Timer) mainTimer;
 	shared(IRenderer) renderer;
-	shared(EventHandler) eventHandler;
+	shared(IWindowEventHandler) eventHandler;
 	shared(IGame) game;
+
+  //List of plugins
+  IPhysicsPlugin physicsPlugin;
 	
 	// On the client these are the IP and port we're gooing to connect to. On the
 	// server these are the IP and port the server is bound to.
@@ -60,14 +63,21 @@ struct Environment  {
 	}
 };
 
-public __gshared Environment g_Env;
-
-shared static this()
+version(Plugin)
 {
-  g_Env.reset();
+  public __gshared Environment* g_Env = null;
 }
-
-shared static ~this()
+else
 {
-  g_Env.reset();
+  public __gshared Environment g_Env;
+
+  shared static this()
+  {
+    g_Env.reset();
+  }
+
+  shared static ~this()
+  {
+    g_Env.reset();
+  }
 }

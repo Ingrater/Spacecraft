@@ -6,7 +6,7 @@ import base.script;
 import base.net;
 import base.events;
 import thBase.file;
-import client.inputlistener;
+import base.inputlistener;
 
 import game.asteroid;
 import game.skybox;
@@ -888,7 +888,7 @@ class GameSimulation : IGameThread, IGame {
      */
     double spawnBox(float x, float y, float z, float inverseMass)
     {
-      base.logger.info("spawnBox %f %f %f %f", x, y, z, inverseMass);
+      logInfo("spawnBox %f %f %f %f", x, y, z, inverseMass);
       auto obj = New!Box(EntityId(2), this, inverseMass);
       obj.setPosition(x,y,z);
       obj.update(1.0f);
@@ -902,7 +902,7 @@ class GameSimulation : IGameThread, IGame {
     */
     double spawnPlane(float x, float y, float z, float inverseMass)
     {
-      base.logger.info("spawnPlane %f %f %f %f", x, y, z, inverseMass);
+      logInfo("spawnPlane %f %f %f %f", x, y, z, inverseMass);
       auto obj = New!(game.devobjects.Plane)(EntityId(2), this, inverseMass);
       obj.setPosition(x,y,z);
       obj.update(1.0f);
@@ -916,7 +916,7 @@ class GameSimulation : IGameThread, IGame {
      */
     void rotate(double id, float x, float y, float z, float degrees)
     {
-      base.logger.info("rotate %f %f %f %f %f", id, x, y, z, degrees);
+      logInfo("rotate %f %f %f %f %f", id, x, y, z, degrees);
       size_t index = cast(size_t)id;
       if(index < m_physicObjects.length)
       {

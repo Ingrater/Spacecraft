@@ -2,6 +2,7 @@ module dllmain;
 
 import std.c.windows.windows;
 import core.sys.windows.dll;
+import thBase.plugin;
 
 __gshared HINSTANCE g_hInst;
 
@@ -12,7 +13,7 @@ BOOL DllMain(HINSTANCE hInstance, ULONG ulReason, LPVOID pvReserved)
     {
 	case DLL_PROCESS_ATTACH:
 	    g_hInst = hInstance;
-	    dll_process_attach( hInstance, true );
+	    dll_fixTLS( hInstance );
 	    break;
 
 	case DLL_PROCESS_DETACH:
@@ -28,5 +29,10 @@ BOOL DllMain(HINSTANCE hInstance, ULONG ulReason, LPVOID pvReserved)
 	    break;
     }
     return true;
+}
+
+extern(C) export void InitPlugin(IPluginRegistry registry)
+{
+  g_pluginRegistry = registry;
 }
 

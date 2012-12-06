@@ -16,7 +16,7 @@ import thBase.logging;
 
 import std.traits;
 
-import base.eventlistener;
+import base.windowevents;
 import base.renderer;
 import base.messages;
 static import base.profiler;
