@@ -258,7 +258,7 @@ public:
 		int top = Lua.gettop(c.L);
 		scope(exit) Lua.settop(c.L,top);
 		
-		//base.logger.info("Executing : %s",commands);
+		//logInfo("Executing : %s",commands);
 		
 		Lua.pushcfunction(c.L,&GenerateDebugInfo);
 		int debugfunc = Lua.gettop(c.L);

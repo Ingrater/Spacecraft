@@ -13,6 +13,7 @@ import thBase.file;
 import core.refcounted;
 import core.allocator;
 import thBase.ctfe;
+import thBase.logging;
 
 import base.all;
 import core.stdc.string: memmove, memset;
@@ -761,7 +762,7 @@ class BufferReader : ISerializer {
 			return true;
 	
 		if (varId > peek!ubyte()){
-			base.logger.error("server net: expected varId %s but got %s", varId, peek!ubyte());
+			logError("server net: expected varId %s but got %s", varId, peek!ubyte());
 			return true;
 		}
 		
@@ -1014,11 +1015,11 @@ class BufferReader : ISerializer {
 	body {
 		block_level--;
 		if (pos < block_limits[block_level] && !intentionalUnreadData)
-			base.logger.warn("BufferReader, leaveBlock: not consumed all block content");
+			logWarning("BufferReader, leaveBlock: not consumed all block content");
 		else if (pos > block_limits[block_level])
 			throw New!RCException(format("BlockReader, leaveBlock: consumed data over the end of the block! pos: %s, limits: %s, level: %s",
 				pos, block_limits, block_level));
-			//base.logger.error("BlockReader, leaveBlock: consumed data over the end of the block");
+			//logError("BlockReader, leaveBlock: consumed data over the end of the block");
 		
 		debug(net) base.logger.test("net: %5d < %s-- leave block --", pos, replicate("|", block_level));
 		pos = block_limits[block_level];
@@ -1141,11 +1142,11 @@ class NetworkBuffer {
 				// Client died and was kind enough to reset its connection before its
 				// death
 				case ECONNRESET:
-					base.logger.warn("net: connection to client lost, connection reset by client (probably died)");
+					logWarning("net: connection to client lost, connection reset by client (probably died)");
 					return false;
 				// Other errors are not ok and usually indicate the the client died
 				default:
-					base.logger.warn("net: connection to client lost, reason unknown, socket errno: %s", socket.errno);
+					logWarning("net: connection to client lost, reason unknown, socket errno: %s", socket.errno);
 					return false;
 			}
 		}
@@ -1193,7 +1194,7 @@ class NetworkBuffer {
 			
 			if (bytes_send == -1){
 				if( !(socket.errno == EWOULDBLOCK || socket.errno == ECONNRESET) )
-					base.logger.warn("net: socket send failed with error %s", socket.errno);
+					logWarning("net: socket send failed with error %s", socket.errno);
 				break sender;
 			}
 			

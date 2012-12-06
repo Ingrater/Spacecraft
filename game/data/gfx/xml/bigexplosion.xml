@@ -8,7 +8,7 @@
         <sprites size="10">
             <SpriteParams x="512" y="0" width="128" height="128" />
             <SpriteParams x="640" y="0" width="128" height="128" />
-            <el2SpriteParams x="768" y="0" width="128" height="128" />
+            <SpriteParams x="768" y="0" width="128" height="128" />
             <SpriteParams x="896" y="0" width="128" height="128" />
             <SpriteParams x="512" y="128" width="128" height="128" />
             <SpriteParams x="640" y="128" width="128" height="128" />

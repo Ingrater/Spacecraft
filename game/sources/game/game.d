@@ -30,7 +30,7 @@ import core.thread;
 
 import client.net;
 
-static import base.logger;
+import thBase.logging;
 
 
 class GameSimulation : IGameThread, IGame {
@@ -105,6 +105,9 @@ class GameSimulation : IGameThread, IGame {
                   break;
                 case Keys.ESCAPE:
                   m_Console.abort();
+                  break;
+                case Keys.TAB:
+                  m_Console.useAutocompleteSuggestion();
                   break;
                 case Keys.SPACE:
                   if(mod & ModKeys.LCTRL)
@@ -238,7 +241,7 @@ class GameSimulation : IGameThread, IGame {
 							}
 							
 							default:
-								base.logger.info("OnKeyboard %d %c",key,cast(wchar)unicode);
+								logInfo("OnKeyboard %d %c",key,cast(wchar)unicode);
 								break;
 						}
 					}
@@ -503,7 +506,7 @@ class GameSimulation : IGameThread, IGame {
 		 */
 		private void loadAutoexecLua(rcstring filename){
 			if (thBase.file.exists(filename[])){
-				base.logger.info("executing %s", filename[]);
+				logInfo("executing %s", filename[]);
 				m_ScriptSystem.executeFile(filename);
 			}
 		}
@@ -520,10 +523,10 @@ class GameSimulation : IGameThread, IGame {
 				auto mutexprofile = base.profiler.Profile("mutexed");
 				float timeDiff = now - m_LastUpdate;
 				if (timeDiff > 10_000){
-					base.logger.warn("game: got a cycle time diff of %s ms. Resetting to 100 ms.", timeDiff);
+					logWarning("game: got a cycle time diff of %s ms. Resetting to 100 ms.", timeDiff);
 					timeDiff = 100;
 				}
-				//base.logger.info("timeDiff %s",timeDiff);
+				//logInfo("timeDiff %s",timeDiff);
 				
 				if(now - m_LastMeasurement > 500.0f){
 					float simulationsPerSecond = cast(float)m_Simulations * 1000.0f / (now - m_LastMeasurement);
@@ -733,7 +736,7 @@ class GameSimulation : IGameThread, IGame {
 		 * to the player and tells the HUD to display the stats of this player.
 		 */
 		void handoverControl(Player controller){
-			base.logger.info("game: setting controller to %s", controller.inspect()[]);
+			logInfo("game: setting controller to %s", controller.inspect()[]);
 			m_Controller = controller;
 			m_AttachedCamera.attachTo(controller);
 			m_Camera = m_AttachedCamera;
@@ -754,14 +757,14 @@ class GameSimulation : IGameThread, IGame {
 			m_Players[playerClientId] = player;
 			
 			if (!g_Env.isServer && m_EventSink.clientId == playerClientId) {
-				base.logger.info("game: player spawned, client id: %s, own client id: %d", playerClientId, m_EventSink.clientId);
+				logInfo("game: player spawned, client id: %s, own client id: %d", playerClientId, m_EventSink.clientId);
 				auto controller = cast(IControllable) player;
 				if (controller) {
 				} else {
-					base.logger.warn("game: spawned a player that is not controllable: %s", player.inspect());
+					logWarning("game: spawned a player that is not controllable: %s", player.inspect());
 				}
 			} else {
-				base.logger.info("game: player spawned, client id: %s", playerClientId);
+				logInfo("game: player spawned, client id: %s", playerClientId);
 			}
 		}
 		+/
@@ -786,9 +789,9 @@ class GameSimulation : IGameThread, IGame {
 		override void onPlayerDeath(IGameObject playerEntity){
 			auto player = cast(Player) playerEntity;
 			if (player !is null) {
-				base.logger.info("game: player %s died!", player.clientId);
+				logInfo("game: player %s died!", player.clientId);
 			} else {
-				base.logger.warn("game: something called onPlayerRespawn() but was not a Player: %s", playerEntity.inspect);
+				logWarning("game: something called onPlayerRespawn() but was not a Player: %s", playerEntity.inspect);
 			}
 		}
 		+/
@@ -855,27 +858,17 @@ class GameSimulation : IGameThread, IGame {
 			// m_Octree.allObjects will return all objects with some exceptions (?).
 			factory.foreachGameObject((ref IGameObject entity)
       {
-				base.logger.info("%s", entity.inspect[]);
+				logInfo("%s", entity.inspect[]);
         return 0;
       });
-		}
-		
-		/**
-		 * Sets the global log level.
-		 */
-		void setLogLevel(uint level){
-			// atomicStore is missing from the imports right now. For now direct
-			// access should not do to much damage.
-			//atomicStore(base.logger.level, level);
-			base.logger.level = cast(shared(base.logger.level_t)) level;
 		}
 		
 		/**
 		 * Spawns a new asteroid
 		 */
 		void spawnAsteroid(float x, float y, float z){
-			base.logger.info("spawnAsteroid %f %f %f",x,y,z);
-			auto obj = new Asteroid(m_GameObjectFactory.nextEntityId(), this, Position(vec3(x,y,z)), Quaternion(vec3(1, 0, 0), 0));
+			logInfo("spawnAsteroid %f %f %f",x,y,z);
+			auto obj = New!Asteroid(m_GameObjectFactory.nextEntityId(), this, Position(vec3(x,y,z)), Quaternion(vec3(1, 0, 0), 0));
 			m_GameObjectFactory.SpawnGameObject(obj);
 		}
 		
@@ -883,7 +876,7 @@ class GameSimulation : IGameThread, IGame {
 		 * Spawns a new asteroid in the model viewer
 		 */
 		void spawnAsteroid2(float x, float y, float z){
-			base.logger.info("spawnAsteroid %f %f %f",x,y,z);
+			logInfo("spawnAsteroid %f %f %f",x,y,z);
 			auto obj = New!Asteroid(EntityId(2), this);
 			obj.setPosition(x,y,z);
 			obj.update(1.0f);
@@ -966,7 +959,7 @@ class GameSimulation : IGameThread, IGame {
 		 */
 		void spawnAsteroidAtCam(float x, float y, float z){
 			vec4 dir = m_FreeCamera.rotation().toMat4() * vec4(0,0,-50,1);
-			base.logger.info("spawnAsteroidAtCam %f %f %f, v = %f %f %f",x,y,z,dir.x,dir.y,dir.z);
+			logInfo("spawnAsteroidAtCam %f %f %f, v = %f %f %f",x,y,z,dir.x,dir.y,dir.z);
 			auto obj = new Asteroid(EntityId(2), this);
 			obj.setPosition(x,y,z);
 			obj.update(1.0f);
@@ -1053,7 +1046,7 @@ class GameSimulation : IGameThread, IGame {
 		void loadSounds(rcstring[] names){
 			foreach(ref name; names){
 				// FIXME: sound loader currently crashes the game
-				base.logger.info("sound: loading %s", name[]);
+				logInfo("sound: loading %s", name[]);
 				m_Sounds[name] = m_SoundSystem.LoadOggSound(format("sfx/%s.ogg", name[]));
 			}
 		}
@@ -1130,7 +1123,6 @@ class GameSimulation : IGameThread, IGame {
 
 		void RegisterScriptFunctions(){
 			m_ScriptSystem.RegisterGlobal("inspectWorld", &inspectWorld);
-			m_ScriptSystem.RegisterGlobal("setLogLevel", &setLogLevel);
 			m_ScriptSystem.RegisterGlobal("dumpOctree", &dumpOctree);
 			m_ScriptSystem.RegisterGlobal("setCamOffset",&setCamOffset);
 			
@@ -1170,4 +1162,9 @@ class GameSimulation : IGameThread, IGame {
       if(m_Physics)
         m_Physics.RegisterCVars(m_CVarsStorage);
 		}
+
+    @property CVars cvars()
+    {
+      return m_CVars;
+    }
 }

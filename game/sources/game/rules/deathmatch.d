@@ -8,9 +8,9 @@ import std.math, std.random;
 import thBase.container.hashmap;
 import thBase.scoped;
 
-static import base.logger;
+import thBase.logging;
 
-class DeathmatchRulesBase : RulesBase, ISerializeable {
+abstract class DeathmatchRulesBase : RulesBase, ISerializeable {
 	
 	private static {
 		const float maxRoundTime = 15 * 60;
@@ -66,15 +66,15 @@ class DeathmatchRulesBase : RulesBase, ISerializeable {
 	class ClientMsgs {
 		void setRoundTime(float currentRoundTime){
 			m_ClientRules.roundTime = currentRoundTime;
-			base.logger.info("game: set round time to %s", currentRoundTime);
+			logInfo("game: set round time to %s", currentRoundTime);
 		}
 		void roundStart(){
-			base.logger.info("game: starting round");
+			logInfo("game: starting round");
 			m_Game.hud.roundEnd(false);
 			m_ClientRules.roundTime = 0;
 		}
 		void roundEnd(){
-			base.logger.info("game: round ended");
+			logInfo("game: round ended");
 			m_Game.hud.roundEnd(true);
 		}
 		void loadLevel(rcstring name){
@@ -145,9 +145,29 @@ class ServerRules : IServerRules {
   }
 	
 	override void onGameStart(){
-		base.logger.info("game: starting...");
+		logInfo("game: starting...");
 		loadLevel(g_Env.level);
 	}
+
+  override Relation getRelation(EntityId ent1, EntityId ent2)
+  {
+    HitableGameObject obj1,obj2;
+    m_Hitables.ifExists(ent1,(ref obj){ obj1 = obj;});
+    m_Hitables.ifExists(ent2,(ref obj){ obj2 = obj;});
+    if(obj1 is null || obj2 is null)
+      return Relation.Unkown;
+    if(obj1 is obj2)
+      return Relation.Friend;
+    if(obj1.team < 0 || obj2.team < 0)
+      return Relation.Neutral;
+    if(obj1.team == obj2.team)
+    {
+      if(obj1.team == 0)
+        return Relation.Enemy;
+      return Relation.Friend;
+    }
+    return Relation.Enemy;
+  }
 	
 	override void onUpdate(float timeDiff){
 		float dt_sec = timeDiff / 1_000;
@@ -183,12 +203,12 @@ class ServerRules : IServerRules {
 	}
 	
 	private void onRoundEnd(){
-		base.logger.info("game: round ended");
+		logInfo("game: round ended");
 		relay.toClient.roundEnd(EventType.preSync);
 	}
 	
 	private void onRoundStart(){
-		base.logger.info("game: starting new round");
+		logInfo("game: starting new round");
 		relay.toClient.roundStart(EventType.preSync);
 		foreach(player; m_Players){
 			player.resetScore();
@@ -200,11 +220,11 @@ class ServerRules : IServerRules {
 	}
 	
 	override void onGameEnd() {
-		base.logger.info("game: ending...");
+		logInfo("game: ending...");
 	}
 	
 	override void onPlayerConnect(uint clientId){
-		base.logger.info("game: player %s connected", clientId);
+		logInfo("game: player %s connected", clientId);
 		
 		relay.toClient.setRoundTime(this.roundTime, EventType.preSync, clientId);
 		
@@ -231,24 +251,24 @@ class ServerRules : IServerRules {
 	}
 	
 	override void onPlayerJoin(Player player){
-		base.logger.info("game: player %s joined the game", player.clientId);
+		logInfo("game: player %s joined the game", player.clientId);
 		m_Players[player.clientId] = player;
 	}
 	
 	override void onPlayerDisconnect(uint clientId){
-		base.logger.info("game: player %s disconnected", clientId);
+		logInfo("game: player %s disconnected", clientId);
 		if (m_Players.exists(clientId))
 			game.factory.removeGameObject(m_Players[clientId]);
 	}
 	
 	override void onPlayerLeave(Player player){
-		base.logger.info("game: player %s (%s) left the game", player.name[], player.clientId);
+		logInfo("game: player %s (%s) left the game", player.name[], player.clientId);
     auto id = player.clientId; //workaround dmd 6799
 		m_Players.remove(id);
 	}
 	
 	override void onPlayerDeath(Player player){
-		base.logger.info("game: player %s (%s) died", player.name[], player.clientId);
+		logInfo("game: player %s (%s) died", player.name[], player.clientId);
 		
 		m_DeadPlayers.insertFront(ResurectInfo(3000.0f,player));
 	}
@@ -272,7 +292,7 @@ class ServerRules : IServerRules {
 	void onTeamChange(uint clientId, byte team){
 		if (m_Players.exists(clientId)){
       auto player = m_Players[clientId];
-			base.logger.info("game: player %s (%s) changed team to %s", player.name[], clientId, team);
+			logInfo("game: player %s (%s) changed team to %s", player.name[], clientId, team);
 			player.team = team;
 		}
 	}
@@ -426,7 +446,7 @@ class ServerRules : IServerRules {
 		}
 		
 		void loadLevel(rcstring name){
-			base.logger.info("game: loading level %s...", name[]);
+			logInfo("game: loading level %s...", name[]);
 			
 			// First clean out all game objects except players, the factory and the
 			// game rules
@@ -444,7 +464,7 @@ class ServerRules : IServerRules {
 				//game.scriptSystem.execute(std.file.readText("levels/" ~ name ~ "/server.lua"));
         game.scriptSystem.executeFile(format("levels/%s/server.lua", name[]));
 			} catch(Exception e) {
-				base.logger.warn("game: could not load the level %s:\n%s", name[], e.toString()[]);
+				logWarning("game: could not load the level %s:\n%s", name[], e.toString()[]);
         Delete(e);
 			}
 			
@@ -495,7 +515,7 @@ class ClientRules : IClientRules {
 	}
 	
 	override void onGameStart(){
-		base.logger.info("game: starting...");
+		logInfo("game: starting...");
 		
 		// Execute the client lua script for the level. Can not be reloaded since
 		// it's hard to remove all the stuff in a clean way. Since the server has no
@@ -506,11 +526,11 @@ class ClientRules : IClientRules {
 	
 	private void loadClientLevel(rcstring name){
 		try {
-			base.logger.info("game: loading client level %s:", name[]);
+			logInfo("game: loading client level %s:", name[]);
 			//game.scriptSystem.execute(std.file.readText("levels/" ~ name ~ "/client.lua"));
       game.scriptSystem.executeFile(format("levels/%s/client.lua", name[]));
 		} catch(Exception e) {
-			base.logger.warn("game: could not load the level %s:\n%s", name[], e.toString()[]);
+			logWarning("game: could not load the level %s:\n%s", name[], e.toString()[]);
       Delete(e);
 		}
 	}
@@ -526,7 +546,7 @@ class ClientRules : IClientRules {
 	}
 	
 	override void onGameEnd() {
-		base.logger.info("game: ending...");
+		logInfo("game: ending...");
     game.soundSystem.RemoveStream(m_music);
     Delete(m_music); m_music = null;
     Delete(m_athmo); m_athmo = null;
@@ -535,7 +555,7 @@ class ClientRules : IClientRules {
 	}
 	
 	override void onPlayerJoin(Player player){
-		base.logger.info("game: player %s joined the game", player.clientId);
+		logInfo("game: player %s joined the game", player.clientId);
 		m_Players[player.clientId] = player;
 		
 		if (game.eventSink.clientId == player.clientId)
@@ -548,14 +568,14 @@ class ClientRules : IClientRules {
 	}
 	
 	override void onPlayerLeave(Player player){
-		base.logger.info("game: player %s (%s) left the game", player.name[], player.clientId);
+		logInfo("game: player %s (%s) left the game", player.name[], player.clientId);
 
     auto id = player.clientId; //Workaround dmd 6799
 		m_Players.remove(id);
 	}
 	
 	override void onPlayerDeath(Player player){
-		base.logger.info("game: player %s (%s) died", player.name[], player.clientId);
+		logInfo("game: player %s (%s) died", player.name[], player.clientId);
 	}
 	
 	
@@ -578,7 +598,26 @@ class ClientRules : IClientRules {
 	float roundTimeLeft(){
 		return relay.maxRoundTime - roundTime;
 	}
-	
+
+  override Relation getRelation(EntityId ent1, EntityId ent2)
+  {
+    HitableGameObject obj1,obj2;
+    m_Hitables.ifExists(ent1,(ref obj){ obj1 = obj;});
+    m_Hitables.ifExists(ent2,(ref obj){ obj2 = obj;});
+    if(obj1 is null || obj2 is null)
+      return Relation.Unkown;
+    if(obj1 is obj2)
+      return Relation.Friend;
+    if(obj1.team < 0 || obj2.team < 0)
+      return Relation.Neutral;
+    if(obj1.team == obj2.team)
+    {
+      if(obj1.team == 0)
+        return Relation.Enemy;
+      return Relation.Friend;
+    }
+    return Relation.Enemy;
+  }
 	
 	//
 	// Lua functions to initialize the client

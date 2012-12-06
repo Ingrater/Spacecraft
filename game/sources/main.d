@@ -7,6 +7,7 @@ import base.debughelper;
 import thBase.io;
 import thBase.conv;
 import thBase.file;
+import thBase.logging;
 
 version(ParticlePerformance)
 {
@@ -183,7 +184,7 @@ int main(string[] args){
     }
 		
 		base.logger.init( (g_Env.isServer) ? "server.log" : "client.log" );
-		base.logger.info("starting up engine");
+		logMessage("starting up engine");
 		
 		// Create the main timer
 		g_Env.mainTimer = cast(shared(Timer))New!Timer();
@@ -228,12 +229,12 @@ int main(string[] args){
 		else
 			client_main();
 		
-		base.logger.info("engine shutdown completed successfully");
+		logInfo("engine shutdown completed successfully");
 		
 		return 0;
 	}
 	catch(Exception e){
-		base.logger.error("Exception %s", e.toString()[]);
+		logError("Exception %s", e.toString()[]);
 		DebugOutput(format("Exception %s", e.toString()[])[]);
 		auto datei = RawFile("error.log", "a");
 		datei.writeArray("Exception");
@@ -242,7 +243,7 @@ int main(string[] args){
     Delete(e);
 	}
 	catch(Error e){
-		base.logger.error("Error %s", e.toString()[]);
+		logError("Error %s", e.toString()[]);
 		DebugOutput(format("Error %s", e.toString()[])[]);
 		auto datei = RawFile("error.log","a");
 		datei.writeArray("Error ");

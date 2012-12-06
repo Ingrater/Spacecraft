@@ -7,6 +7,7 @@ import thBase.container.hashmap;
 import thBase.container.stack;
 import thBase.allocator;
 import thBase.policies.locking;
+import thBase.logging;
 
 
 class NetworkServer : IEventSink {
@@ -88,7 +89,7 @@ class NetworkServer : IEventSink {
 			// already have a started cycle report.
 			client_buffer.writer.startBlock();
 			
-			base.logger.info("net: accepted new client no. %s: %s", next_client_id, con.remoteAddress.toString()[]);
+			logInfo("net: accepted new client no. %s: %s", next_client_id, con.remoteAddress.toString()[]);
 			
 			// Let the game know that a new player joined. Since the game will usually
 			// generate events in some way (e.g. spawn something) we needed to open
@@ -118,12 +119,12 @@ class NetworkServer : IEventSink {
 		client.writer.startBlock();
 		
 		// Replicate the game objects first so the client knows them
-		debug(net) base.logger.info("net: start sending world events...");
+		debug(net) logInfo("net: start sending world events...");
 		entity_manager.OnClientConnected(client_id);
-		debug(net) base.logger.info("net: finished sending world events...");
+		debug(net) logInfo("net: finished sending world events...");
 		
 		// Update the game objects with the newest state
-		debug(net) base.logger.info("net: start sending world objects...");
+		debug(net) logInfo("net: start sending world objects...");
 		entity_manager.foreachGameObject((ref IGameObject entity){
 			if(entity.syncOverNetwork){
 				client.writer.startBlock();
@@ -140,7 +141,7 @@ class NetworkServer : IEventSink {
 			}
       return 0;
 		});
-		debug(net) base.logger.info("net: finished sending world objects...");
+		debug(net) logInfo("net: finished sending world objects...");
 		
 		client.writer.finishBlock();
 	}
@@ -189,7 +190,7 @@ class NetworkServer : IEventSink {
     {
       auto id = dead_client_ids.pop();
 			clients.remove(id);
-			base.logger.info("net: lost connection to client %s", id);
+			logInfo("net: lost connection to client %s", id);
 
       // Notify the game about the disconnected client (game then kills the player
       // or something like that)
@@ -268,7 +269,7 @@ class NetworkServer : IEventSink {
 		});
 		version(netUsage){
 			if(count > 0)
-				base.logger.info("send %d updates",count);
+				logInfo("send %d updates",count);
 		}
 	}	
 	
@@ -279,12 +280,12 @@ class NetworkServer : IEventSink {
 	void send(){
 		foreach(uint i,client; clients){
 			client.writer.finishBlock();
-			version(netUsage) base.logger.info("client %d, %d bytes",i,client.writer.curPos());
+			version(netUsage) logInfo("client %d, %d bytes",i,client.writer.curPos());
 			client.send();
 		}
 		version(netUsage) {
 			if(numEvents > 0){
-				base.logger.info("send %d events",numEvents);
+				logInfo("send %d events",numEvents);
 				numEvents = 0;
 			}
 		}

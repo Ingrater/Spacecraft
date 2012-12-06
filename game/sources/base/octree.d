@@ -11,6 +11,7 @@ import core.allocator;
 import core.hashmap;
 import thBase.policies.hashing;
 import thBase.allocator;
+import thBase.logging;
 
 /**
  * Octree 
@@ -130,7 +131,7 @@ private:
 				assert(sum == 8);*/
 			}
 			body {
-				//base.logger.info("subdividing");
+				//logInfo("subdividing");
 				m_HasChilds = true;
 				float shift = m_RealSize / 4.0f;
 				float newsize = m_RealSize / 2.0f;
@@ -246,23 +247,23 @@ private:
 			}
 			
 			void dumpToConsole(string pre){
-				base.logger.info("%s m_RealSize=%s",pre,m_RealSize);
+				logInfo("%s m_RealSize=%s",pre,m_RealSize);
 				vec3 min = m_BoundingBox.min.toVec3();
 				vec3 max = m_BoundingBox.max.toVec3();
-				base.logger.info("%s m_BoundingBox min=%s (cell:%s rel:%s)",pre,min.f,m_BoundingBox.min.cell.f,m_BoundingBox.min.relPos.f);
-				base.logger.info("%s m_BoundingBox max=%s (cell:%s rel:%s)",pre,max.f,m_BoundingBox.max.cell.f,m_BoundingBox.max.relPos.f);
+				logInfo("%s m_BoundingBox min=%s (cell:%s rel:%s)",pre,min.f,m_BoundingBox.min.cell.f,m_BoundingBox.min.relPos.f);
+				logInfo("%s m_BoundingBox max=%s (cell:%s rel:%s)",pre,max.f,m_BoundingBox.max.cell.f,m_BoundingBox.max.relPos.f);
 				foreach(ref object;m_Objects[]){
-					base.logger.info("%s Object %s",pre,object.inspect()[]);
+					logInfo("%s Object %s",pre,object.inspect()[]);
 					min = object.boundingBox.min.toVec3();
 					max = object.boundingBox.max.toVec3();
-					base.logger.info("%s        boundingBox min=%s (cell:%s rel:%s)",pre,min.f,object.boundingBox.min.cell.f,object.boundingBox.min.relPos.f);
-					base.logger.info("%s        boundingBox max=%s (cell:%s rel:%s)",pre,max.f,object.boundingBox.max.cell.f,object.boundingBox.max.relPos.f);
+					logInfo("%s        boundingBox min=%s (cell:%s rel:%s)",pre,min.f,object.boundingBox.min.cell.f,object.boundingBox.min.relPos.f);
+					logInfo("%s        boundingBox max=%s (cell:%s rel:%s)",pre,max.f,object.boundingBox.max.cell.f,object.boundingBox.max.relPos.f);
 				}
 				if(m_HasChilds){
 					foreach(ref child;m_Childs){
-						base.logger.info("%s-+",pre);
+						logInfo("%s-+",pre);
 						child.dumpToConsole(pre ~ " |");
-						base.logger.info(pre);
+						logInfo(pre);
 					}
 				}
 			}
