@@ -1,5 +1,6 @@
 module dllmain;
 
+import base.all;
 import std.c.windows.windows;
 import core.sys.windows.dll;
 import core.runtime;
@@ -42,6 +43,6 @@ extern(C) export bool InitPlugin(IPluginRegistry registry)
 
 extern(C) export IPlugin GetPlugin()
 {
-  return null;
+  return g_Env.physicsPlugin;
 }
 

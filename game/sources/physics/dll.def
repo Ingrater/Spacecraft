@@ -15,3 +15,5 @@ DATA         PRELOAD MULTIPLE
 ;    Symbol Symbol
 
 EXPORTS
+GetPlugin GetPlugin
+InitPlugin InitPlugin

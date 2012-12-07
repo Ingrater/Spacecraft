@@ -6,7 +6,9 @@ public import base.game;
 public import base.windowevents;
 public import core.allocator;
 public import core.refcounted;
+
 import base.physics;
+import thBase.plugin;
 
 struct Environment  {
 	bool isServer = false;
@@ -66,6 +68,11 @@ struct Environment  {
 version(Plugin)
 {
   public __gshared Environment* g_Env = null;
+
+  shared static this()
+  {
+    g_Env = cast(Environment*)g_pluginRegistry.GetValue("g_Env");
+  }
 }
 else
 {
@@ -74,6 +81,7 @@ else
   shared static this()
   {
     g_Env.reset();
+    g_pluginRegistry.AddValue("g_Env", &g_Env);
   }
 
   shared static ~this()

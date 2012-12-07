@@ -10,8 +10,54 @@ import thBase.math3d.all;
 import thBase.casts;
 import thBase.math;
 import thBase.logging;
+import thBase.plugin;
+import game.collision;
 
 import std.math;
+
+shared static this()
+{
+  g_Env.physicsPlugin = New!PhysicsPlugin();
+}
+
+shared static ~this()
+{
+  Delete(g_Env.physicsPlugin);
+}
+
+class PhysicsPlugin : IPhysicsPlugin
+{
+  public:
+    @property override string name()
+    {
+      return "PhysicsPlugin";
+    }
+
+    override bool isInPluginMemory(void* ptr)
+    {
+      return g_pluginAllocator.isInMemory(ptr);
+    }
+
+    override IPhysics CreatePhysics(Octree octree)
+    {
+      return New!PhysicsSimulation(octree);
+    }
+
+    override void DeletePhysics(IPhysics physics)
+    {
+      Delete(physics);
+    }
+
+    override IRigidBody CreateRigidBody(CollisionHull collision, float fInverseMass)
+    {
+      return New!RigidBody(collision, fInverseMass);
+    }
+
+    override void DeleteRigidBody(IRigidBody b)
+    {
+      Delete(b);
+    }
+}
 
 class PhysicsSimulation : IPhysics
 {
