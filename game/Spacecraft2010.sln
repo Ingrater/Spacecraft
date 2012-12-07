@@ -4,65 +4,58 @@ Microsoft Visual Studio Solution File, Format Version 11.00
 Project("{002A2DE9-8BB6-484D-9802-7E4AD4084715}") = "Spacecraft", "sources\Spacecraft.visualdproj", "{6BAFFA1B-7C40-4E03-AC73-20CDE989AE2C}"
 	ProjectSection(ProjectDependencies) = postProject
 		{AC6B556F-2AE2-4C7A-9FA0-5E09DEBEE5B6} = {AC6B556F-2AE2-4C7A-9FA0-5E09DEBEE5B6}
+		{81C122C4-617F-487D-87C9-AADF1A033719} = {81C122C4-617F-487D-87C9-AADF1A033719}
 	EndProjectSection
 EndProject
 Project("{002A2DE9-8BB6-484D-9802-7E4AD4084715}") = "thBase", "..\..\thBase\src\common.visualdproj", "{AC6B556F-2AE2-4C7A-9FA0-5E09DEBEE5B6}"
 EndProject
 Project("{002A2DE9-8BB6-484D-9802-7E4AD4084715}") = "PhysicsPlugin", "sources\PhysicsPlugin.visualdproj", "{81C122C4-617F-487D-87C9-AADF1A033719}"
+	ProjectSection(ProjectDependencies) = postProject
+		{0B29298E-97B3-4EF1-A91A-67D0ED433937} = {0B29298E-97B3-4EF1-A91A-67D0ED433937}
+	EndProjectSection
+EndProject
+Project("{002A2DE9-8BB6-484D-9802-7E4AD4084715}") = "thBasePlugin", "..\..\thBase\src\commonplugin.visualdproj", "{0B29298E-97B3-4EF1-A91A-67D0ED433937}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
-		Debug-Client|Win32 = Debug-Client|Win32
-		debug-gdc|Win32 = debug-gdc|Win32
 		Release|Win32 = Release|Win32
 		Release-debug|Win32 = Release-debug|Win32
-		Release-GDC|Win32 = Release-GDC|Win32
 		Unittest|Win32 = Unittest|Win32
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{6BAFFA1B-7C40-4E03-AC73-20CDE989AE2C}.Debug|Win32.ActiveCfg = Debug|Win32
 		{6BAFFA1B-7C40-4E03-AC73-20CDE989AE2C}.Debug|Win32.Build.0 = Debug|Win32
-		{6BAFFA1B-7C40-4E03-AC73-20CDE989AE2C}.Debug-Client|Win32.ActiveCfg = Debug-Client|Win32
-		{6BAFFA1B-7C40-4E03-AC73-20CDE989AE2C}.Debug-Client|Win32.Build.0 = Debug-Client|Win32
-		{6BAFFA1B-7C40-4E03-AC73-20CDE989AE2C}.debug-gdc|Win32.ActiveCfg = debug-gdc|Win32
-		{6BAFFA1B-7C40-4E03-AC73-20CDE989AE2C}.debug-gdc|Win32.Build.0 = debug-gdc|Win32
 		{6BAFFA1B-7C40-4E03-AC73-20CDE989AE2C}.Release|Win32.ActiveCfg = Release|Win32
 		{6BAFFA1B-7C40-4E03-AC73-20CDE989AE2C}.Release|Win32.Build.0 = Release|Win32
 		{6BAFFA1B-7C40-4E03-AC73-20CDE989AE2C}.Release-debug|Win32.ActiveCfg = Release-debug|Win32
 		{6BAFFA1B-7C40-4E03-AC73-20CDE989AE2C}.Release-debug|Win32.Build.0 = Release-debug|Win32
-		{6BAFFA1B-7C40-4E03-AC73-20CDE989AE2C}.Release-GDC|Win32.ActiveCfg = Release-GDC|Win32
-		{6BAFFA1B-7C40-4E03-AC73-20CDE989AE2C}.Release-GDC|Win32.Build.0 = Release-GDC|Win32
 		{6BAFFA1B-7C40-4E03-AC73-20CDE989AE2C}.Unittest|Win32.ActiveCfg = Unittest|Win32
 		{6BAFFA1B-7C40-4E03-AC73-20CDE989AE2C}.Unittest|Win32.Build.0 = Unittest|Win32
 		{AC6B556F-2AE2-4C7A-9FA0-5E09DEBEE5B6}.Debug|Win32.ActiveCfg = Debug Lib|Win32
 		{AC6B556F-2AE2-4C7A-9FA0-5E09DEBEE5B6}.Debug|Win32.Build.0 = Debug Lib|Win32
-		{AC6B556F-2AE2-4C7A-9FA0-5E09DEBEE5B6}.Debug-Client|Win32.ActiveCfg = Debug Lib|Win32
-		{AC6B556F-2AE2-4C7A-9FA0-5E09DEBEE5B6}.Debug-Client|Win32.Build.0 = Debug Lib|Win32
-		{AC6B556F-2AE2-4C7A-9FA0-5E09DEBEE5B6}.debug-gdc|Win32.ActiveCfg = Debug Lib|Win32
-		{AC6B556F-2AE2-4C7A-9FA0-5E09DEBEE5B6}.debug-gdc|Win32.Build.0 = Debug Lib|Win32
 		{AC6B556F-2AE2-4C7A-9FA0-5E09DEBEE5B6}.Release|Win32.ActiveCfg = Release Lib|Win32
 		{AC6B556F-2AE2-4C7A-9FA0-5E09DEBEE5B6}.Release|Win32.Build.0 = Release Lib|Win32
 		{AC6B556F-2AE2-4C7A-9FA0-5E09DEBEE5B6}.Release-debug|Win32.ActiveCfg = Release|Win32
 		{AC6B556F-2AE2-4C7A-9FA0-5E09DEBEE5B6}.Release-debug|Win32.Build.0 = Release|Win32
-		{AC6B556F-2AE2-4C7A-9FA0-5E09DEBEE5B6}.Release-GDC|Win32.ActiveCfg = Release|Win32
-		{AC6B556F-2AE2-4C7A-9FA0-5E09DEBEE5B6}.Release-GDC|Win32.Build.0 = Release|Win32
 		{AC6B556F-2AE2-4C7A-9FA0-5E09DEBEE5B6}.Unittest|Win32.ActiveCfg = Debug Lib|Win32
 		{AC6B556F-2AE2-4C7A-9FA0-5E09DEBEE5B6}.Unittest|Win32.Build.0 = Debug Lib|Win32
 		{81C122C4-617F-487D-87C9-AADF1A033719}.Debug|Win32.ActiveCfg = Debug|Win32
 		{81C122C4-617F-487D-87C9-AADF1A033719}.Debug|Win32.Build.0 = Debug|Win32
-		{81C122C4-617F-487D-87C9-AADF1A033719}.Debug-Client|Win32.ActiveCfg = Debug|Win32
-		{81C122C4-617F-487D-87C9-AADF1A033719}.Debug-Client|Win32.Build.0 = Debug|Win32
-		{81C122C4-617F-487D-87C9-AADF1A033719}.debug-gdc|Win32.ActiveCfg = Debug|Win32
-		{81C122C4-617F-487D-87C9-AADF1A033719}.debug-gdc|Win32.Build.0 = Debug|Win32
 		{81C122C4-617F-487D-87C9-AADF1A033719}.Release|Win32.ActiveCfg = Release|Win32
 		{81C122C4-617F-487D-87C9-AADF1A033719}.Release|Win32.Build.0 = Release|Win32
 		{81C122C4-617F-487D-87C9-AADF1A033719}.Release-debug|Win32.ActiveCfg = Release|Win32
 		{81C122C4-617F-487D-87C9-AADF1A033719}.Release-debug|Win32.Build.0 = Release|Win32
-		{81C122C4-617F-487D-87C9-AADF1A033719}.Release-GDC|Win32.ActiveCfg = Release|Win32
-		{81C122C4-617F-487D-87C9-AADF1A033719}.Release-GDC|Win32.Build.0 = Release|Win32
 		{81C122C4-617F-487D-87C9-AADF1A033719}.Unittest|Win32.ActiveCfg = Release|Win32
 		{81C122C4-617F-487D-87C9-AADF1A033719}.Unittest|Win32.Build.0 = Release|Win32
+		{0B29298E-97B3-4EF1-A91A-67D0ED433937}.Debug|Win32.ActiveCfg = Debug Lib|Win32
+		{0B29298E-97B3-4EF1-A91A-67D0ED433937}.Debug|Win32.Build.0 = Debug Lib|Win32
+		{0B29298E-97B3-4EF1-A91A-67D0ED433937}.Release|Win32.ActiveCfg = Release Lib|Win32
+		{0B29298E-97B3-4EF1-A91A-67D0ED433937}.Release|Win32.Build.0 = Release Lib|Win32
+		{0B29298E-97B3-4EF1-A91A-67D0ED433937}.Release-debug|Win32.ActiveCfg = Release Lib|Win32
+		{0B29298E-97B3-4EF1-A91A-67D0ED433937}.Release-debug|Win32.Build.0 = Release Lib|Win32
+		{0B29298E-97B3-4EF1-A91A-67D0ED433937}.Unittest|Win32.ActiveCfg = Release Lib|Win32
+		{0B29298E-97B3-4EF1-A91A-67D0ED433937}.Unittest|Win32.Build.0 = Release Lib|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

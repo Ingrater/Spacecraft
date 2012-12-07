@@ -3,7 +3,7 @@ module game.gameobject;
 public import base.gameobject, base.game, base.net, base.renderer;
 public import game.collision, game.hitable;
 import game.game;
-import physics.rigidbody;
+import base.physics;
 
 
 import base.all: g_Env;

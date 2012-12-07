@@ -23,8 +23,7 @@ import game.rules.base, game.rules.deathmatch;
 import thBase.container.queue;
 import thBase.container.hashmap;
 import thBase.container.vector;
-import physics.physics;
-import physics.rigidbody;
+import base.physics;
 
 import core.thread;
 
@@ -283,7 +282,7 @@ class GameSimulation : IGameThread, IGame {
 		Console m_Console;
 		SmartPtr!HUD m_Hud;
 		IRulesBase m_Rules;
-    PhysicsSimulation m_Physics;
+    IPhysics m_Physics;
 
     SkyBox m_SkyBox;
 		
@@ -310,7 +309,7 @@ class GameSimulation : IGameThread, IGame {
 			m_LastMeasurement = m_LastUpdate;
 			m_FirstPersonOffset = vec3(0,0.4f,-1.0f);
 			m_ThirdPersonOffset = vec3(0,10,50);
-      m_Physics = New!PhysicsSimulation(m_Octree);
+      m_Physics = g_Env.physicsPlugin.CreatePhysics(m_Octree);
       m_physicObjects = New!(typeof(m_physicObjects))();
 		}
 
@@ -319,7 +318,7 @@ class GameSimulation : IGameThread, IGame {
       g_Env.renderer.destroyDebugDrawRecorder(m_debugDrawRecorder); m_debugDrawRecorder = null;
       Delete(m_physicObjects); m_physicObjects = null;
 
-      Delete(m_Physics);
+      g_Env.physicsPlugin.DeletePhysics(m_Physics); 
       m_Physics = null;
 
       Delete(m_SkyBox);
@@ -805,7 +804,7 @@ class GameSimulation : IGameThread, IGame {
 			return m_Hud;
 		}
 
-    @property PhysicsSimulation physics()
+    @property IPhysics physics()
     {
       return m_Physics;
     }
@@ -921,7 +920,7 @@ class GameSimulation : IGameThread, IGame {
       if(index < m_physicObjects.length)
       {
         auto obj = m_physicObjects[index];
-        auto rigidBody = cast(RigidBody)obj.physicsComponent();
+        auto rigidBody = cast(IRigidBody)obj.physicsComponent();
         rigidBody.rotation = rigidBody.rotation * Quaternion(vec3(x,y,z), degrees);
         obj.update(1.0f);
       }
@@ -949,7 +948,7 @@ class GameSimulation : IGameThread, IGame {
       if(index < m_physicObjects.length)
       {
         auto obj = m_physicObjects[index];
-        auto rigidBody = cast(RigidBody)obj.physicsComponent();
+        auto rigidBody = cast(IRigidBody)obj.physicsComponent();
         rigidBody.velocity = vec3(x,y,z);
       }
     }

@@ -82,7 +82,7 @@
   <cv2pdbOptions />
   <objfiles />
   <linkswitches />
-  <libfiles>kernel32.lib thBased.lib</libfiles>
+  <libfiles>kernel32.lib thBasePlugind.lib</libfiles>
   <libpaths>$(SolutionDir)\..\..\phobos;$(SolutionDir)\..\..\thBase\lib</libpaths>
   <deffile />
   <resfile />
