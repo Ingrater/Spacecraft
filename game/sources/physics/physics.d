@@ -25,12 +25,23 @@ shared static ~this()
   Delete(g_Env.physicsPlugin);
 }
 
+__gshared PhysicsSimulation g_simulation;
+
 class PhysicsPlugin : IPhysicsPlugin
 {
   public:
     @property override string name()
     {
       return "PhysicsPlugin";
+    }
+
+    override size_t GetScanRoots(ScanPair[] results)
+    {
+      if(results.length < 1)
+        return 1;
+
+      results[0] = ScanPair(cast(void**)&g_simulation, typeid(g_simulation));
+      return 1;
     }
 
     override bool isInPluginMemory(void* ptr)
@@ -40,11 +51,13 @@ class PhysicsPlugin : IPhysicsPlugin
 
     override IPhysics CreatePhysics(Octree octree)
     {
-      return New!PhysicsSimulation(octree);
+      g_simulation = New!PhysicsSimulation(octree);
+      return g_simulation;
     }
 
     override void DeletePhysics(IPhysics physics)
     {
+      g_simulation = null;
       Delete(physics);
     }
 
@@ -80,7 +93,9 @@ class PhysicsSimulation : IPhysics
 
     override void AddSimulatedBody(IRigidBody obj)
     {
-      m_simulated ~= static_cast!RigidBody(obj);
+      auto b = static_cast!RigidBody(obj);
+      assert(g_Env.physicsPlugin.isInPluginMemory(cast(void*)b));
+      m_simulated ~= b;
     }
 
     override void RemoveSimulatedBody(IRigidBody obj)

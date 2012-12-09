@@ -8,14 +8,16 @@ import thBase.io;
 import thBase.conv;
 import thBase.file;
 import thBase.logging;
+import thBase.plugin;
+import thBase.asserthandler;
 
 version(ParticlePerformance)
 {
 import game.effects.particle_oo_v4;
 }
 
-
 int main(string[] args){
+  thBase.asserthandler.Init();
 	try {
 		// Parse command line arguments and store everything in g_Env
 		for(uint i = 1; i < args.length; i++){
@@ -185,10 +187,19 @@ int main(string[] args){
 		
 		base.logger.init( (g_Env.isServer) ? "server.log" : "client.log" );
 		logMessage("starting up engine");
-		
+
 		// Create the main timer
 		g_Env.mainTimer = cast(shared(Timer))New!Timer();
     scope(exit) Delete(g_Env.mainTimer);
+
+    //Load plugins
+    if(g_pluginRegistry.LoadPlugin("PhysicsPlugin") is null)
+    {
+      logFatalError("Loading physics plugin failed");
+      return -1;
+    }
+		
+
 
     version(ParticlePerformance)
     {

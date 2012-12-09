@@ -65,7 +65,7 @@
   <debuglevel>0</debuglevel>
   <debugids />
   <versionlevel>0</versionlevel>
-  <versionids>NOGCSAFE OPENGL_ERROR_CHECK USE_SSE Plugin</versionids>
+  <versionids>NOGCSAFE OPENGL_ERROR_CHECK USE_SSE Plugin RTTI</versionids>
   <dump_source>0</dump_source>
   <mapverbosity>0</mapverbosity>
   <createImplib>0</createImplib>

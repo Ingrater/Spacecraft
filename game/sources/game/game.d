@@ -515,6 +515,12 @@ class GameSimulation : IGameThread, IGame {
 			// stop
 			if (m_ExitGame)
 				return false;
+
+      //Wait for a command buffer from the renderer
+      {
+        auto renderbufferprofile = base.profiler.Profile("Wait for render buffer");
+        m_Extractor.WaitForBuffer();
+      }
 			
 			Zeitpunkt now = Zeitpunkt(g_Env.mainTimer);
 			
@@ -590,11 +596,6 @@ class GameSimulation : IGameThread, IGame {
 				}
 				//Client game code
 				else {
-          //Wait for a command buffer from the renderer
-          {
-            auto renderbufferprofile = base.profiler.Profile("Wait for render buffer");
-            m_Extractor.WaitForBuffer();
-          }
 					
 					//core.stdc.stdio.printf("Messages %d\n",getNumberOfMessages(thisTid()));
 					

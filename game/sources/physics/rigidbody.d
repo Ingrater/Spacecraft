@@ -10,9 +10,6 @@ class RigidBody : IRigidBody
   float m_inverseMass;
 
   public:
-    Position position;
-    Quaternion rotation;
-    vec3 velocity;
     float remainingTime;
 
     @property float inverseMass() const

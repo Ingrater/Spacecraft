@@ -51,6 +51,11 @@ template ConstRef(T) if (is(T == class) || is(T == interface) || isArray!(T))
     }
 }
 
+struct ErrorTest
+{
+  float x, y, z;
+}
+
 string EnumToStringGenerate(T,string pre = "")(string var){
 	string res = "final switch(" ~ var ~ "){";
 	foreach(m;__traits(allMembers,T)){

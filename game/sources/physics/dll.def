@@ -17,3 +17,4 @@ DATA         PRELOAD MULTIPLE
 EXPORTS
 GetPlugin GetPlugin
 InitPlugin InitPlugin
+DeinitPlugin DeinitPlugin

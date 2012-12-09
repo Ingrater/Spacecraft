@@ -13,6 +13,7 @@ import thBase.io;
 import core.allocator;
 import core.refcounted;
 import client.eventhandler;
+import thBase.plugin;
 
 import base.debughelper;
 import core.thread;
@@ -49,6 +50,7 @@ void client_main(){
 	// Build the basic game simulation
 	IGameFactory gameFactory = NewGameFactory();
 	IGameThread game = gameFactory.GetGame();
+  g_Env.game = cast(shared(IGameThread))game;
   scope(exit)
   {
     gameFactory.DeleteGame(game);
@@ -97,8 +99,7 @@ void client_main(){
 				running = false;
 			}
 			
-			renderer.Work();
-			
+			renderer.Work();			
 			
 			if(!gameThread.isRunning)
 				running = false;

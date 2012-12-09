@@ -13,9 +13,11 @@ import thBase.container.queue;
 import thBase.container.hashmap;
 import thBase.container.vector;
 import thBase.logging;
+import thBase.plugin;
 
 import std.traits;
 
+import base.all;
 import base.windowevents;
 import base.renderer;
 import base.messages;
@@ -1397,6 +1399,16 @@ public:
 			}
 			
 			m_LastTime = m_CurrentTime;
+
+      static int counter = 0;
+      if(g_Env.game !is null && counter > 60 && (counter % 60) == 1)
+      {
+        synchronized(g_Env.game.simulationMutex)
+        {
+          g_pluginRegistry.SerializePlugins();
+        }
+      }
+      counter++;
 		}
 	}
 	
