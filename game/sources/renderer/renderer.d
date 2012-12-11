@@ -1405,6 +1405,7 @@ public:
       {
         synchronized(g_Env.game.simulationMutex)
         {
+          g_pluginRegistry.BuildPluginTypeInfo(g_Env.physicsPlugin);
           g_pluginRegistry.SerializePlugins();
         }
       }

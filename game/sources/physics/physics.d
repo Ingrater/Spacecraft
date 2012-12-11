@@ -84,8 +84,6 @@ class PhysicsSimulation : IPhysics
     {
       m_simulated = New!(typeof(m_simulated))();
       m_octree = octree;
-
-      assert(typeid(Quaternion).rtInfo !is null);
     }
 
     ~this()

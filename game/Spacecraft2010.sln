@@ -4,7 +4,6 @@ Microsoft Visual Studio Solution File, Format Version 11.00
 Project("{002A2DE9-8BB6-484D-9802-7E4AD4084715}") = "Spacecraft", "sources\Spacecraft.visualdproj", "{6BAFFA1B-7C40-4E03-AC73-20CDE989AE2C}"
 	ProjectSection(ProjectDependencies) = postProject
 		{AC6B556F-2AE2-4C7A-9FA0-5E09DEBEE5B6} = {AC6B556F-2AE2-4C7A-9FA0-5E09DEBEE5B6}
-		{81C122C4-617F-487D-87C9-AADF1A033719} = {81C122C4-617F-487D-87C9-AADF1A033719}
 	EndProjectSection
 EndProject
 Project("{002A2DE9-8BB6-484D-9802-7E4AD4084715}") = "thBase", "..\..\thBase\src\common.visualdproj", "{AC6B556F-2AE2-4C7A-9FA0-5E09DEBEE5B6}"
