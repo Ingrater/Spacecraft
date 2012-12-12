@@ -12,7 +12,7 @@ interface IDebugDrawRecorder
 }
 
 interface IRenderer : IWindowEventListener{
-	void Init(shared(IGame) game);
+	void Init(shared(IGame) game, IWindowEventHandler eventHandler);
 	void RegisterCVars(ConfigVarsBinding* CVarStorage) shared;
 	void Deinit();
 	void Work();

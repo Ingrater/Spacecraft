@@ -42,12 +42,12 @@ BOOL DllMain(HINSTANCE hInstance, ULONG ulReason, LPVOID pvReserved)
     return true;
 }
 
-extern(C) export bool InitPlugin(IPluginRegistry registry)
+extern(C) export bool InitPlugin(IPluginRegistry registry, void* allocator)
 {
   printf("InitPlugin\n");
   g_pluginRegistry = registry;
   thBase.asserthandler.Init();
-  InitPluginSystem();
+  InitPluginSystem(allocator);
   Runtime.initialize();
   g_isPluginInititalized = true;
   return dll_attachAllThreads();

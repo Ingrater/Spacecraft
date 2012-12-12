@@ -86,7 +86,7 @@
   <libpaths>$(SolutionDir)\..\..\phobos;$(SolutionDir)\..\..\thBase\lib</libpaths>
   <deffile />
   <resfile />
-  <exefile>..\data\$(ProjectName).dll</exefile>
+  <exefile>..\plugins\$(ProjectName).dll</exefile>
   <useStdLibPath>1</useStdLibPath>
   <additionalOptions>-defaultlib=phobosnogcd -debuglib=phobosnogcd</additionalOptions>
   <preBuildCommand />

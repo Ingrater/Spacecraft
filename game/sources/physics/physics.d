@@ -40,7 +40,7 @@ class PhysicsPlugin : IPhysicsPlugin
       if(results.length < 1)
         return 1;
 
-      results[0] = ScanPair(cast(void**)&g_simulation, typeid(g_simulation));
+      results[0] = ScanPair(cast(void**)&g_simulation, typeid(typeof(g_simulation)));
       return 1;
     }
 
@@ -110,6 +110,7 @@ class PhysicsSimulation : IPhysics
         FloatingPointControl fpctrl; 
         fpctrl.enableExceptions(FloatingPointControl.severeExceptions);
       }
+      logInfo("New Code...");
 
       if(m_CVars.p_fixedTimestep > 0)
         timeDiff = cast(float)m_CVars.p_fixedTimestep;

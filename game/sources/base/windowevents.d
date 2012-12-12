@@ -48,6 +48,14 @@ interface IWindowEventHandler
 	///ditto
 	void RegisterInputListener(shared(IInputListener) listener) shared;
 
+	/**
+  * deregisters a input listener
+  * Params:
+  *  listener = listener to remove
+  */
+  void DeregisterInputListener(IInputListener listener);
+
+  ///ditto
   void DeregisterInputListener(shared(IInputListener) listener) shared;
 
 	/**

@@ -52,11 +52,15 @@ public:
 
 	///ditto
 	override void RegisterInputListener(shared(IInputListener) listener) shared {
-		(cast(Vector!InputListenerInfo)m_InputListeners) ~= InputListenerInfo(listener,null);
+		(cast(Vector!InputListenerInfo)m_InputListeners) ~= InputListenerInfo(listener, null);
 	}
 
+  override void DeregisterInputListener(IInputListener listener) {
+    (cast(Vector!InputListenerInfo)m_InputListeners).remove(InputListenerInfo(null, listener));
+  }
+
   override void DeregisterInputListener(shared(IInputListener) listener) shared {
-    (cast(Vector!InputListenerInfo)m_InputListeners).remove(InputListenerInfo(listener,null));
+    (cast(Vector!InputListenerInfo)m_InputListeners).remove(InputListenerInfo(listener, null));
   }
 	
 	/**

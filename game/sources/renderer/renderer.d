@@ -21,6 +21,7 @@ import base.all;
 import base.windowevents;
 import base.renderer;
 import base.messages;
+import base.inputlistener;
 static import base.profiler;
 
 import renderer.rendertarget;
@@ -58,6 +59,26 @@ private struct DebugDrawLine
   vec4 color;
 }
 
+class RendererInput : InputListenerAdapter {
+  private:
+    Renderer m_renderer;
+
+  public:
+    this(Renderer renderer)
+    {
+      m_renderer = renderer;
+    }
+
+    override void OnKeyboard(ubyte device, bool pressed, uint key, ushort unicode, ubyte scancode, uint mod)
+    {
+      if(key == Keys.F12)
+      {
+        if(pressed)
+          m_renderer.m_reloadPlugin = true;
+      }
+    }
+}
+
 /**
  * Renderer implementation
  * See: IRenderer for public methods
@@ -85,6 +106,9 @@ private:
 	
 	bool m_PostProcessingSwitch = false;
 	bool m_PostProcessing = false;
+  bool m_reloadPlugin = false;
+
+  RendererInput m_input;
 	
 	Rendertarget m_MainRendertarget;
 	Rendertarget m_DataHoldingRendertarget;
@@ -226,6 +250,7 @@ public:
     m_DebugDrawLines = New!(typeof(m_DebugDrawLines))();
     m_DebugLineLock = New!Mutex();
     m_DebugTextLock = New!Mutex();
+    m_input = New!RendererInput(this);
 	}
 
   ~this()
@@ -235,6 +260,7 @@ public:
       m_DebugDrawAllocator.Reset(StillAllocated.Ignore);
       Delete(m_DebugDrawAllocator);
     }
+    Delete(m_input);
     Delete(m_DebugDrawLines);
     Delete(m_DebugLineLock);
     Delete(m_DebugTextLock);
@@ -850,7 +876,7 @@ public:
 	// end IRendererExtractor Access
 	//---------------------------------------------------------------------------
 	
-	void Init(shared(IGame) game)
+	void Init(shared(IGame) game, IWindowEventHandler eventHandler)
 	in {
 		assert(game !is null);
 	}
@@ -1112,6 +1138,8 @@ public:
     m_HudMaterial = New!Material();
 		m_HudMaterial.SetShader(m_Hud3dShader.GetShader());
 		m_HudMaterial.SetTexture(m_HudRendertarget.GetColorTexture(0),0);
+
+    eventHandler.RegisterInputListener(m_input);
 		
 		base.profiler.Init("Renderer");
 	}
@@ -1400,16 +1428,14 @@ public:
 			
 			m_LastTime = m_CurrentTime;
 
-      static int counter = 0;
-      if(g_Env.game !is null && counter > 60 && (counter % 60) == 1)
+      if(g_Env.game !is null && m_reloadPlugin)
       {
         synchronized(g_Env.game.simulationMutex)
         {
-          g_pluginRegistry.BuildPluginTypeInfo(g_Env.physicsPlugin);
-          g_pluginRegistry.SerializePlugins();
+          g_pluginRegistry.ReloadPlugin("PhysicsPlugin");
+          m_reloadPlugin = false;
         }
       }
-      counter++;
 		}
 	}
 	

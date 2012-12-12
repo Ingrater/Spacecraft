@@ -198,8 +198,6 @@ int main(string[] args){
       logFatalError("Loading physics plugin failed");
       return -1;
     }
-		
-
 
     version(ParticlePerformance)
     {

@@ -291,6 +291,9 @@ interface IInputListener {
 	 *  y = window coordinates y 
 	 */ 
 	void OnMouseButton(ubyte device, ubyte button, bool pressed, ushort x, ushort y);
+
+  ///ditto
+  void OnMouseButton(ubyte device, ubyte button, bool pressed, ushort x, ushort y) shared;
 	
 	/**
 	 * called on mouse move 
@@ -302,6 +305,9 @@ interface IInputListener {
 	 *  yrel = relative y movement
 	 */
 	void OnMouseMove(ubyte device, ushort x, ushort y, short xrel, short yrel);
+
+  ///ditto
+  void OnMouseMove(ubyte device, ushort x, ushort y, short xrel, short yrel) shared;
 	
 	/**
 	 * called on keyboard key event
@@ -314,6 +320,9 @@ interface IInputListener {
 	 *  mod = modding keys pressed, see ModKeys
 	 */
 	void OnKeyboard(ubyte device, bool pressed, uint key, ushort unicode, ubyte scancode, uint mod);
+
+  ///ditto
+  void OnKeyboard(ubyte device, bool pressed, uint key, ushort unicode, ubyte scancode, uint mod) shared;
 	
 	/**
 	 * called on joystick axis event
@@ -323,6 +332,9 @@ interface IInputListener {
 	 *  value = value of the axis
 	 */
 	void OnJoyAxis(ubyte device, ubyte axis, short value);
+
+  ///ditto
+  void OnJoyAxis(ubyte device, ubyte axis, short value) shared;
 	
 	/**
 	 * called on joystick button event
@@ -332,6 +344,9 @@ interface IInputListener {
 	 *  pressed = true when pressed, false otherwise
 	 */
 	void OnJoyButton(ubyte device, ubyte button, bool pressed);
+
+  ///ditto
+  void OnJoyButton(ubyte device, ubyte button, bool pressed) shared;
 	
 	/**
 	 * called on joystick ball event
@@ -342,6 +357,9 @@ interface IInputListener {
 	 *  yrel = relative y movement
 	 */
 	void OnJoyBall(ubyte device, ubyte ball, short xrel, short yrel);
+
+  ///ditto
+  void OnJoyBall(ubyte device, ubyte ball, short xrel, short yrel) shared;
 	
 	/**
 	 * called on joystick hat (POV) movement
@@ -352,121 +370,141 @@ interface IInputListener {
 	 */
 	void OnJoyHat(ubyte device, ubyte hat, ubyte value);
 
+  ///ditto
+  void OnJoyHat(ubyte device, ubyte hat, ubyte value) shared;
+};
+
+abstract class CrossThreadInputListener : IInputListener
+{
   /**
-   * getter for the thread safe ring buffer for communication between threads
-   */
+  * getter for the thread safe ring buffer for communication between threads
+  */
   @property ThreadSafeRingBuffer!() ringBuffer();
 
   ///ditto
   @property shared(ThreadSafeRingBuffer!()) ringBuffer() shared;
-	
+
+  abstract void OnMouseButton(ubyte device, ubyte button, bool pressed, ushort x, ushort y);
 	final void OnMouseButton(ubyte device, ubyte button, bool pressed, ushort x, ushort y) shared {
 		//send(getTid(),MsgOnMouseButton(device,button,pressed,x,y));
     this.ringBuffer.enqueue(MsgOnMouseButton(device, button, pressed, x, y));
 	}
-	
+
+  abstract void OnMouseMove(ubyte device, ushort x, ushort y, short xrel, short yrel);
 	final void OnMouseMove(ubyte device, ushort x, ushort y, short xrel, short yrel) shared {
 		//send(getTid(),MsgOnMouseMove(device,x,y,xrel,yrel));
     this.ringBuffer.enqueue(MsgOnMouseMove(device, x, y, xrel, yrel));
 	}
-	
+
+  abstract void OnKeyboard(ubyte device, bool pressed, uint key, ushort unicode, ubyte scancode, uint mod);
 	final void OnKeyboard(ubyte device, bool pressed, uint key, ushort unicode, ubyte scancode, uint mod) shared {
 		//send(getTid(),MsgOnKeyboard(device,pressed,key,unicode,scancode,mod));
     this.ringBuffer.enqueue(MsgOnKeyboard(device, pressed, key, unicode, scancode, mod));
 	}
-	
+
+  abstract void OnJoyAxis(ubyte device, ubyte axis, short value);
 	final void OnJoyAxis(ubyte device, ubyte axis, short value) shared {
 		//send(getTid(),MsgOnJoyAxis(device,axis,value));
     this.ringBuffer.enqueue(MsgOnJoyAxis(device, axis, value));
 	}
-	
+
+  abstract void OnJoyButton(ubyte device, ubyte button, bool pressed);
 	final void OnJoyButton(ubyte device, ubyte button, bool pressed) shared {
 		//send(getTid(),MsgOnJoyButton(device,button,pressed));
     this.ringBuffer.enqueue(MsgOnJoyButton(device, button, pressed));
 	}
 
+  abstract void OnJoyBall(ubyte device, ubyte ball, short xrel, short yrel);
 	final void OnJoyBall(ubyte device, ubyte ball, short xrel, short yrel) shared {
 		//send(getTid(),MsgOnJoyBall(device,ball,xrel,yrel));
     this.ringBuffer.enqueue(MsgOnJoyBall(device, ball, xrel, yrel));
 	}
-	
+
+  abstract void OnJoyHat(ubyte device, ubyte hat, ubyte value);
 	final void OnJoyHat(ubyte device, ubyte hat, ubyte value) shared {
 		//send(getTid(),MsgOnJoyHat(device,hat,value));
     this.ringBuffer.enqueue(MsgOnJoyHat(device, hat, value));
 	}
-		
+
 	final void ProgressMessages(){
     InputMessage* im = null;
     while((im = this.ringBuffer.tryGet!InputMessage()) !is null)
     {
       final switch(im.event)
       {
-         case InputEvent.MouseButton:
-           {
-             auto msg = cast(MsgOnMouseButton*)im;
-             this.OnMouseButton(msg.device,msg.button,msg.pressed,msg.x,msg.y);
-             this.ringBuffer.skip!MsgOnMouseButton();
-           }
-           break;
-         case InputEvent.MouseMove:
-           {
-             auto msg = cast(MsgOnMouseMove*)im;
-             this.OnMouseMove(msg.device,msg.x,msg.y,msg.xrel,msg.yrel);
-             this.ringBuffer.skip!MsgOnMouseMove();
-           }
-           break;
-         case InputEvent.Keyboard:
-           {
-             auto msg = cast(MsgOnKeyboard*)im;
-             this.OnKeyboard(msg.device,msg.pressed,msg.key,msg.unicode,msg.scancode,msg.mod);
-             this.ringBuffer.skip!MsgOnKeyboard();
-           }
-           break;
-         case InputEvent.JoyAxis:
-           {
-             auto msg = cast(MsgOnJoyAxis*)im;
-             this.OnJoyAxis(msg.device,msg.axis,msg.value);
-             this.ringBuffer.skip!MsgOnJoyAxis();
-           }
-           break;
-         case InputEvent.JoyButton:
-           {
-             auto msg = cast(MsgOnJoyButton*)im;
-             this.OnJoyButton(msg.device,msg.button,msg.pressed);
-             this.ringBuffer.skip!MsgOnJoyButton();
-           }
-           break;
-         case InputEvent.JoyHat:
-           {
-             auto msg = cast(MsgOnJoyHat*)im;
-             this.OnJoyHat(msg.device,msg.hat,msg.value);
-             this.ringBuffer.skip!MsgOnJoyHat();
-           }
-           break;
-         case InputEvent.JoyBall:
-           {
-             auto msg = cast(MsgOnJoyBall*)im;
-             this.OnJoyBall(msg.device,msg.ball,msg.xrel,msg.yrel);
-             this.ringBuffer.skip!MsgOnJoyBall();
-           }
-           break;
+        case InputEvent.MouseButton:
+          {
+            auto msg = cast(MsgOnMouseButton*)im;
+            this.OnMouseButton(msg.device,msg.button,msg.pressed,msg.x,msg.y);
+            this.ringBuffer.skip!MsgOnMouseButton();
+          }
+          break;
+        case InputEvent.MouseMove:
+          {
+            auto msg = cast(MsgOnMouseMove*)im;
+            this.OnMouseMove(msg.device,msg.x,msg.y,msg.xrel,msg.yrel);
+            this.ringBuffer.skip!MsgOnMouseMove();
+          }
+          break;
+        case InputEvent.Keyboard:
+          {
+            auto msg = cast(MsgOnKeyboard*)im;
+            this.OnKeyboard(msg.device,msg.pressed,msg.key,msg.unicode,msg.scancode,msg.mod);
+            this.ringBuffer.skip!MsgOnKeyboard();
+          }
+          break;
+        case InputEvent.JoyAxis:
+          {
+            auto msg = cast(MsgOnJoyAxis*)im;
+            this.OnJoyAxis(msg.device,msg.axis,msg.value);
+            this.ringBuffer.skip!MsgOnJoyAxis();
+          }
+          break;
+        case InputEvent.JoyButton:
+          {
+            auto msg = cast(MsgOnJoyButton*)im;
+            this.OnJoyButton(msg.device,msg.button,msg.pressed);
+            this.ringBuffer.skip!MsgOnJoyButton();
+          }
+          break;
+        case InputEvent.JoyHat:
+          {
+            auto msg = cast(MsgOnJoyHat*)im;
+            this.OnJoyHat(msg.device,msg.hat,msg.value);
+            this.ringBuffer.skip!MsgOnJoyHat();
+          }
+          break;
+        case InputEvent.JoyBall:
+          {
+            auto msg = cast(MsgOnJoyBall*)im;
+            this.OnJoyBall(msg.device,msg.ball,msg.xrel,msg.yrel);
+            this.ringBuffer.skip!MsgOnJoyBall();
+          }
+          break;
       }
     }
 	}
-};
+}
 
 /**
  * dummy implementation of IInputListener, does nothing
  * should be used when you only want to implement some of the event functions, but not all of them
  */
 abstract class InputListenerAdapter : IInputListener {
-	void OnMouseButton(ubyte device, ubyte button, bool pressed, ushort x, ushort y){}
-	void OnMouseMove(ubyte device, ushort x, ushort y, short xrel, short yrel){}
-	void OnKeyboard(ubyte device, bool pressed, uint key, ushort unicode, ubyte scancode, uint mod){}
-	void OnJoyAxis(ubyte device, ubyte axis, short value){}
-	void OnJoyButton(ubyte device, ubyte button, bool pressed){}
-	void OnJoyBall(ubyte device, ubyte ball, short xrel, short yrel){}
-	void OnJoyHat(ubyte device, ubyte hat, ubyte value){}
+	override void OnMouseButton(ubyte device, ubyte button, bool pressed, ushort x, ushort y){}
+  override void OnMouseButton(ubyte device, ubyte button, bool pressed, ushort x, ushort y) shared {}
+	override void OnMouseMove(ubyte device, ushort x, ushort y, short xrel, short yrel){}
+  override void OnMouseMove(ubyte device, ushort x, ushort y, short xrel, short yrel) shared {}
+	override void OnKeyboard(ubyte device, bool pressed, uint key, ushort unicode, ubyte scancode, uint mod){}
+  override void OnKeyboard(ubyte device, bool pressed, uint key, ushort unicode, ubyte scancode, uint mod) shared {}
+	override void OnJoyAxis(ubyte device, ubyte axis, short value){}
+  override void OnJoyAxis(ubyte device, ubyte axis, short value) shared {}
+	override void OnJoyButton(ubyte device, ubyte button, bool pressed){}
+  override void OnJoyButton(ubyte device, ubyte button, bool pressed) shared {}
+	override void OnJoyBall(ubyte device, ubyte ball, short xrel, short yrel){}
+  override void OnJoyBall(ubyte device, ubyte ball, short xrel, short yrel) shared {}
+	override void OnJoyHat(ubyte device, ubyte hat, ubyte value){}
+  override void OnJoyHat(ubyte device, ubyte hat, ubyte value) shared {}
 };
 
 enum InputEvent : uint

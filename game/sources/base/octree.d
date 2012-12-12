@@ -304,6 +304,7 @@ public:
         }
       }
 			
+      IAllocator m_Allocator; //need this for cross dll allocations
 			Stack!(NodeInfo) m_NodeList;
 			AlignedBox m_Box;
 			IGameObject m_CurrentObject;
@@ -336,6 +337,7 @@ public:
 			{
 				m_Box = box;
 				m_NodeList = New!(Stack!(NodeInfo))(1024);
+        m_Allocator = StdAllocator.globalInstance;
 				if(tree.m_Root.m_BoundingBox.intersects(m_Box))
 					m_NodeList.push( NodeInfo( tree.m_Root, (tree.m_Root.m_BoundingBox in m_Box) ) );
 				popFront();
@@ -344,11 +346,12 @@ public:
       this(this)
       {
         m_NodeList = New!(Stack!(NodeInfo))(m_NodeList);
+        m_Allocator = StdAllocator.globalInstance;
       }
 
       ~this()
       {
-        Delete(m_NodeList);
+        AllocatorDelete(m_Allocator, m_NodeList);
       }
 		
 			@property bool empty(){

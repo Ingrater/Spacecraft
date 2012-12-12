@@ -38,7 +38,7 @@ class GameSimulation : IGameThread, IGame {
 			vec3[6] m_Vertices;
 			int m_ToMove = 0;
 		}
-		class GameInput : IInputListener {
+		class GameInput : CrossThreadInputListener {
 			private:
 				bool m_MouseOn = true;
 				bool m_ConsoleOn = false;
@@ -56,9 +56,9 @@ class GameSimulation : IGameThread, IGame {
           Delete(m_RingBuffer);
         }
 
-        @property ThreadSafeRingBuffer!() ringBuffer() { return m_RingBuffer; }
+        @property override ThreadSafeRingBuffer!() ringBuffer() { return m_RingBuffer; }
 
-        @property shared(ThreadSafeRingBuffer!()) ringBuffer() shared { return m_RingBuffer; }
+        @property override shared(ThreadSafeRingBuffer!()) ringBuffer() shared { return m_RingBuffer; }
 				
 				override void OnMouseButton(ubyte device, ubyte button, bool pressed, ushort x, ushort y) {
 					/*if(g_Env.viewModel && pressed){

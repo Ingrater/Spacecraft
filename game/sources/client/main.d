@@ -57,14 +57,7 @@ void client_main(){
     DeleteGameFactory(gameFactory);
   }
 
-  // Initialize the renderer
-  renderer = rendererFactory.GetRenderer();
-	g_Env.renderer = cast(shared(IRenderer)) renderer;
-	renderer.OnResize(g_Env.screenWidth, g_Env.screenHeight);
-	renderer.Init(cast(shared(IGameThread))game);
-	logInfo("loaded renderer");
-	
-	// Build the event handler
+  // Build the event handler
 	EventHandler eventHandler = New!EventHandler();
   scope(exit)
   { 
@@ -72,6 +65,14 @@ void client_main(){
     Delete(eventHandler);
   }
 	g_Env.eventHandler = cast(shared(EventHandler)) (eventHandler);
+
+  // Initialize the renderer
+  renderer = rendererFactory.GetRenderer();
+	g_Env.renderer = cast(shared(IRenderer)) renderer;
+	renderer.OnResize(g_Env.screenWidth, g_Env.screenHeight);
+	renderer.Init(cast(shared(IGameThread))game, eventHandler);
+	logInfo("loaded renderer");
+	
 	eventHandler.RegisterEventListener(renderer);
 	
 	// Initialize the scripting system and kick of the game thread
