@@ -1,11 +1,13 @@
 module dllmain;
 
 import core.stdc.stdio;
+import core.sys.windows.dll;
+import core.runtime;
+import core.thread;
 
 import base.all;
 import std.c.windows.windows;
-import core.sys.windows.dll;
-import core.runtime;
+
 import thBase.plugin;
 import thBase.asserthandler;
 
@@ -28,13 +30,14 @@ BOOL DllMain(HINSTANCE hInstance, ULONG ulReason, LPVOID pvReserved)
 	    break;
 
 	case DLL_THREAD_ATTACH:
-      printf("DLL_THREAD_ATTACH\n");
-      if(g_isPluginInititalized)
+      if(g_isPluginInititalized && IsDThread(GetCurrentThreadId()))
+      {
+        printf("Attaching D-Thread\n");
 	      dll_thread_attach( true, true );
+      }
 	    break;
 
 	case DLL_THREAD_DETACH:
-      printf("DLL_THREAD_DETACH\n");
       if(g_isPluginInititalized)
 	      dll_thread_detach( true, true );
 	    break;
@@ -50,7 +53,22 @@ extern(C) export bool InitPlugin(IPluginRegistry registry, void* allocator)
   InitPluginSystem(allocator);
   Runtime.initialize();
   g_isPluginInititalized = true;
-  return dll_attachAllThreads();
+  
+  //Attach all D-Threads
+  return enumProcessThreads(
+    function (uint id, void* context) {
+      if( IsDThread(id) )
+      {
+        printf("Attaching D-Thread\n");
+        // if the OS has not prepared TLS for us, don't attach to the thread
+        if( GetTlsDataAddress( id ) )
+        {
+          thread_attachByAddr( id );
+          thread_moduleTlsCtor( id );
+        }
+      }
+      return true;
+    }, null );
 }
 
 extern(C) export void DeinitPlugin()

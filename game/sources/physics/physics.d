@@ -110,7 +110,6 @@ class PhysicsSimulation : IPhysics
         FloatingPointControl fpctrl; 
         fpctrl.enableExceptions(FloatingPointControl.severeExceptions);
       }
-      logInfo("New Code...");
 
       if(m_CVars.p_fixedTimestep > 0)
         timeDiff = cast(float)m_CVars.p_fixedTimestep;
