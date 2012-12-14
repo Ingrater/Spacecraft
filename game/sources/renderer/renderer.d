@@ -74,7 +74,7 @@ class RendererInput : InputListenerAdapter {
       if(key == Keys.F12)
       {
         if(pressed)
-          m_renderer.m_reloadPlugin = true;
+          m_renderer.m_checkPlugins = true;
       }
     }
 }
@@ -106,7 +106,7 @@ private:
 	
 	bool m_PostProcessingSwitch = false;
 	bool m_PostProcessing = false;
-  bool m_reloadPlugin = false;
+  bool m_checkPlugins = false;
 
   RendererInput m_input;
 	
@@ -798,7 +798,8 @@ public:
 	// start IEventListener
 	
 	void OnFocus(bool hasFocus, ubyte state){
-		//TODO set m_isVisible here
+		if(hasFocus)
+      m_checkPlugins = true;
 	}
 	
 	void OnResize(int width, int height){
@@ -1428,12 +1429,12 @@ public:
 			
 			m_LastTime = m_CurrentTime;
 
-      if(g_Env.game !is null && m_reloadPlugin)
+      if(g_Env.game !is null && m_checkPlugins)
       {
         synchronized(g_Env.game.simulationMutex)
         {
           g_pluginRegistry.ReloadPlugin("PhysicsPlugin");
-          m_reloadPlugin = false;
+          m_checkPlugins = false;
         }
       }
 		}
