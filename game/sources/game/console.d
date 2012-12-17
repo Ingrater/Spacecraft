@@ -294,8 +294,6 @@ public:
     {
       if(m_CommandHistory.length == 0)
         return;
-      if(m_selectedLastCommand == 0)
-        return;
       m_selectedLastCommand--;
       if(m_selectedLastCommand >= m_CommandHistory.length)
         m_selectedLastCommand = m_CommandHistory.length - 1;
