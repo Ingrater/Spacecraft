@@ -14,6 +14,7 @@ import thBase.container.hashmap;
 import thBase.container.vector;
 import thBase.logging;
 import thBase.plugin;
+import thBase.enumbitfield;
 
 import std.traits;
 
@@ -797,8 +798,9 @@ public:
 	//---------------------------------------------------------------------------
 	// start IEventListener
 	
-	void OnFocus(bool hasFocus, ubyte state){
-		if(hasFocus)
+	override void OnFocus(bool hasFocus, EnumBitfield!FocusRecieved focusRecieved){
+    logInfo("OnFocus(%s, %d)", hasFocus, focusRecieved.value);
+		if(hasFocus && focusRecieved.IsSet(FocusRecieved.Application))
       m_checkPlugins = true;
 	}
 	
@@ -1433,7 +1435,7 @@ public:
       {
         synchronized(g_Env.game.simulationMutex)
         {
-          g_pluginRegistry.ReloadPlugin("PhysicsPlugin");
+          g_pluginRegistry.CheckForModifiedPlugins();
           m_checkPlugins = false;
         }
       }

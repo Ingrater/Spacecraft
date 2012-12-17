@@ -432,6 +432,13 @@ class SDL {
 		VIDEORESIZE,
 		VIDEOEXPOSE
 	};
+
+  //SDL focus states
+  enum : uint {
+    APPMOUSEFOCUS	 = 0x01,		/**< The app has mouse coverage */
+    APPINPUTFOCUS	 = 0x02,		/**< The app has input focus */
+    APPACTIVE		   = 0x04 		/**< The application is active */
+  };
 	
 	enum : ubyte {
 		RELEASED = 0,

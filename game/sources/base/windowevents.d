@@ -1,6 +1,14 @@
 module base.windowevents;
 
 import base.inputlistener;
+import thBase.enumbitfield;
+
+enum FocusRecieved : ubyte
+{
+  Mouse       = 0x01,
+  Input       = 0x02,
+  Application = 0x04
+}
 
 /**
  * EventListener interface
@@ -11,7 +19,7 @@ interface IWindowEventListener {
 	 * Params:
 	 *  hasFocus = true when window has focus, false otherwise
 	 */
-	void OnFocus(bool hasFocus, ubyte state);
+	void OnFocus(bool hasFocus, EnumBitfield!FocusRecieved focusRecieved);
 	/**
 	 * called on window resize
 	 * Params:
@@ -31,7 +39,7 @@ interface IWindowEventListener {
  * should be used when you only want to implement some of the event functions, but not all of them
  */
 class WindowEventListenerAdapter : IWindowEventListener {
-	void OnFocus(bool hasFocus, ubyte state){}
+	void OnFocus(bool hasFocus, EnumBitfield!FocusRecieved focusRecieved){}
 	void OnResize(int width, int height){}
 	void OnQuit(){}
 };

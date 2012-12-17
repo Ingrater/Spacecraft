@@ -4,6 +4,9 @@ import renderer.sdl.main;
 import base.windowevents;
 import base.inputlistener;
 import thBase.container.vector;
+import thBase.enumbitfield;
+
+import core.stdc.stdio;
 
 
 /**
@@ -144,7 +147,14 @@ public:
 					}
 				case SDL.ACTIVEEVENT:
 					foreach(listener; m_EventListeners){
-						listener.OnFocus((event.active.gain != 0),event.active.state);
+            EnumBitfield!FocusRecieved focusRecieved;
+            if(event.active.state & SDL.APPMOUSEFOCUS)
+              focusRecieved.Add(FocusRecieved.Mouse);
+            if(event.active.state & SDL.APPINPUTFOCUS)
+              focusRecieved.Add(FocusRecieved.Input);
+            if(event.active.state & SDL.APPACTIVE)
+              focusRecieved.Add(FocusRecieved.Application);
+						listener.OnFocus((event.active.gain != 0) ,focusRecieved);
 					}
 					break;
 				case SDL.VIDEORESIZE:
