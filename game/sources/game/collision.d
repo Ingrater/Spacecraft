@@ -8,12 +8,16 @@ import core.allocator;
 import thBase.scoped;
 import base.modelloader;
 import thBase.enumbitfield;
+import thBase.math;
 
 class CollisionHull {
 private
 	Triangle[] m_Faces;
 	
 public:
+  vec3 minBounds, maxBounds;
+  float boundingRadius;
+
 	/**
 	 * Builds a new collison hull from the model in pFilename.
 	 */
@@ -74,12 +78,21 @@ public:
       curNode = curNode.data.parent;
     }
 
+    minBounds = vec3(float.max, float.max, float.max);
+    maxBounds = vec3(-float.max, -float.max, -float.max);
+    boundingRadius = 0.0f;
+
     foreach(size_t i, ref vertex; vertices)
     {
       vertex = transform * mesh.vertices[i];
+      minBounds = minimum(minBounds, vertex);
+      maxBounds = maximum(maxBounds, vertex);
+      boundingRadius = max(boundingRadius, vertex.length);
     }
+
 		
-		foreach(size_t i,ref face;m_Faces){			
+		foreach(size_t i,ref face;m_Faces)
+    {			
 			face.v0 = vertices[mesh.faces[i].indices[0]];
       face.v1 = vertices[mesh.faces[i].indices[1]];
       face.v2 = vertices[mesh.faces[i].indices[2]];
@@ -88,52 +101,104 @@ public:
 	}
 
 	/**
-     * Detectes wether this collision hull does intersect with a other collision hull
-     * Params:
+   * Detectes wether this collision hull does intersect with a other collision hull
+   * Params:
 	 *  other = the other collision hull to intersect with
 	 *  lhTrans = the transformation of this collision hull
 	 *  rhTrans = the transformation of the other collision hull
 	 */
-	bool intersects(CollisionHull other,mat4 lhTrans, mat4 rhTrans){
-		uint testcount = 0;
-		
-		auto transformed_other = new Triangle[](other.m_Faces.length);
+	bool intersects(CollisionHull other, mat4 lhTrans, mat4 rhTrans)
+  {
+		auto transformed_other = AllocatorNewArray!Triangle(ThreadLocalStackAllocator.globalInstance, other.m_Faces.length);
+    scope(exit) AllocatorDelete(ThreadLocalStackAllocator.globalInstance, transformed_other);
 		foreach(i, ref f2; other.m_Faces)
 			transformed_other[i] = f2.transform(rhTrans);
 		
+    Ray dummy;
 		foreach(ref f1;m_Faces){
 			Triangle lhTri = f1.transform(lhTrans);
 			
-      Ray dummy;
 			foreach(ref f2; transformed_other){
-				testcount++;
 				if(lhTri.intersects(f2, dummy)){
-					//logInfo("col: %d tests (hit)", testcount);
 					return true;
 				}
 			}
 		}
-		
-		//logInfo("col: %d tests (no hit)", testcount);
+
 		return false;
 	}
+
+  /**
+   * tests if two collision hulls intersect
+   * Params:
+   *  other = the other collision hull to test with
+   *  otherSpaceToThisSpace = a transformation that will transform the vertices of the other collision hull into the space of this collision hull
+   * Returns:
+   *  true if the two intersect, false otherwise
+   */
+  bool intersectsFast(const(CollisionHull) other, mat4 otherSpaceToThisSpace) const
+  {
+    Ray dummy;
+    foreach(ref f1; other.m_Faces)
+    {
+      Triangle rhTri = f1.transform(otherSpaceToThisSpace);
+      foreach(ref lhTri; m_Faces)
+      {
+        if(rhTri.intersects(lhTri, dummy))
+          return true;
+      }
+    }
+
+    return false;
+  }
+
+  /**
+  * tests if two collision hulls intersect
+  * Params:
+  *  other = the other collision hull to test with
+  *  otherSpaceToThisSpace = a transformation that will transform the vertices of the other collision hull into the space of this collision hull
+  *  results = a preallocated array of which will be filled with the results
+  * Returns:
+  *  the number of intersections found
+  */
+  size_t getIntersections(const(CollisionHull) other, mat4 otherSpaceToThisSpace, scope Ray[] results) const
+  {
+    Ray dummy;
+    size_t i=0;
+    foreach(ref f1; other.m_Faces)
+    {
+      Triangle rhTri = f1.transform(otherSpaceToThisSpace);
+      foreach(ref lhTri; m_Faces)
+      {
+        if(i >= results.length)
+          return i;
+        if(rhTri.intersects(lhTri, results[i]))
+        {
+          i++;
+        }
+      }
+    }
+
+    return i;
+  }
 	
 	/**
 	 * Tests for a intersection with a already correctly transformed ray and this collision hull
 	 * Params:
 	 *  ray = the ray to test with
 	 *  lhTrans = the transformation to apply to this collision hull
-	 *  rayPos = the position on the ray where it did intersect
+	 *  rayPos = the position on the ray where it did intersect (out = result)
+   *  normal = the normal at the intersection
 	 */
-	bool intersects(Ray ray,mat4 lhTrans,ref float rayPos, ref vec3 normal){
+	bool intersects(Ray ray,mat4 lhTrans,ref float rayPos, ref vec3 normal) const {
 		bool result = false;
 		rayPos = float.max;
 		foreach(ref f; m_Faces){
 			Triangle lhTri = f.transform(lhTrans);
-			float pos;
+			float pos = -1.0f;
 			if( lhTri.intersects(ray,pos) ){
-				result = true;
-				if(pos < rayPos){
+				if(pos < rayPos && pos >= 0.0f){
+          result = true;
 					rayPos = pos;
 					normal = lhTri.plane.normal;
 				}
@@ -145,19 +210,42 @@ public:
 	/**
 	 * Draws a transformed version of the collision mesh
 	 * Pararms:
-	 *  transformation = the transformation to use
+	 *  position = position of the collision mesh
+   *  rotation = rotation of the collision mesh
 	 *  renderer = the renderer to use for drawing
 	 *  color = the color to use (optional)
 	 */
-	void debugDraw(mat4 transformation, shared(IRenderer) renderer, vec4 color = vec4(1.0f,1.0f,1.0f,1.0f)){
-		foreach(ref f;m_Faces){
+	void debugDraw(Position position, Quaternion rotation, shared(IRenderer) renderer, vec4 color = vec4(1.0f,1.0f,1.0f,1.0f)) const {
+		mat4 transformation = rotation.toMat4();
+    foreach(ref f;m_Faces){
 			Triangle curFace = f.transform(transformation);
 			
-			renderer.drawLine(Position(curFace.v0),Position(curFace.v1),color);
-			renderer.drawLine(Position(curFace.v0),Position(curFace.v2),color);
-			renderer.drawLine(Position(curFace.v1),Position(curFace.v2),color);
+			renderer.drawLine(position + curFace.v0,position + curFace.v1,color);
+			renderer.drawLine(position + curFace.v0,position + curFace.v2,color);
+			renderer.drawLine(position + curFace.v1,position + curFace.v2,color);
 		}
 	}
+
+  /**
+  * Draws a transformed version of the collision mesh
+  * Pararms:
+  *  transformation = the transformation to use
+  *  renderer = the renderer to use for drawing
+  *  color = the color to use (optional)
+  */
+  void debugDraw(mat4 transform, shared(IRenderer) renderer, vec4 color  = vec4(1.0f,1.0f,1.0f,1.0f)) const 
+  {
+    foreach(ref f;m_Faces){
+			Triangle curFace = f.transform(transform);
+      Position v0 = Position(curFace.v0);
+      Position v1 = Position(curFace.v1);
+      Position v2 = Position(curFace.v2);
+
+			renderer.drawLine(v0, v1, color);
+			renderer.drawLine(v0, v2, color);
+			renderer.drawLine(v1, v2, color);
+		}
+  }
 	
 	/**
 	 * Computes the bounding box for this collision mesh

@@ -247,16 +247,19 @@ class Player : HitableGameObject, ISerializeable, IControllable {
 		
 		// Spawn new projectiles if the MG is currently fireing and the not in
 		// cooldown
-		auto firedProjectiles = m_Turret.update(timeDiff);
-		m_Temperature = m_Temperature + m_TemperatureCost * firedProjectiles;
-		if (m_Temperature.value >= m_TemperatureMax)
-			m_Turret.increaseUsage(m_TemperatureUsageOverheat);
+    if(!m_Dead)
+    {
+		  auto firedProjectiles = m_Turret.update(timeDiff);
+		  m_Temperature = m_Temperature + m_TemperatureCost * firedProjectiles;
+		  if (m_Temperature.value >= m_TemperatureMax)
+			  m_Turret.increaseUsage(m_TemperatureUsageOverheat);
 		
-		if (m_Temperature.value > 0){
-			m_Temperature = m_Temperature - m_TemperatureCooldown * dt_sec;
-			if (m_Temperature.value < 0)
-				m_Temperature = 0;
-		}
+		  if (m_Temperature.value > 0){
+			  m_Temperature = m_Temperature - m_TemperatureCooldown * dt_sec;
+			  if (m_Temperature.value < 0)
+				  m_Temperature = 0;
+		  }
+    }
 		
 		// If the player died notify the game and let it respawn the player
 		if (this.hitpoints <= 0 && !m_Dead)
