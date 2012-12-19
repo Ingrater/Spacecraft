@@ -214,7 +214,7 @@ class Player : HitableGameObject, ISerializeable, IControllable {
 			if (other !is null && other !is this && other.collisionHull !is null){
 				auto hitable = cast(IHitable)other;
 				if(hitable is null || (hitable !is null && !hitable.isDead)){
-					mat4 transformOtherToThis = other.rotation.toMat4() * TranslationMatrix(other.position - this.position) * this.rotation.toMat4().Inverse();
+					mat4 transformOtherToThis = ScaleMatrix(other.scale) * other.rotation.toMat4() * TranslationMatrix(other.position - this.position) * (ScaleMatrix(this.scale) * this.rotation.toMat4()).Inverse();
 					//auto intersect_start = Zeitpunkt(g_Env.mainTimer);
 					if ( this.m_CollisionHull.intersectsFast(other.collisionHull, transformOtherToThis) ){
 						//logInfo("game: player collision with %s", other.inspect());
