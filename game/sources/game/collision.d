@@ -9,6 +9,7 @@ import thBase.scoped;
 import base.modelloader;
 import thBase.enumbitfield;
 import thBase.math;
+import thBase.logging;
 
 class CollisionHull {
 private
@@ -89,6 +90,7 @@ public:
       maxBounds = maximum(maxBounds, vertex);
       boundingRadius = max(boundingRadius, vertex.length);
     }
+    logInfo("%s => minBounds %s, maxBounds %s", pFilename[], minBounds.f[], maxBounds.f[]);
 
 		
 		foreach(size_t i,ref face;m_Faces)
@@ -98,34 +100,6 @@ public:
       face.v2 = vertices[mesh.faces[i].indices[2]];
       face.plane = Plane(face.v0, face.v1, face.v2);
 		}
-	}
-
-	/**
-   * Detectes wether this collision hull does intersect with a other collision hull
-   * Params:
-	 *  other = the other collision hull to intersect with
-	 *  lhTrans = the transformation of this collision hull
-	 *  rhTrans = the transformation of the other collision hull
-	 */
-	bool intersects(CollisionHull other, mat4 lhTrans, mat4 rhTrans)
-  {
-		auto transformed_other = AllocatorNewArray!Triangle(ThreadLocalStackAllocator.globalInstance, other.m_Faces.length);
-    scope(exit) AllocatorDelete(ThreadLocalStackAllocator.globalInstance, transformed_other);
-		foreach(i, ref f2; other.m_Faces)
-			transformed_other[i] = f2.transform(rhTrans);
-		
-    Ray dummy;
-		foreach(ref f1;m_Faces){
-			Triangle lhTri = f1.transform(lhTrans);
-			
-			foreach(ref f2; transformed_other){
-				if(lhTri.intersects(f2, dummy)){
-					return true;
-				}
-			}
-		}
-
-		return false;
 	}
 
   /**

@@ -214,9 +214,9 @@ class Player : HitableGameObject, ISerializeable, IControllable {
 			if (other !is null && other !is this && other.collisionHull !is null){
 				auto hitable = cast(IHitable)other;
 				if(hitable is null || (hitable !is null && !hitable.isDead)){
-					mat4 other_transform = other.transformation(Position(vec3(0, 0, 0)));
+					mat4 transformOtherToThis = other.rotation.toMat4() * TranslationMatrix(other.position - this.position) * this.rotation.toMat4().Inverse();
 					//auto intersect_start = Zeitpunkt(g_Env.mainTimer);
-					if ( this.m_CollisionHull.intersects(other.collisionHull, own_transform, other_transform) ){
+					if ( this.m_CollisionHull.intersectsFast(other.collisionHull, transformOtherToThis) ){
 						//logInfo("game: player collision with %s", other.inspect());
 						// Impact, push the player back and hurt him depending on the speed
 						// difference between him and the object. We need to reset the player
@@ -523,6 +523,10 @@ class Player : HitableGameObject, ISerializeable, IControllable {
 	}
 	
 	override IRenderProxy renderProxy() {
+    if(m_CollMode)
+    {
+      return m_RenderProxy;
+    }
 		if(m_Dead){
 			if(m_Game.eventSink.clientId == m_ClientId)
 				return m_RedProxy;
