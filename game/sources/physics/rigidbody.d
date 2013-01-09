@@ -11,6 +11,7 @@ class RigidBody : IRigidBody
 
   public:
     float remainingTime;
+    float inverseResolveMass;
 
     @property float inverseMass() const
     {
@@ -31,6 +32,7 @@ class RigidBody : IRigidBody
     {
       m_collision = collision;
       m_inverseMass = fInverseMass;
+      inverseResolveMass = fInverseMass;
       rotation = Quaternion(vec3(1,0,0), 0);
       velocity = vec3(0,0,0);
     }

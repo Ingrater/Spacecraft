@@ -96,6 +96,7 @@ class PhysicsSimulation : IPhysics
       auto b = static_cast!RigidBody(obj);
       assert(g_Env.physicsPlugin.isInPluginMemory(cast(void*)b));
       m_simulated ~= b;
+      m_simulated.insertionSort((ref a, ref b){ return a.inverseResolveMass < b.inverseResolveMass; });
     }
 
     override void RemoveSimulatedBody(IRigidBody obj)
@@ -360,6 +361,13 @@ class PhysicsSimulation : IPhysics
           {
             g_Env.renderer.drawBox(queryBox, vec4(0.0f, 1.0f, 0.0f, 1.0f));
           }
+        }
+
+        //Now resolve all intersections by doing shock propagation
+        //First reset the resolve mass to the real mass
+        foreach(obj; m_simulated.toArray())
+        {
+          obj.inverseResolveMass = obj.inverseMass;
         }
       }
     }
