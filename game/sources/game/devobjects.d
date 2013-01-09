@@ -98,10 +98,12 @@ public:
 		m_RenderProxy = res.proxy;
 		super(entityId, game, res.boundingBox, null);
     m_RigidBody = g_Env.physicsPlugin.CreateRigidBody(server.resources.col(_T("plane")), bounciness);
+    game.physics.AddSimulatedBody(m_RigidBody);
 	}
 
   ~this()
   {
+    m_Game.physics.RemoveSimulatedBody(m_RigidBody);
     g_Env.physicsPlugin.DeleteRigidBody(m_RigidBody);
   }
 

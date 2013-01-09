@@ -1,6 +1,6 @@
 cvars.p_drawCollisionGeometry = 1
 cvars.p_drawCollisionInfo = 1
-cvars.p_iterations = 2
+cvars.p_iterations = 1
 --spawnBox(0,0,0, 1/0.1)
 --spawnBox(2.1,0,0, 1/0.1)
 --spawnBox(-2.1,0,0, 1/0.1)
@@ -82,7 +82,7 @@ function test4()
   resetWorld()
   spawnPlane(0,-1,0,0)
   spawnBox(0,1,0,1/1)
-  spawnBox(0.01,1.6,0,1/1)
+  spawnBox(0.01,1.6,0.01,1/1)
 end
 
 function test5()
@@ -116,6 +116,6 @@ function test8()
   stack(2)
 end
 
-test7()
+test4()
 
 
