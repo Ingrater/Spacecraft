@@ -131,7 +131,7 @@ class PhysicsSimulation : IPhysics
 
       for(uint iteration=0; iteration < numIterations; iteration++)
       {
-        /++foreach(size_t objNum,objA; m_simulated.toArray())
+        foreach(size_t objNum,objA; m_simulated.toArray())
         {
           if(objA.remainingTime < FloatEpsilon || objA.inverseMass <= 0.0f)
             continue;
@@ -161,20 +161,37 @@ class PhysicsSimulation : IPhysics
               numChecks++;
             
               Ray[32] intersections = void;
+              Triangle[2][32] triangles = void;
               mat4 collidingRigidyBodyTransform = collidingRigidBody.transformTo(objA);
-              size_t numIntersections = objA.collision.getIntersections(collidingRigidBody.collision, collidingRigidyBodyTransform, intersections);
+              size_t numIntersections = objA.collision.getIntersections(collidingRigidBody.collision, collidingRigidyBodyTransform, intersections, triangles);
 
               if(numIntersections > 0)
               {
+
+                {
+                  //objA.collision.debugDraw(Position(vec3(0,0,0)), objA.rotation, g_Env.renderer, vec4(0.0f, 1.0f, 0.0f, 1.0f));
+                  //collidingRigidBody.collision.debugDraw(Position(collidingRigidyBodyTransform * vec3(0,0,0)), objA.rotation, g_Env.renderer, vec4(0.0f, 1.0f, 0.0f, 1.0f));
+                  mat4 rotation = objA.rotation.toMat4();
+                  size_t index = cast(size_t)m_CVars.p_debugNum;
+                  g_Env.renderer.drawLine(Position(intersections[index].pos), Position(intersections[index].end), vec4(1.0f, 0.0f, 0.0f, 1.0f));
+                  g_Env.renderer.drawLine(Position(triangles[index][0].v0), Position(triangles[index][0].v1), vec4(1.0f, 1.0f, 0.0f, 1.0f));
+                  g_Env.renderer.drawLine(Position(triangles[index][0].v1), Position(triangles[index][0].v2), vec4(1.0f, 1.0f, 0.0f, 1.0f));
+                  g_Env.renderer.drawLine(Position(triangles[index][0].v2), Position(triangles[index][0].v0), vec4(1.0f, 1.0f, 0.0f, 1.0f));
+
+                  g_Env.renderer.drawLine(Position(triangles[index][1].v0), Position(triangles[index][1].v1), vec4(0.5f, 1.0f, 0.0f, 1.0f));
+                  g_Env.renderer.drawLine(Position(triangles[index][1].v1), Position(triangles[index][1].v2), vec4(0.5f, 1.0f, 0.0f, 1.0f));
+                  g_Env.renderer.drawLine(Position(triangles[index][1].v2), Position(triangles[index][1].v0), vec4(0.5f, 1.0f, 0.0f, 1.0f));
+                }
+
                 vec3 collisionPoint = intersections[0].pos + intersections[0].end;
                 foreach(ref intersection; intersections[1..numIntersections])
                 {
                   collisionPoint = collisionPoint + intersection.pos + intersection.end;
                 }
-                collisionPoint = collisionPoint * (1.0f / cast(float)numIntersections);
+                collisionPoint = collisionPoint * (1.0f / cast(float)(numIntersections * 2));
 
                 Ray normalFindRay = Ray.CreateFromPoints(vec3(0,0,0), collisionPoint);
-                //normalFindRay.pos = normalFindRay.pos - (normalFindRay.dir * 0.01f);
+                normalFindRay.pos = normalFindRay.pos - (normalFindRay.dir * 0.1f);
 
                 float intersectionPosOther = -0.01f;
                 vec3 intersectionNormalOther;
@@ -182,6 +199,11 @@ class PhysicsSimulation : IPhysics
                 {
                   intersectionPosOther = 0.0f;
                   intersectionNormalOther = -(normalFindRay.dir.normalize());
+
+                  /*mat4 rotation = objA.rotation.toMat4();
+                  g_Env.renderer.drawArrow(objA.position + (rotation * normalFindRay.pos), objA.position + (rotation * normalFindRay.end), vec4(0.0f, 1.0f, 1.0f, 1.0f));
+                  collidingRigidBody.collision.debugDraw(collidingRigidBody.position, collidingRigidBody.rotation, g_Env.renderer, vec4(1.0f, 1.0f, 0.0f, 1.0f));
+                  objA.collision.debugDraw(objA.position, objA.rotation, g_Env.renderer, vec4(0.5f, 1.0f, 0.0f, 1.0f));*/
                 }
 
                 float intersectionPosCurrent = -0.01f;
@@ -189,7 +211,7 @@ class PhysicsSimulation : IPhysics
                 if(!objA.collision.intersects(normalFindRay, mat4.Identity(), intersectionPosCurrent, intersectionNormalCurrent))
                 {
                   intersectionPosCurrent = 0.0f;
-                  intersectionNormalOther = normalFindRay.dir.normalize();
+                  intersectionNormalCurrent = normalFindRay.dir.normalize();
                 }
 
                 if(m_CVars.p_drawCollisionInfo > 0)
@@ -288,12 +310,7 @@ class PhysicsSimulation : IPhysics
             objB.velocity = newVelocityB;
             objA.remainingTime -= timeOfImpact;
           }
-          else if(numCollisions > 0)
-          {
-            static int counter = 0;
-            logInfo("Collision ignored because resolving intersection %d", counter++);
-          }
-          else //no collision and no resolving -> step complete
+          else //no collision
           {
             objA.remainingTime = 0.0f;
           }
@@ -308,7 +325,7 @@ class PhysicsSimulation : IPhysics
           {
             g_Env.renderer.drawBox(queryBox, vec4(0.0f, 1.0f, 0.0f, 1.0f));
           }
-        }++/
+        }
 
         //Now resolve all intersections by doing shock propagation
         //First reset the resolve mass to the real mass
@@ -367,7 +384,7 @@ class PhysicsSimulation : IPhysics
                 if(!objA.collision.intersects(normalFindRay, mat4.Identity(), intersectionPosCurrent, intersectionNormalCurrent))
                 {
                   intersectionPosCurrent = 0.0f;
-                  intersectionNormalOther = normalFindRay.dir.normalize();
+                  intersectionNormalCurrent = normalFindRay.dir.normalize();
                 }
 
                 if(m_CVars.p_drawCollisionInfo > 0)
@@ -442,6 +459,10 @@ class PhysicsSimulation : IPhysics
                 float ratioB = inverseTotalMass * objB.inverseResolveMass; //how much the second object will be affected by the intersection correction
                 objA.position = objA.position + resolveDirection * (-noIntersectionTime * ratioA);
                 objB.position = startPosition + resolveDirection * (noIntersectionTime * ratioB);
+                //assign the new resolve mass
+                auto newResolveMass = min(objA.inverseResolveMass, objB.inverseResolveMass);
+                objA.inverseResolveMass = newResolveMass;
+                objB.inverseResolveMass = newResolveMass;
               }
             }
           }

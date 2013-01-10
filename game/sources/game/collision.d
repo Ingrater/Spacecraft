@@ -181,6 +181,29 @@ public:
 
     return i;
   }
+
+  size_t getIntersections(const(CollisionHull) other, mat4 otherSpaceToThisSpace, scope Ray[] results, scope Triangle[2][] triangles) const
+  {
+    Ray dummy;
+    size_t i=0;
+    foreach(ref f1; other.m_Faces)
+    {
+      Triangle rhTri = f1.transform(otherSpaceToThisSpace);
+      foreach(ref lhTri; m_Faces)
+      {
+        if(i >= results.length)
+          return i;
+        if(rhTri.intersects(lhTri, results[i]))
+        {
+          triangles[i][0] = lhTri;
+          triangles[i][1] = rhTri;
+          i++;
+        }
+      }
+    }
+
+    return i;
+  }
 	
 	/**
 	 * Tests for a intersection with a already correctly transformed ray and this collision hull

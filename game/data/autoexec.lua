@@ -1,5 +1,5 @@
-cvars.p_drawCollisionGeometry = 1
-cvars.p_drawCollisionInfo = 1
+cvars.p_drawCollisionGeometry = 0
+cvars.p_drawCollisionInfo = 0
 cvars.p_iterations = 1
 --spawnBox(0,0,0, 1/0.1)
 --spawnBox(2.1,0,0, 1/0.1)
@@ -116,6 +116,22 @@ function test8()
   stack(2)
 end
 
-test4()
+function test9()
+  resetWorld()
+  spawnPlane(0,-1,0,0)
+  spawnBox(0,3,0, 1/1)
+  spawnBox(-1.1,6,0, 1/1)  
+end
+
+function test10()
+  resetWorld()
+  spawnPlane(0,-1,0,0)
+  local box1 = spawnBox(0.00000000, 0.10174561, 0.00000000, 1/1)
+  setVelocity(box1, 0.00000000, 2.7195253, 0.00000000)
+  local box2 = spawnBox(-1.09998, 2.5633545, 0, 1/1)
+  setVelocity(box2, 0.00000000, -8.1197395, 0.00000000)
+end
+
+test10()
 
 

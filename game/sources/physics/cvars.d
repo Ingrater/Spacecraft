@@ -7,4 +7,5 @@ struct CVars {
   double p_gravity = 1.0; //if > 0 gravity is enabled
   double p_iterations = 3.0; //how many iterations of solving should be done per frame
   double p_correction = 0.99; //factor for getting rid of impercise floating point computation issues
+  double p_debugNum = 0.0; //which debug output to draw
 }
