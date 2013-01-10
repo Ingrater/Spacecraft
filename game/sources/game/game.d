@@ -953,6 +953,14 @@ class GameSimulation : IGameThread, IGame {
         rigidBody.velocity = vec3(x,y,z);
       }
     }
+
+    /**
+     * reloads the autoexec.lua
+     */
+    void reloadAutoexec()
+    {
+      loadAutoexecLua(_T("autoexec.lua"));
+    }
 		
 		/**
 		 * Spawns a new asteroid in the model viewer
@@ -1149,6 +1157,7 @@ class GameSimulation : IGameThread, IGame {
         m_ScriptSystem.RegisterGlobal("rotate", &rotate);
         m_ScriptSystem.RegisterGlobal("resetWorld", &resetWorld);
         m_ScriptSystem.RegisterGlobal("setVelocity", &setVelocity);
+        m_ScriptSystem.RegisterGlobal("reloadAutoexec", &reloadAutoexec);
 			}
 		}
 		
