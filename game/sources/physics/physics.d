@@ -195,7 +195,7 @@ class PhysicsSimulation : IPhysics
               if(numIntersections > 0)
               {
 
-                {
+                /*{
                   //objA.collision.debugDraw(Position(vec3(0,0,0)), objA.rotation, g_Env.renderer, vec4(0.0f, 1.0f, 0.0f, 1.0f));
                   //collidingRigidBody.collision.debugDraw(Position(collidingRigidyBodyTransform * vec3(0,0,0)), objA.rotation, g_Env.renderer, vec4(0.0f, 1.0f, 0.0f, 1.0f));
                   mat4 rotation = objA.rotation.toMat4();
@@ -208,7 +208,7 @@ class PhysicsSimulation : IPhysics
                   g_Env.renderer.drawLine(Position(triangles[index][1].v0), Position(triangles[index][1].v1), vec4(0.5f, 1.0f, 0.0f, 1.0f));
                   g_Env.renderer.drawLine(Position(triangles[index][1].v1), Position(triangles[index][1].v2), vec4(0.5f, 1.0f, 0.0f, 1.0f));
                   g_Env.renderer.drawLine(Position(triangles[index][1].v2), Position(triangles[index][1].v0), vec4(0.5f, 1.0f, 0.0f, 1.0f));
-                }
+                }*/
 
                 vec3 collisionPoint = intersections[0].pos + intersections[0].end;
                 foreach(ref intersection; intersections[1..numIntersections])
@@ -297,7 +297,7 @@ class PhysicsSimulation : IPhysics
 
                       vec3 collisionNormal = rotation.transformDirection((intersectionNormalOther - intersectionNormalCurrent).normalize());
                     
-                      float bounciness = 0.4f;
+                      float bounciness = 0.8f;
                       vec3 impulseDiff = (1.0f + bounciness) * collisionNormal * ((objA.velocity - objB.velocity).dot(collisionNormal)) / ( objA.inverseMass + objB.inverseMass );
                       newVelocityA = (objA.velocity - (impulseDiff * objA.inverseMass)) * fCorrection;
                       newVelocityB = (objB.velocity + (impulseDiff * objB.inverseMass)) * fCorrection;
@@ -375,6 +375,8 @@ class PhysicsSimulation : IPhysics
               robjB = static_cast!RigidBody(colObj.physicsComponent);
               if(robjB is robjA)
                 continue;
+              if(robjB.inverseMass == 0.0f && robjA.inverseMass == 0.0f)
+                continue;
 
               Ray[32] intersections = void;
               mat4 collidingRigidyBodyTransform = robjB.transformTo(robjA);
@@ -416,7 +418,7 @@ class PhysicsSimulation : IPhysics
                 }
                 assert(intersectionNormalCurrent.length() > 0.1f);
 
-                if(m_CVars.p_drawCollisionInfo > 0)
+                //if(m_CVars.p_drawCollisionInfo > 0)
                 {
                   mat4 rotation = robjA.rotation.toMat4();
                   g_Env.renderer.drawArrow(robjA.position + (rotation * normalFindRay.get(intersectionPosOther)), robjA.position + (rotation * (normalFindRay.get(intersectionPosOther) + intersectionNormalOther)), vec4(1.0f, 0.0f, 0.0f, 1.0f));
@@ -426,7 +428,7 @@ class PhysicsSimulation : IPhysics
                 }
 
                 //We have a intersection to resolve
-                vec3 resolveDirection = robjA.rotation.toMat4().transformDirection(-intersectionNormalCurrent);
+                vec3 resolveDirection = robjA.rotation.toMat4().transformDirection(intersectionNormalCurrent);
                 float searchPoint = 0.0f;
                 float searchDelta = 1.0f;
                 float stillSearchingMult = 2.0f;
@@ -452,8 +454,8 @@ class PhysicsSimulation : IPhysics
 
                   if(numTestIntersections > 0)
                   {
-                    if(m_CVars.p_drawCollisionInfo > 0)
-                      robjB.collision.debugDraw(robjB.position, robjB.rotation, g_Env.renderer, vec4(1.0f, 1.0f, 0.0f, 1.0f));
+                    //if(m_CVars.p_drawCollisionInfo > 0)
+                      //robjB.collision.debugDraw(robjB.position, robjB.rotation, g_Env.renderer, vec4(1.0f, 1.0f, 0.0f, 1.0f));
                     //still intersecting
                     if(searchDelta > 0.0f)
                     {
@@ -466,8 +468,8 @@ class PhysicsSimulation : IPhysics
                   }
                   else
                   {
-                    if(m_CVars.p_drawCollisionInfo > 0)
-                      robjB.collision.debugDraw(robjB.position, robjB.rotation, g_Env.renderer, vec4(0.0f, 1.0f, 1.0f, 1.0f));
+                    //if(m_CVars.p_drawCollisionInfo > 0)
+                      //robjB.collision.debugDraw(robjB.position, robjB.rotation, g_Env.renderer, vec4(0.0f, 1.0f, 1.0f, 1.0f));
                     //not intersecting anymore
                     noIntersectionTime = searchPoint;
                     stillSearchingMult = 0.5f;
