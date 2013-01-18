@@ -886,10 +886,13 @@ class GameSimulation : IGameThread, IGame {
     /**
      * Spawns a box in the model viewer
      */
-    double spawnBox(float x, float y, float z, float inverseMass)
+    double spawnBox(float x, float y, float z, float inverseMass, float intertiaTensor)
     {
-      logInfo("spawnBox %f %f %f %f", x, y, z, inverseMass);
-      auto obj = New!Box(EntityId(2), this, inverseMass);
+      logInfo("spawnBox %f %f %f %f %f", x, y, z, inverseMass, intertiaTensor);
+      uint it = cast(uint)intertiaTensor;
+      if(it > IntertiaTensorType.max)
+        it = 0;
+      auto obj = New!Box(EntityId(2), this, inverseMass, cast(IntertiaTensorType)it);
       obj.setPosition(x,y,z);
       obj.update(1.0f);
       m_Octree.insert(obj);
@@ -900,10 +903,13 @@ class GameSimulation : IGameThread, IGame {
     /**
     * Spawns a plane in the model viewer
     */
-    double spawnPlane(float x, float y, float z, float inverseMass)
+    double spawnPlane(float x, float y, float z, float inverseMass, float intertiaTensor)
     {
-      logInfo("spawnPlane %f %f %f %f", x, y, z, inverseMass);
-      auto obj = New!(game.devobjects.Plane)(EntityId(2), this, inverseMass);
+      logInfo("spawnPlane %f %f %f %f %f", x, y, z, inverseMass, intertiaTensor);
+      uint it = cast(uint)intertiaTensor;
+      if(it > IntertiaTensorType.max)
+        it = 0;
+      auto obj = New!(game.devobjects.Plane)(EntityId(2), this, inverseMass, cast(IntertiaTensorType)it);
       obj.setPosition(x,y,z);
       obj.update(1.0f);
       m_Octree.insert(obj);
@@ -951,6 +957,20 @@ class GameSimulation : IGameThread, IGame {
         auto obj = m_physicObjects[index];
         auto rigidBody = cast(IRigidBody)obj.physicsComponent();
         rigidBody.velocity = vec3(x,y,z);
+      }
+    }
+
+    /**
+     * sets the angular momentum of a physics object
+     */
+    void setAngularMomentum(double id, float x, float y, float z)
+    {
+      size_t index = cast(size_t)id;
+      if(index < m_physicsObjects.length)
+      {
+        auto obj = m_physicsObjects[index];
+        auto rigidBody = cast(IRigidBody)obj.physicsComponent();
+        rigidBody.angularMomentum = vec3(x,y,z);
       }
     }
 
@@ -1157,6 +1177,7 @@ class GameSimulation : IGameThread, IGame {
         m_ScriptSystem.RegisterGlobal("rotate", &rotate);
         m_ScriptSystem.RegisterGlobal("resetWorld", &resetWorld);
         m_ScriptSystem.RegisterGlobal("setVelocity", &setVelocity);
+        m_ScriptSystem.RegisterGlobal("setAngularMomentum", &setAngularMomentum);
         m_ScriptSystem.RegisterGlobal("reloadAutoexec", &reloadAutoexec);
 			}
 		}

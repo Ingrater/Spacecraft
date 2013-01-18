@@ -6,12 +6,20 @@ import thBase.plugin;
 import thBase.math3d.all;
 import game.collision;
 
+enum IntertiaTensorType
+{
+  fixed = 0,
+  box = 1,
+  sphere = 2
+}
+
 abstract class IRigidBody
 {
 public:
   Position position;
   Quaternion rotation;
   vec3 velocity;
+  vec3 angularMomentum;
 }
 
 interface IPhysicsPlugin : IPlugin
@@ -21,7 +29,7 @@ interface IPhysicsPlugin : IPlugin
   IPhysics CreatePhysics(Octree octree);
   void DeletePhysics(IPhysics physics);
 
-  IRigidBody CreateRigidBody(CollisionHull collision, float fInverseMass);
+  IRigidBody CreateRigidBody(CollisionHull collision, float fInverseMass, IntertiaTensorType intertiaTensor);
   void DeleteRigidBody(IRigidBody b);
 }
 

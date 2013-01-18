@@ -163,9 +163,16 @@ class PhysicsSimulation : IPhysics
           if(objA.remainingTime < FloatEpsilon || objA.inverseMass <= 0.0f)
             continue;
 
+          //Update the position
           auto startPosition = objA.position;
           objA.position = startPosition + objA.velocity * objA.remainingTime;
 
+          //Update the rotation
+          auto startRotation = objA.rotation;
+          vec3 angularVelocityA = objA.inverseInertiaTensor * objA.angularMomentum;
+          objA.rotation = startRotation + angularVelocityA * objA.remainingTime;
+
+          //Compute the collision bounding box
           float collisionRadius = objA.collision.boundingRadius + objA.velocity.length * objA.remainingTime;
           vec3 boundOffset = vec3(collisionRadius, collisionRadius, collisionRadius);
           auto queryBox = AlignedBox(objA.position  - boundOffset, objA.position + boundOffset);
@@ -298,7 +305,8 @@ class PhysicsSimulation : IPhysics
                       vec3 collisionNormal = rotation.transformDirection((intersectionNormalOther - intersectionNormalCurrent).normalize());
                     
                       float bounciness = 0.8f;
-                      vec3 impulseDiff = (1.0f + bounciness) * collisionNormal * ((objA.velocity - objB.velocity).dot(collisionNormal)) / ( objA.inverseMass + objB.inverseMass );
+                      vec3 f = (1.0f + bounciness) * ((objA.velocity - objB.velocity).dot(collisionNormal)) / ( objA.inverseMass + objB.inverseMass );
+                      vec3 impulseDiff = f * collisionNormal;
                       newVelocityA = (objA.velocity - (impulseDiff * objA.inverseMass)) * fCorrection;
                       newVelocityB = (objB.velocity + (impulseDiff * objB.inverseMass)) * fCorrection;
 
