@@ -8,4 +8,5 @@ struct CVars {
   double p_iterations = 3.0; //how many iterations of solving should be done per frame
   double p_correction = 0.99; //factor for getting rid of impercise floating point computation issues
   double p_debugNum = 0.0; //which debug output to draw
+  double p_collisionResponse = 1.0; //which collision response to use
 }

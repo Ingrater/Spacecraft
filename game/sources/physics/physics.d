@@ -296,25 +296,32 @@ class PhysicsSimulation : IPhysics
                     {
                       timeOfImpact = noCollisionTime;
                       objB = collidingRigidBody;
-                      //TODO real collision response
-                      //newVelocityA = objA.velocity * -0.2;
-                      //newVelocityB = vec3(0,0,0);
+
 
                       mat4 rotation = objA.rotation.toMat4();
 
                       vec3 collisionNormal = rotation.transformDirection((intersectionNormalOther - intersectionNormalCurrent).normalize());
                     
-                      float bounciness = 0.8f;
-                      vec3 f = (1.0f + bounciness) * ((objA.velocity - objB.velocity).dot(collisionNormal)) / ( objA.inverseMass + objB.inverseMass );
-                      vec3 impulseDiff = f * collisionNormal;
-                      newVelocityA = (objA.velocity - (impulseDiff * objA.inverseMass)) * fCorrection;
-                      newVelocityB = (objB.velocity + (impulseDiff * objB.inverseMass)) * fCorrection;
-
-                      if(m_CVars.p_drawCollisionInfo > 0)
+                      if(m_cvars.p_collisionResponse < 1.0)
                       {
+                        //collision response without rotation
+                        float bounciness = 0.5f;
+                        vec3 f = (1.0f + bounciness) * ((objA.velocity - objB.velocity).dot(collisionNormal)) / ( objA.inverseMass + objB.inverseMass );
+                        vec3 impulseDiff = f * collisionNormal;
+                        newVelocityA = (objA.velocity - (impulseDiff * objA.inverseMass)) * fCorrection;
+                        newVelocityB = (objB.velocity + (impulseDiff * objB.inverseMass)) * fCorrection;
+
+                        if(m_CVars.p_drawCollisionInfo > 0)
+                        {
                       
-                        g_Env.renderer.drawArrow(objA.position + (rotation * collisionPoint), objA.position + (rotation * (collisionPoint + collisionNormal)), vec4(1.0f, 1.0f, 1.0f, 1.0f));
-                        g_Env.renderer.drawArrow(objA.position + (rotation * collisionPoint), objA.position + (rotation * (collisionPoint + impulseDiff)), vec4(0.0f, 0.0f, 0.0f, 1.0f));
+                          g_Env.renderer.drawArrow(objA.position + (rotation * collisionPoint), objA.position + (rotation * (collisionPoint + collisionNormal)), vec4(1.0f, 1.0f, 1.0f, 1.0f));
+                          g_Env.renderer.drawArrow(objA.position + (rotation * collisionPoint), objA.position + (rotation * (collisionPoint + impulseDiff)), vec4(0.0f, 0.0f, 0.0f, 1.0f));
+                        }
+                      }
+                      else
+                      {
+                        //collision repsonse with rotation
+
                       }
                     }
                   }
