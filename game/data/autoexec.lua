@@ -1,6 +1,7 @@
-cvars.p_drawCollisionGeometry = 0
-cvars.p_drawCollisionInfo = 0
-cvars.p_iterations = 4
+cvars.p_drawCollisionGeometry = 1
+cvars.p_drawCollisionInfo = 1
+cvars.p_iterations = 1
+cvars.p_collisionResponse = 1
 --spawnBox(0,0,0, 1/0.1)
 --spawnBox(2.1,0,0, 1/0.1)
 --spawnBox(-2.1,0,0, 1/0.1)
@@ -88,30 +89,30 @@ end
 --intersection test 1
 function test4()
   emptyWorld()
-  spawnBox(0,1,0,1/1)
-  spawnBox(0.01,1.6,0.01,1/1)
+  spawnBox(0,1,0,1/1, INERTIA_TENSOR_BOX)
+  spawnBox(0.01,1.6,0.01,1/1, INERTIA_TENSOR_BOX)
 end
 
 --intersection test 2
 function test5()
   emptyWorld()
-  spawnBox(0,0.5,0,1/1)
-  spawnBox(0.01,1.5,0,1/1)
-  spawnBox(-0.01,2.5,0,1/1)
+  spawnBox(0,0.5,0,1/1, INERTIA_TENSOR_BOX)
+  spawnBox(0.01,1.5,0,1/1, INERTIA_TENSOR_BOX)
+  spawnBox(-0.01,2.5,0,1/1, INERTIA_TENSOR_BOX)
 end
 
 function test6()
   emptyWorld()
   slope(-30)
-  local chestId = spawnBox(0,11,-10, 1/1)
+  local chestId = spawnBox(0,11,-10, 1/1, INERTIA_TENSOR_BOX)
   rotate(chestId, 1,0,0, -30)
 end
 
 function test7()
   emptyWorld()
   cvars.p_gravity = 0
-  spawnBox(0,3,0, 1/1)
-  local boxId = spawnBox(0, 3.01, 3, 1/1)
+  spawnBox(0,3,0, 1/1, INERTIA_TENSOR_BOX)
+  local boxId = spawnBox(0, 3.01, 3, 1/1, INERTIA_TENSOR_BOX)
   setVelocity(boxId, 0,0,-10)
 end
 
@@ -122,16 +123,16 @@ end
 
 function test9()
   emptyWorld()
-  spawnBox(0,3,0, 1/1)
-  spawnBox(-1.1,6,0, 1/1)  
+  spawnBox(0,3,0, 1/1, INERTIA_TENSOR_BOX)
+  spawnBox(-1.1,6,0, 1/1, INERTIA_TENSOR_BOX)  
 end
 
 function test10()
   emptyWorld()
-  local box1 = spawnBox(0.00000000, 0.10174561, 0.00000000, 1/1)
+  local box1 = spawnBox(0.00000000, 0.10174561, 0.00000000, 1/1, INERTIA_TENSOR_BOX)
   setVelocity(box1, 0.00000000, 2.7195253, 0.00000000)
-  local box2 = spawnBox(-1.09998, 2.5633545, 0, 1/1)
-  setVelocity(box2, 0.00000000, -8.1197395, 0.00000000)
+  local box2 = spawnBox(-1.09998, 2.5633545, 0, 1/1, INERTIA_TENSOR_BOX)
+  setVelocity(box2, 0.00000000, -8.1197395, 0.00000000, INERTIA_TENSOR_BOX)
 end
 
 function test11()
@@ -142,11 +143,19 @@ end
 --intersection test 3
 function test12()
   emptyWorld()
-  spawnBox(0,-0.1,0,1/1)
-  spawnBox(0.01,1.8,0,1/1)
-  spawnBox(-0.01,3.7,0,1/1)
+  spawnBox(0,-0.1,0,1/1, INERTIA_TENSOR_BOX)
+  spawnBox(0.01,1.8,0,1/1, INERTIA_TENSOR_BOX)
+  spawnBox(-0.01,3.7,0,1/1, INERTIA_TENSOR_BOX)
 end
 
-test12()
+--rotation test
+function test13()
+  emptyWorld()
+  --cvars.p_gravity = 0
+  local boxId = spawnBox(0,3,0,1/1, INERTIA_TENSOR_BOX)
+  setAngularMomentum(boxId, 0,0,0.001)
+end
+
+test13()
 
 

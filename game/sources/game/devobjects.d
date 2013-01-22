@@ -28,11 +28,11 @@ public:
   * for this game object arives. Therefore you can only set attributes but the
   * netvars will not be set to their proper server values yet.
   */
-	this(EntityId entityId, GameSimulation game, float bounciness){
+	this(EntityId entityId, GameSimulation game, float bounciness, InertiaTensorType inertiaTensor){
 		auto res = client.resources.model(_T("box"));
 		m_RenderProxy = res.proxy;
 		super(entityId, game, res.boundingBox, null);
-    m_RigidBody = g_Env.physicsPlugin.CreateRigidBody(server.resources.col(_T("box")), bounciness);
+    m_RigidBody = g_Env.physicsPlugin.CreateRigidBody(server.resources.col(_T("box")), bounciness, inertiaTensor);
     game.physics.AddSimulatedBody(m_RigidBody);
 	}
 
@@ -93,11 +93,11 @@ public:
   * for this game object arives. Therefore you can only set attributes but the
   * netvars will not be set to their proper server values yet.
   */
-	this(EntityId entityId, GameSimulation game, float bounciness){
+	this(EntityId entityId, GameSimulation game, float bounciness, InertiaTensorType inertiaTensor){
 		auto res = client.resources.model(_T("plane"));
 		m_RenderProxy = res.proxy;
 		super(entityId, game, res.boundingBox, null);
-    m_RigidBody = g_Env.physicsPlugin.CreateRigidBody(server.resources.col(_T("plane")), bounciness);
+    m_RigidBody = g_Env.physicsPlugin.CreateRigidBody(server.resources.col(_T("plane")), bounciness, inertiaTensor);
     game.physics.AddSimulatedBody(m_RigidBody);
 	}
 

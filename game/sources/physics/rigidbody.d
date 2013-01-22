@@ -8,7 +8,7 @@ class RigidBody : IRigidBody
 {
   CollisionHull m_collision;
   float m_inverseMass;
-  mat3  m_inverseIntertiaTensor;
+  mat3  m_inverseInertiaTensor;
 
   public:
     float remainingTime;
@@ -19,9 +19,9 @@ class RigidBody : IRigidBody
       return m_inverseMass;
     }
 
-    @property ref const(mat3) inverseIntertiaTensor() const
+    @property ref const(mat3) inverseInertiaTensor() const
     {
-      return m_inverseIntertiaTensor;
+      return m_inverseInertiaTensor;
     }
 
     @property const(CollisionHull) collision() const
@@ -34,7 +34,7 @@ class RigidBody : IRigidBody
      * Params:
      *  collsion = the collision mesh to use
      */
-    this(CollisionHull collision, float fInverseMass, IntertiaTensorType intertiaTensor)
+    this(CollisionHull collision, float fInverseMass, InertiaTensorType inertiaTensor)
     {
       m_collision = collision;
       m_inverseMass = fInverseMass;
@@ -43,30 +43,30 @@ class RigidBody : IRigidBody
       velocity = vec3(0,0,0);
       angularMomentum = vec3(0,0,0);
 
-      final switch(intertiaTensor)
+      final switch(inertiaTensor)
       {
-        case IntertiaTensorType.fixed:
-          m_inverseIntertiaTensor.f[0..9] = 0.0f;
+        case InertiaTensorType.fixed:
+          m_inverseInertiaTensor.f[0..9] = 0.0f;
           break;
-        case IntertiaTensorType.box:
+        case InertiaTensorType.box:
           vec3 size = m_collision.maxBounds - m_collision.minBounds;
           vec3 squaredSize = size * size;
           float massFactor = 12.0f / m_inverseMass;
-          m_inverseIntertiaTensor.f[0..9] = 0.0f;
-          m_inverseIntertiaTensor.f[0] = massFactor * (squaredSize.y + squaredSize.z);
-          m_inverseIntertiaTensor.f[4] = massFactor * (squaredSize.x + squaredSize.z);
-          m_inverseIntertiaTensor.f[8] = massFactor * (squaredSize.x + squaredSize.y);
-          m_inverseIntertiaTensor = m_inverseIntertiaTensor.Inverse();
+          m_inverseInertiaTensor.f[0..9] = 0.0f;
+          m_inverseInertiaTensor.f[0] = massFactor * (squaredSize.y + squaredSize.z);
+          m_inverseInertiaTensor.f[4] = massFactor * (squaredSize.x + squaredSize.z);
+          m_inverseInertiaTensor.f[8] = massFactor * (squaredSize.x + squaredSize.y);
+          m_inverseInertiaTensor = m_inverseInertiaTensor.Inverse();
           break;
-        case IntertiaTensorType.sphere:
-          m_inverseIntertiaTensor.f[0..9] = 0.0f;
-          float radiusSquare = maxBounds.x * maxBounds.x;
+        case InertiaTensorType.sphere:
+          m_inverseInertiaTensor.f[0..9] = 0.0f;
+          float radiusSquare = m_collision.maxBounds.x * m_collision.maxBounds.x;
           float massFactor = 2.0f / 5.0f / m_inverseMass;
           float c = massFactor * radiusSquare;
-          m_inverseIntertiaTensor.f[0] = c;
-          m_inverseIntertiaTensor.f[4] = c;
-          m_inverseIntertiaTensor.f[8] = c;
-          m_inverseIntertiaTensor = m_inverseIntertiaTensor.Inverse();
+          m_inverseInertiaTensor.f[0] = c;
+          m_inverseInertiaTensor.f[4] = c;
+          m_inverseInertiaTensor.f[8] = c;
+          m_inverseInertiaTensor = m_inverseInertiaTensor.Inverse();
           break;
       }
     }

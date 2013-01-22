@@ -890,9 +890,9 @@ class GameSimulation : IGameThread, IGame {
     {
       logInfo("spawnBox %f %f %f %f %f", x, y, z, inverseMass, intertiaTensor);
       uint it = cast(uint)intertiaTensor;
-      if(it > IntertiaTensorType.max)
+      if(it > InertiaTensorType.max)
         it = 0;
-      auto obj = New!Box(EntityId(2), this, inverseMass, cast(IntertiaTensorType)it);
+      auto obj = New!Box(EntityId(2), this, inverseMass, cast(InertiaTensorType)it);
       obj.setPosition(x,y,z);
       obj.update(1.0f);
       m_Octree.insert(obj);
@@ -907,9 +907,9 @@ class GameSimulation : IGameThread, IGame {
     {
       logInfo("spawnPlane %f %f %f %f %f", x, y, z, inverseMass, intertiaTensor);
       uint it = cast(uint)intertiaTensor;
-      if(it > IntertiaTensorType.max)
+      if(it > InertiaTensorType.max)
         it = 0;
-      auto obj = New!(game.devobjects.Plane)(EntityId(2), this, inverseMass, cast(IntertiaTensorType)it);
+      auto obj = New!(game.devobjects.Plane)(EntityId(2), this, inverseMass, cast(InertiaTensorType)it);
       obj.setPosition(x,y,z);
       obj.update(1.0f);
       m_Octree.insert(obj);
@@ -966,9 +966,9 @@ class GameSimulation : IGameThread, IGame {
     void setAngularMomentum(double id, float x, float y, float z)
     {
       size_t index = cast(size_t)id;
-      if(index < m_physicsObjects.length)
+      if(index < m_physicObjects.length)
       {
-        auto obj = m_physicsObjects[index];
+        auto obj = m_physicObjects[index];
         auto rigidBody = cast(IRigidBody)obj.physicsComponent();
         rigidBody.angularMomentum = vec3(x,y,z);
       }

@@ -6,7 +6,7 @@ import thBase.plugin;
 import thBase.math3d.all;
 import game.collision;
 
-enum IntertiaTensorType
+enum InertiaTensorType
 {
   fixed = 0,
   box = 1,
@@ -29,7 +29,7 @@ interface IPhysicsPlugin : IPlugin
   IPhysics CreatePhysics(Octree octree);
   void DeletePhysics(IPhysics physics);
 
-  IRigidBody CreateRigidBody(CollisionHull collision, float fInverseMass, IntertiaTensorType intertiaTensor);
+  IRigidBody CreateRigidBody(CollisionHull collision, float fInverseMass, InertiaTensorType intertiaTensor);
   void DeleteRigidBody(IRigidBody b);
 }
 
