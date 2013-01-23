@@ -51,12 +51,12 @@ class RigidBody : IRigidBody
         case InertiaTensorType.box:
           vec3 size = m_collision.maxBounds - m_collision.minBounds;
           vec3 squaredSize = size * size;
-          float massFactor = 12.0f / m_inverseMass;
+          float massFactor = 1.0f / (12.0f * m_inverseMass);
           m_inverseInertiaTensor.f[0..9] = 0.0f;
-          m_inverseInertiaTensor.f[0] = massFactor * (squaredSize.y + squaredSize.z);
-          m_inverseInertiaTensor.f[4] = massFactor * (squaredSize.x + squaredSize.z);
-          m_inverseInertiaTensor.f[8] = massFactor * (squaredSize.x + squaredSize.y);
-          m_inverseInertiaTensor = m_inverseInertiaTensor.Inverse();
+          m_inverseInertiaTensor.f[0] = 1.0f / (massFactor * (squaredSize.y + squaredSize.z));
+          m_inverseInertiaTensor.f[4] = 1.0f / (massFactor * (squaredSize.x + squaredSize.z));
+          m_inverseInertiaTensor.f[8] = 1.0f / (massFactor * (squaredSize.x + squaredSize.y));
+          //m_inverseInertiaTensor = m_inverseInertiaTensor.Inverse();
           break;
         case InertiaTensorType.sphere:
           m_inverseInertiaTensor.f[0..9] = 0.0f;

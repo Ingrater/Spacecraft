@@ -1,6 +1,6 @@
-cvars.p_drawCollisionGeometry = 1
-cvars.p_drawCollisionInfo = 1
-cvars.p_iterations = 1
+cvars.p_drawCollisionGeometry = 0
+cvars.p_drawCollisionInfo = 0
+cvars.p_iterations = 4
 cvars.p_collisionResponse = 1
 --spawnBox(0,0,0, 1/0.1)
 --spawnBox(2.1,0,0, 1/0.1)
@@ -12,30 +12,32 @@ INERTIA_TENSOR_FIXED = 0
 INERTIA_TENSOR_BOX = 1
 INERTIA_TENSOR_SPHERE = 2
 
+BOX_MASS = 1/10
+
 function plane()
   spawnPlane(0,-1,0, 0)
 end
 
 function stack(height)
   for i=1,height do
-    spawnBox(0, 4 + i * 3, 0.01 * i, 1/1)
+    spawnBox(0, 4 + i * 3, 0.01 * i, BOX_MASS, INERTIA_TENSOR_BOX)
   end
 end
 
 function diagonalStack()
-  spawnBox(-0.2, 4, 0, 1/1, INERTIA_TENSOR_BOX)
-  spawnBox(0.05, 7, 0.9, 1/1, INERTIA_TENSOR_BOX)
-  spawnBox(0.3, 10, 2.1, 1/1, INERTIA_TENSOR_BOX)
+  spawnBox(-0.2, 4, 0, BOX_MASS, INERTIA_TENSOR_BOX)
+  spawnBox(0.05, 7, 0.9, BOX_MASS, INERTIA_TENSOR_BOX)
+  spawnBox(0.3, 10, 2.1, BOX_MASS, INERTIA_TENSOR_BOX)
 end
 
 function pyramid()
-  spawnBox(0,3,0, 1/1, INERTIA_TENSOR_BOX)
-  spawnBox(2.1,3,0, 1/1, INERTIA_TENSOR_BOX)
-  spawnBox(-2.1,3,0, 1/1, INERTIA_TENSOR_BOX)
-  spawnBox(-1.1,6,0, 1/1, INERTIA_TENSOR_BOX)
-  spawnBox(1.1,6,0, 1/1, INERTIA_TENSOR_BOX)	
-  spawnBox(0,9,0, 1/1, INERTIA_TENSOR_BOX)
-  spawnBox(0.01,40,0.01, 1/1, INERTIA_TENSOR_BOX)
+  spawnBox(0,3,0, BOX_MASS, INERTIA_TENSOR_BOX)
+  spawnBox(2.1,3,0, BOX_MASS, INERTIA_TENSOR_BOX)
+  spawnBox(-2.1,3,0, BOX_MASS, INERTIA_TENSOR_BOX)
+  spawnBox(-1.1,6,0, BOX_MASS, INERTIA_TENSOR_BOX)
+  spawnBox(1.1,6,0, BOX_MASS, INERTIA_TENSOR_BOX)	
+  spawnBox(0,9,0, BOX_MASS, INERTIA_TENSOR_BOX)
+  spawnBox(0.01,40,0.01, BOX_MASS, INERTIA_TENSOR_BOX)
 end
 
 function emptyWorld()
@@ -45,22 +47,22 @@ function emptyWorld()
 end
 
 function rotatedChest(angel)
-  local chestId = spawnBox(0,3,0, 1/1, INERTIA_TENSOR_BOX)
+  local chestId = spawnBox(0,3,0, BOX_MASS, INERTIA_TENSOR_BOX)
   rotate(chestId, 1,0,0, angel)
 end
 
 function oneChest()
-   spawnBox(0,3,0, 1/1, INERTIA_TENSOR_BOX)
+   spawnBox(0,3,0, BOX_MASS, INERTIA_TENSOR_BOX)
 end
 
 function throwChest()
-  local boxId = spawnBox(0,3,10, 1/10, INERTIA_TENSOR_BOX)
+  local boxId = spawnBox(0,3,10, BOX_MASS, INERTIA_TENSOR_BOX)
   setVelocity(boxId, 0,0,-20)
 end
 
 function rotatedStack()
-  local chest1Id = spawnBox(0, 4, 0, 1/1, INERTIA_TENSOR_BOX)
-  local chest2Id = spawnBox(0.01, 7, 0.01, 1/1, INERTIA_TENSOR_BOX)
+  local chest1Id = spawnBox(0, 4, 0, BOX_MASS, INERTIA_TENSOR_BOX)
+  local chest2Id = spawnBox(0.01, 7, 0.01, BOX_MASS, INERTIA_TENSOR_BOX)
   rotate(chest1Id, 1,0,0,-25)
   rotate(chest2Id, 0,0,1,15)
 end
@@ -89,30 +91,30 @@ end
 --intersection test 1
 function test4()
   emptyWorld()
-  spawnBox(0,1,0,1/1, INERTIA_TENSOR_BOX)
-  spawnBox(0.01,1.6,0.01,1/1, INERTIA_TENSOR_BOX)
+  spawnBox(0,1,0,BOX_MASS, INERTIA_TENSOR_BOX)
+  spawnBox(0.01,1.6,0.01,BOX_MASS, INERTIA_TENSOR_BOX)
 end
 
 --intersection test 2
 function test5()
   emptyWorld()
-  spawnBox(0,0.5,0,1/1, INERTIA_TENSOR_BOX)
-  spawnBox(0.01,1.5,0,1/1, INERTIA_TENSOR_BOX)
-  spawnBox(-0.01,2.5,0,1/1, INERTIA_TENSOR_BOX)
+  spawnBox(0,0.5,0,BOX_MASS, INERTIA_TENSOR_BOX)
+  spawnBox(0.01,1.5,0,BOX_MASS, INERTIA_TENSOR_BOX)
+  spawnBox(-0.01,2.5,0,BOX_MASS, INERTIA_TENSOR_BOX)
 end
 
 function test6()
   emptyWorld()
   slope(-30)
-  local chestId = spawnBox(0,11,-10, 1/1, INERTIA_TENSOR_BOX)
+  local chestId = spawnBox(0,11,-10, BOX_MASS, INERTIA_TENSOR_BOX)
   rotate(chestId, 1,0,0, -30)
 end
 
 function test7()
   emptyWorld()
   cvars.p_gravity = 0
-  spawnBox(0,3,0, 1/1, INERTIA_TENSOR_BOX)
-  local boxId = spawnBox(0, 3.01, 3, 1/1, INERTIA_TENSOR_BOX)
+  spawnBox(0,3,0, BOX_MASS, INERTIA_TENSOR_BOX)
+  local boxId = spawnBox(0, 3.01, 3, BOX_MASS, INERTIA_TENSOR_BOX)
   setVelocity(boxId, 0,0,-10)
 end
 
@@ -123,16 +125,16 @@ end
 
 function test9()
   emptyWorld()
-  spawnBox(0,3,0, 1/1, INERTIA_TENSOR_BOX)
-  spawnBox(-1.1,6,0, 1/1, INERTIA_TENSOR_BOX)  
+  spawnBox(0,3,0, BOX_MASS, INERTIA_TENSOR_BOX)
+  spawnBox(-1.1,6,0, BOX_MASS, INERTIA_TENSOR_BOX)  
 end
 
 function test10()
   emptyWorld()
-  local box1 = spawnBox(0.00000000, 0.10174561, 0.00000000, 1/1, INERTIA_TENSOR_BOX)
+  local box1 = spawnBox(0.00000000, 0.10174561, 0.00000000, BOX_MASS, INERTIA_TENSOR_BOX)
   setVelocity(box1, 0.00000000, 2.7195253, 0.00000000)
-  local box2 = spawnBox(-1.09998, 2.5633545, 0, 1/1, INERTIA_TENSOR_BOX)
-  setVelocity(box2, 0.00000000, -8.1197395, 0.00000000, INERTIA_TENSOR_BOX)
+  local box2 = spawnBox(-1.09998, 2.5633545, 0, BOX_MASS, INERTIA_TENSOR_BOX)
+  setVelocity(box2, 0.00000000, -8.1197395, 0.00000000)
 end
 
 function test11()
@@ -143,19 +145,29 @@ end
 --intersection test 3
 function test12()
   emptyWorld()
-  spawnBox(0,-0.1,0,1/1, INERTIA_TENSOR_BOX)
-  spawnBox(0.01,1.8,0,1/1, INERTIA_TENSOR_BOX)
-  spawnBox(-0.01,3.7,0,1/1, INERTIA_TENSOR_BOX)
+  spawnBox(0,-0.1,0,BOX_MASS, INERTIA_TENSOR_BOX)
+  spawnBox(0.01,1.8,0,BOX_MASS, INERTIA_TENSOR_BOX)
+  spawnBox(-0.01,3.7,0,BOX_MASS, INERTIA_TENSOR_BOX)
 end
 
 --rotation test
 function test13()
   emptyWorld()
-  --cvars.p_gravity = 0
-  local boxId = spawnBox(0,3,0,1/1, INERTIA_TENSOR_BOX)
-  setAngularMomentum(boxId, 0,0,0.001)
+  cvars.p_gravity = 0
+  local boxId1 = spawnBox(-3,3,0,BOX_MASS, INERTIA_TENSOR_BOX)
+  setVelocity(boxId1, 2,0,0)
+  local boxId2 = spawnBox(0.01,1.2,0.01,BOX_MASS, INERTIA_TENSOR_BOX)
+  --rotate(boxId, 0,0,1,15)
+  
+  --setAngularMomentum(boxId, 0,0,0.001)
 end
 
-test13()
+function test14()
+  emptyWorld()
+  local boxId = spawnBox(0,5,0, BOX_MASS, INERTIA_TENSOR_BOX)
+  rotate(boxId, 0,0,1,15)
+end
+
+test14()
 
 
