@@ -1,7 +1,8 @@
 cvars.p_drawCollisionGeometry = 0
-cvars.p_drawCollisionInfo = 0
+cvars.p_drawCollisionInfo = 1
 cvars.p_iterations = 4
-cvars.p_collisionResponse = 1
+cvars.p_collisionResponse = 0
+cvars.p_correctionVelocity = 0.99
 --spawnBox(0,0,0, 1/0.1)
 --spawnBox(2.1,0,0, 1/0.1)
 --spawnBox(-2.1,0,0, 1/0.1)
@@ -165,7 +166,7 @@ end
 function test14()
   emptyWorld()
   local boxId = spawnBox(0,5,0, BOX_MASS, INERTIA_TENSOR_BOX)
-  rotate(boxId, 0,0,1,15)
+  rotate(boxId, 0,0,1,195)
 end
 
 test14()
