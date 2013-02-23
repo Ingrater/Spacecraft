@@ -10,6 +10,7 @@ import thBase.math3d.box;
 import thBase.allocator;
 import thBase.scoped;
 import thBase.types;
+import thBase.casts;
 import modeltypes;
 
 extern(C) int D10modeltypes12__ModuleInfoZ;
@@ -91,7 +92,7 @@ public:
 
   private uint allocationSize(T)(uint num)
   {
-    uint size = T.sizeof * num;
+    uint size = cast(uint)T.sizeof * num;
     if(size % m_meshDataAllocator.alignment != 0)
     {
       size += m_meshDataAllocator.alignment - (size & m_meshDataAllocator.alignment);
@@ -637,7 +638,7 @@ public:
 
           
           node.meshes = file.readAndAllocateArray!(uint, uint, typeof(m_meshDataAllocator))(m_meshDataAllocator);
-          memstat.meshReferenceMemory += allocationSize!uint(node.meshes.length);
+          memstat.meshReferenceMemory += allocationSize!uint(int_cast!uint(node.meshes.length));
           uint numChildren;
           file.read(numChildren);
           if(numChildren > 0)

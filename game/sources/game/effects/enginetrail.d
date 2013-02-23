@@ -9,6 +9,7 @@ import thBase.serialize.xmldeserializer;
 import thBase.serialize.xmlserializer;
 import game.gameobject;
 import thBase.format;
+import thBase.casts;
 
 class EngineTrail : RenderProxyGameObject!(ObjectInfoSprite), IGameObject {
 private:
@@ -151,7 +152,7 @@ public:
 		m_UpDir = vec3(rotation * vec4(m_Params.upDir,0.0f)).normalize();
 		
 		m_CurParticle = m_Particles.GetRange();
-		uint alive = m_Particles.length - m_DeadParticles.size();
+		uint alive = int_cast!uint(m_Particles.length - m_DeadParticles.size());
 		for(uint i=0;i<alive;i++){
 			while(!m_CurParticle.front.alive)
 				m_CurParticle.popFront();

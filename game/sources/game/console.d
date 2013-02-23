@@ -6,6 +6,7 @@ import thBase.container.vector;
 import base.script;
 import thBase.conv;
 import thBase.string;
+import thBase.casts;
 
 
 
@@ -270,7 +271,7 @@ public:
 	void scrollUp(){
 		m_ScrollPos++;
 		if(m_ScrollPos >= m_History.length){
-			m_ScrollPos = m_History.length - 1;
+			m_ScrollPos = int_cast!uint(m_History.length - 1);
 			if(m_ScrollPos < 0)
 				m_ScrollPos = 0;
 		}

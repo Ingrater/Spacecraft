@@ -7,6 +7,7 @@ import base.utilsD2;
 import core.memory;
 import thBase.format;
 import thBase.string;
+import thBase.casts;
 
 class ScriptContext : IScriptContext {
 private:
@@ -117,7 +118,7 @@ public:
 	}
 	
 	override int getInteger(int n){
-		return Lua.tointeger(L,n);
+		return int_cast!int(Lua.tointeger(L,n));
 	}
 	
 	override double getNumber(int n){

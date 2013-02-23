@@ -106,7 +106,9 @@ public:
 							m_RotateAroundCenterOffset,
 							cos(m_RotateAroundCenterPos) * m_RotateAroundCenter);
 			m_Position = Position(pos);
-			m_ViewMatrix = mat4.LookDirMatrix(vec4(-pos),vec4(0,1,0,1));
+      auto tempPos = vec4(-pos);
+      auto tempUp = vec4(0,1,0,1);
+			m_ViewMatrix = mat4.LookDirMatrix(tempPos, tempUp);
 		}
 	}
 	

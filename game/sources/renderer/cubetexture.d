@@ -7,6 +7,7 @@ import base.all;
 import core.stdc.stdlib;
 import renderer.internal;
 import thBase.math;
+import thBase.casts;
 
 class CubeTexture : ITextureInternal {
 public:
@@ -126,7 +127,7 @@ public:
         size_t divisor = 1;
         foreach(size_t level, ref mipmap; data.GetData())
         {
-          gl.CompressedTexImage2D(CUBE_FACE[i], level, data.GetFormat(), max(1, data.GetWidth() / divisor), max(1, data.GetHeight() / divisor), 0, mipmap.length, mipmap.ptr);
+          gl.CompressedTexImage2D(CUBE_FACE[i], int_cast!uint(level), data.GetFormat(), max(1, data.GetWidth() / divisor), max(1, data.GetHeight() / divisor), 0, mipmap.length, mipmap.ptr);
 
           debug{
             gl.ErrorCode error = gl.GetError();
@@ -146,7 +147,7 @@ public:
         size_t divisor = 1;
         foreach(size_t level, ref mipmap; data.GetData())
         {
-          gl.TexImage2D(CUBE_FACE[i], level, data.GetFormat(), max(1, data.GetWidth() / divisor), max(1, data.GetHeight() / divisor), 0, data.GetBaseFormat(), data.GetComponent(), mipmap.ptr);
+          gl.TexImage2D(CUBE_FACE[i], int_cast!int(level), data.GetFormat(), max(1, data.GetWidth() / divisor), max(1, data.GetHeight() / divisor), 0, data.GetBaseFormat(), data.GetComponent(), mipmap.ptr);
 
           debug{
             gl.ErrorCode error = gl.GetError();

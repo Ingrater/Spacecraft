@@ -14,6 +14,7 @@ import core.refcounted;
 import core.allocator;
 import thBase.ctfe;
 import thBase.logging;
+import thBase.casts;
 
 import base.all;
 import core.stdc.string: memmove, memset;
@@ -595,7 +596,7 @@ class BufferWriter : ISerializer {
 			pos += T.sizeof;
 		} else static if ( is(T == rcstring) ) {
 			assert(pos + uint.sizeof + val.length <= buffer.length, "BufferWriter, push: no space left in the buffer!");
-			push!uint(val.length);
+			push!uint(int_cast!uint(val.length));
 			buffer[pos .. pos + val.length] = cast(void[])(val[]);
 			debug(net) base.logger.test("net: %5d > %s %10s: %s (length: %d)", pos, replicate("|", block_level), T.stringof, val, val.length);
 			pos += val.length;
@@ -636,7 +637,7 @@ class BufferWriter : ISerializer {
 			"BufferWriter, finishBlock: tried to finish a block that was not started. Looks like a nesting error.");
 		block_level--;
 		if(!throwAway){
-			uint length = pos - block_start_pos[block_level] - uint.sizeof;
+			uint length = pos - block_start_pos[block_level] - cast(uint)(uint.sizeof);
 			if(length != 0){
 				*( cast(uint*)(buffer.ptr + block_start_pos[block_level]) ) = length;
 				debug(net) base.logger.test("net: %5d > %s-- block end, length: %d --", pos, replicate("|", block_level), length);
@@ -1118,7 +1119,7 @@ class NetworkBuffer {
 			reader.unconsumed.ptr - recv_buffer.ptr, reader.unconsumed.length);
 		if (unconsumed_data.length > 0)
 			memmove(recv_buffer.ptr, unconsumed_data.ptr, unconsumed_data.length);
-		reader.reset(unconsumed_data.length);
+		reader.reset(int_cast!uint(unconsumed_data.length));
 		// Not really necessary, only used during testing to make sure the rest of
 		// the buffer was nilled
 		//memset(recv_buffer.ptr + unconsumed_data.length, 0, recv_buffer.length - unconsumed_data.length);
@@ -1129,7 +1130,7 @@ class NetworkBuffer {
 		debug(net) base.logger.test("net: receive: got %s bytes", bytes_recieved);
 		if (bytes_recieved > 0) {
 			// We got real data
-			reader.expand(bytes_recieved);
+			reader.expand(int_cast!uint(bytes_recieved));
 			return true;
 		} else if (bytes_recieved == 0) {
 			// Connection to the client was lost
@@ -1161,7 +1162,7 @@ class NetworkBuffer {
 		scope(exit) socket.blocking = false;
 		
 		uint total_received_bytes = 0;
-		int received_bytes = 0;
+		ptrdiff_t received_bytes = 0;
 		while(total_received_bytes < length){
 			received_bytes = socket.receive(reader.unused[total_received_bytes .. $]);
 			
@@ -1186,7 +1187,7 @@ class NetworkBuffer {
 	 */
 	void send(){
 		uint total_bytes_send = 0;
-		int bytes_send;
+		ptrdiff_t bytes_send;
 		
 		sender: while(total_bytes_send < writer.data.length){
 			bytes_send = socket.send(writer.data[total_bytes_send .. $]);
@@ -1205,6 +1206,6 @@ class NetworkBuffer {
 		if (unsend_bytes > 0)
 			memmove(send_buffer.ptr, writer.data[total_bytes_send .. $].ptr, unsend_bytes);
 		
-		writer.reset(unsend_bytes);
+		writer.reset(int_cast!uint(unsend_bytes));
 	}
 }

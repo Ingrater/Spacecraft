@@ -337,7 +337,7 @@ private:
 				printValuesHelper(renderer,newPos,m_LastRoot,maxY,m_LastRoot);
 			}
 		}
-		return pos(pos.x + maxIndent + maxLength + 65.0f, pos.y + maxY);
+		return vec2(pos.x + maxIndent + maxLength + 65.0f, pos.y + maxY);
 	}
 
   void drawRecordedHelper(IRenderer renderer, vec2 rootPos, float rootWidth, ref Zeitpunkt start, double recordedLength, ref float yOffset, Block* block, ref size_t colorIndex)
@@ -369,7 +369,7 @@ private:
         maxYOffset = yOffset > maxYOffset ? yOffset : maxYOffset;
       }
     }
-    return pos(pos.x, pos.y + maxYOffset);
+    return vec2(pos.x, pos.y + maxYOffset);
   }
 }
 

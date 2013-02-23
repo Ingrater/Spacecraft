@@ -81,7 +81,7 @@ public:
 			);
 		}
 		m_CurParticle = m_Particles.GetRange();
-		uint alive = m_Particles.length;
+		auto alive = m_Particles.length;
 		float maxDistance = m_Params.maxDistance.value;
 		{
 			auto profile2 = base.profiler.Profile("respawn");

@@ -16,6 +16,7 @@ import core.stdc.stdlib;
 import base.all;
 import thBase.string;
 import thBase.file;
+import thBase.casts;
 
 /**
  * API Wrapper for OpenGL shader functions
@@ -233,7 +234,7 @@ public:
  			throw New!FileException(format("Couldn't open '%s' for loading into shader '%s'", pFileName, m_Name[]));
  		}
  		
- 		int i = datei.size();
+ 		uint i = int_cast!uint(datei.size());
  		
  		char[] content = NewArray!char(i);
     scope(exit) Delete(content);
@@ -444,7 +445,7 @@ public:
   		char[256] UniformName;
   		int UniformSize = -1;
   		gl.GLenum Type;
-  		gl.GetActiveUniform(m_ShaderProgram,pIndex,UniformName.length,null,&UniformSize,&Type,UniformName.ptr);
+  		gl.GetActiveUniform(m_ShaderProgram, pIndex, int_cast!int(UniformName.length), null, &UniformSize, &Type, UniformName.ptr);
   		switch(Type){
   			case gl.INT:
   				pInfo.m_Type = UniformType.INT;

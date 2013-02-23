@@ -1,6 +1,7 @@
 module base.socket;
 
 import thBase.string;
+import thBase.casts;
 import core.allocator;
 import core.refcounted;
 
@@ -12,7 +13,7 @@ import core.refcounted;
  * - http://msdn.microsoft.com/en-us/library/ms740668(v=vs.85).aspx
  * - http://pubs.opengroup.org/onlinepubs/009695399/functions/recv.html
  */
-version(Win32)
+version(Windows)
 	enum { EINTR = 10004, EWOULDBLOCK = 10035, ECONNRESET = 10054 }
 else
 	enum { EINTR = 4, EWOULDBLOCK = 11, ECONNRESET = 104 }
@@ -68,7 +69,7 @@ version(Posix)
         version = BsdSockets;
 }
 
-version(Win32)
+version(Windows)
 {
         pragma (lib, "ws2_32.lib");
         pragma (lib, "wsock32.lib");
@@ -196,7 +197,7 @@ class SocketException: Exception
 
 shared static this()
 {
-        version(Win32)
+        version(Windows)
         {
                 WSADATA wd;
 
@@ -212,12 +213,10 @@ shared static this()
 
 shared static ~this()
 {
-	try {
-        version(Win32)
-        {
-                WSACleanup();
-        }
-	} catch(Throwable e){ asm { int 3; } }
+    version(Windows)
+    {
+            WSACleanup();
+    }
 }
 
 /**
@@ -974,7 +973,7 @@ class SocketSet
         fd_set set;
 
 
-        version(Win32)
+        version(Windows)
         {
                 uint count()
                 {
@@ -1085,7 +1084,7 @@ class SocketSet
 
         int selectn()
         {
-                version(Win32)
+                version(Windows)
                 {
                         return count;
                 }
@@ -1116,7 +1115,7 @@ enum SocketOptionLevel: int
 extern(C) struct linger
 {
         // D interface
-        version(Win32)
+        version(Windows)
         {
                 uint16_t on;    /// Nonzero for on.
                 uint16_t time;  /// Linger time.
@@ -1170,7 +1169,7 @@ class Socket
         socket_t sock;
         AddressFamily _family;
 
-        version(Win32)
+        version(Windows)
             bool _blocking = false;     /// Property to get or set whether the socket is blocking or nonblocking.
 
 
@@ -1245,7 +1244,7 @@ class Socket
          */
         bool blocking()
         {
-                version(Win32)
+                version(Windows)
                 {
                         return _blocking;
                 }
@@ -1258,7 +1257,7 @@ class Socket
         /// ditto
         void blocking(bool byes)
         {
-                version(Win32)
+                version(Windows)
                 {
                         uint num = !byes;
                         if(_SOCKET_ERROR == ioctlsocket(sock, FIONBIO, &num))
@@ -1319,7 +1318,7 @@ class Socket
 
                         if(!blocking)
                         {
-                                version(Win32)
+                                version(Windows)
                                 {
                                         if(WSAEWOULDBLOCK == err)
                                                 return;
@@ -1389,7 +1388,7 @@ class Socket
                         assert(newSocket.sock == socket_t.INVALID_SOCKET);
 
                         newSocket.sock = newsock;
-                        version(Win32)
+                        version(Windows)
                                 newSocket._blocking = _blocking; //inherits blocking mode
                         newSocket._family = _family; //same family
                 }
@@ -1411,7 +1410,7 @@ class Socket
 
         private static void _close(socket_t sock)
         {
-                version(Win32)
+                version(Windows)
                 {
                         .closesocket(sock);
                 }
@@ -1499,7 +1498,7 @@ class Socket
         {
           flags |= MSG_NOSIGNAL;
         }
-        auto sent = .send(sock, buf.ptr, buf.length, cast(int)flags);
+        auto sent = .send(sock, buf.ptr, int_cast!int(buf.length), cast(int)flags);
                 return sent;
         }
 
@@ -1526,7 +1525,7 @@ class Socket
         {
           flags |= SocketFlags.NOSIGNAL;
         }
-        return .sendto(sock, buf.ptr, buf.length, cast(int)flags, to.name(), to.nameLen());
+        return .sendto(sock, buf.ptr, int_cast!int(buf.length), cast(int)flags, to.name(), to.nameLen());
         }
 
         /// ditto
@@ -1544,7 +1543,7 @@ class Socket
           {
             flags |= MSG_NOSIGNAL;
           }
-          return .sendto(sock, buf.ptr, buf.length, cast(int)flags, null, 0);
+          return .sendto(sock, buf.ptr, int_cast!int(buf.length), cast(int)flags, null, 0);
         }
 
 
@@ -1566,7 +1565,7 @@ class Socket
     ptrdiff_t receive(void[] buf, SocketFlags flags)
         {
         return buf.length
-            ? .recv(sock, buf.ptr, buf.length, cast(int)flags)
+            ? .recv(sock, buf.ptr, int_cast!int(buf.length), cast(int)flags)
             : 0;
         }
 
@@ -1590,7 +1589,7 @@ class Socket
                         return 0;
                 from = newFamilyObject();
                 socklen_t nameLen = cast(socklen_t) from.nameLen();
-                auto read = .recvfrom(sock, buf.ptr, buf.length, cast(int)flags, from.name(), &nameLen);
+                auto read = .recvfrom(sock, buf.ptr, int_cast!int(buf.length), cast(int)flags, from.name(), &nameLen);
                 assert(from.addressFamily() == _family);
                 // if(!read) //connection closed
                 return read;
@@ -1611,7 +1610,7 @@ class Socket
         {
                 if(!buf.length) //return 0 and don't think the connection closed
                         return 0;
-                auto read = .recvfrom(sock, buf.ptr, buf.length, cast(int)flags, null, null);
+                auto read = .recvfrom(sock, buf.ptr, int_cast!int(buf.length), cast(int)flags, null, null);
                 // if(!read) //connection closed
                 return read;
         }
@@ -1701,7 +1700,7 @@ class Socket
                 fd_set* fr, fw, fe;
                 int n = 0;
 
-                version(Win32)
+                version(Windows)
                 {
                         // Windows has a problem with empty fd_set`s that aren't null.
                         fr = (checkRead && checkRead.count()) ? checkRead.toFd_set() : null;
@@ -1749,7 +1748,7 @@ class Socket
 
                 int result = .select(n, fr, fw, fe, cast(_ctimeval*)tv);
 
-                version(Win32)
+                version(Windows)
                 {
                         if(_SOCKET_ERROR == result && WSAGetLastError() == WSAEINTR)
                                 return -1;

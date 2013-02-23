@@ -6,6 +6,7 @@ import game.gameobject;
 import base.net;
 import std.math, std.random;
 import thBase.container.vector;
+import thBase.casts;
 import core.refcounted;
 import core.allocator;
 import game.game;
@@ -68,7 +69,7 @@ private:
 			info.position = (m_outer.m_Position.value - extractor.origin) + m_outer.m_Explosions[i].offset;
 			uint spriteId = cast(uint)floor(m_outer.m_Explosions[i].age / m_outer.m_Params.explosion.playbackSpeed);
 			if(spriteId >= m_outer.m_ExplosionSprites.length)
-				spriteId = m_outer.m_ExplosionSprites.length-1;
+				spriteId = int_cast!uint(m_outer.m_ExplosionSprites.length-1);
 			info.sprite = m_outer.m_ExplosionSprites[spriteId];
 			info.size = vec2(m_outer.m_Explosions[i].size,m_outer.m_Explosions[i].size);
 			info.blending = ObjectInfoSprite.Blending.ADDITIVE;

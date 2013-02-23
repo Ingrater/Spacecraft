@@ -15,7 +15,7 @@ struct EntityId
     this.id = id;
   }
 
-  size_t Hash()
+  uint Hash()
   {
     return id;
   }

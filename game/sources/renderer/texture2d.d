@@ -8,6 +8,7 @@ import core.stdc.stdlib;
 import base.all;
 import renderer.internal;
 import thBase.math;
+import thBase.casts;
 
 /**
  * Wrapper class for grahpics api 2D textures
@@ -131,7 +132,7 @@ public:
       m_UploadedMemorySize = 0;
       foreach(size_t level, ref mipmap; m_Data.GetData())
       {
-        gl.CompressedTexImage2D(gl.TEXTURE_2D, level, m_Data.GetFormat(), max(1, m_Data.GetWidth() / divisor), max(1, m_Data.GetHeight() / divisor), 0, mipmap.length, mipmap.ptr);
+        gl.CompressedTexImage2D(gl.TEXTURE_2D, int_cast!int(level), m_Data.GetFormat(), max(1, m_Data.GetWidth() / divisor), max(1, m_Data.GetHeight() / divisor), 0, mipmap.length, mipmap.ptr);
 
         debug{
           gl.ErrorCode error = gl.GetError();
@@ -151,7 +152,7 @@ public:
       size_t divisor = 1;
       foreach(size_t level, ref mipmap; m_Data.GetData())
       {
-		    gl.TexImage2D(gl.TEXTURE_2D, level, m_Data.GetFormat(), max(1, m_Data.GetWidth() / divisor), max(1, m_Data.GetHeight() / divisor), 0, m_Data.GetBaseFormat(), m_Data.GetComponent(), mipmap.ptr);
+		    gl.TexImage2D(gl.TEXTURE_2D, int_cast!int(level), m_Data.GetFormat(), max(1, m_Data.GetWidth() / divisor), max(1, m_Data.GetHeight() / divisor), 0, m_Data.GetBaseFormat(), m_Data.GetComponent(), mipmap.ptr);
 
         debug{
           gl.ErrorCode error = gl.GetError();
@@ -182,11 +183,11 @@ public:
 				m_UploadedMemorySize = size;
 			}
 			else {
-				m_UploadedMemorySize =  m_Data.GetData().length;
+				m_UploadedMemorySize =  int_cast!int(m_Data.GetData().length);
 			}
 		}
 		else {
-			m_UploadedMemorySize =  m_Data.GetData().length;
+			m_UploadedMemorySize = int_cast!int(m_Data.GetData().length);
 		}
 
 		m_Renderer.addTextureMemoryAmount(m_UploadedMemorySize);
@@ -241,11 +242,11 @@ public:
 				m_UploadedMemorySize = size;
 			}
 			else {
-				m_UploadedMemorySize = m_Data.GetSizeOfComponent() * m_Data.GetNumberOfComponents() * m_Data.GetWidth() * m_Data.GetHeight();
+				m_UploadedMemorySize = int_cast!int(m_Data.GetSizeOfComponent() * m_Data.GetNumberOfComponents() * m_Data.GetWidth() * m_Data.GetHeight());
 			}
 		}
 		else {
-			m_UploadedMemorySize =m_Data.GetSizeOfComponent() * m_Data.GetNumberOfComponents() * m_Data.GetWidth() * m_Data.GetHeight();
+			m_UploadedMemorySize = int_cast!int(m_Data.GetSizeOfComponent() * m_Data.GetNumberOfComponents() * m_Data.GetWidth() * m_Data.GetHeight());
 		}
 		m_Renderer.addTextureMemoryAmount(m_UploadedMemorySize);
 	}
@@ -265,7 +266,7 @@ public:
       size_t divisor = 1;
       foreach(size_t level, ref mipmap; m_Data.GetData())
       {
-        gl.CompressedTexImage2D(gl.TEXTURE_2D, level, m_Data.GetFormat(), max(1, m_Data.GetWidth() / divisor), max(1, m_Data.GetHeight() / divisor), 0, mipmap.length, mipmap.ptr);
+        gl.CompressedTexImage2D(gl.TEXTURE_2D, int_cast!int(level), m_Data.GetFormat(), max(1, m_Data.GetWidth() / divisor), max(1, m_Data.GetHeight() / divisor), 0, mipmap.length, mipmap.ptr);
 
         debug{
           gl.ErrorCode error = gl.GetError();
@@ -284,7 +285,7 @@ public:
       size_t divisor = 1;
       foreach(size_t level, ref mipmap; m_Data.GetData())
       {
-		    gl.TexImage2D(gl.TEXTURE_2D, level, m_Data.GetFormat(), m_Data.GetWidth() / divisor, m_Data.GetHeight() / divisor, 0, m_Data.GetBaseFormat(), m_Data.GetComponent(), mipmap.ptr);
+		    gl.TexImage2D(gl.TEXTURE_2D, int_cast!int(level), m_Data.GetFormat(), m_Data.GetWidth() / divisor, m_Data.GetHeight() / divisor, 0, m_Data.GetBaseFormat(), m_Data.GetComponent(), mipmap.ptr);
 
         debug{
           gl.ErrorCode error = gl.GetError();

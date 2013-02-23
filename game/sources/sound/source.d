@@ -12,6 +12,7 @@ import base.utilsD2;
 import base.sound;
 import thBase.string;
 import thBase.format;
+import thBase.casts;
 
 /** \brief Is a virtual class representing a SoundSource
 *  \details Is created and connected with an int Id by the IdManager
@@ -300,9 +301,9 @@ public:
 
 	  ov.clear(&oggFile);
 
-	  al.GenBuffers(1,&m_aluiBuffer);
-	  al.GenSources(1,&m_aluiSource);
-	  al.BufferData(m_aluiBuffer,m_format,&m_DataBuffer[0],m_DataBuffer.size(),m_freq);
+	  al.GenBuffers(1, &m_aluiBuffer);
+	  al.GenSources(1, &m_aluiSource);
+	  al.BufferData(m_aluiBuffer, m_format, &m_DataBuffer[0], int_cast!int(m_DataBuffer.size()), m_freq);
 	  al.Sourcei(m_aluiSource, al.BUFFER, m_aluiBuffer);
 
 	  m_bDataLoaded = true;
@@ -325,7 +326,7 @@ private:
 
 		while(size < BUFFER_SIZE)
 		{
-			result = ov.read(&m_oggFile, data.ptr + size, BUFFER_SIZE - size, 0, 2, 1, &section);
+			result = ov.read(&m_oggFile, data.ptr + size, int_cast!int(BUFFER_SIZE - size), 0, 2, 1, &section);
 
 			if(result > 0)
 			  size += result;

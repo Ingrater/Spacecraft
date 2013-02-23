@@ -17,6 +17,7 @@ import modeltypes;
 import thBase.dds;
 import thBase.conv;
 import thBase.logging;
+import thBase.casts;
 
 
 class AssetLoader : IAssetLoader {
@@ -213,12 +214,12 @@ public:
 		// load textures and create materials for the model
 		foreach(size_t i, matInfo; model.GetMaterialInfo())
     {
-			model.SetMaterial(0,i,m_ShadowMaterial);
+			model.SetMaterial(0, int_cast!int(i), m_ShadowMaterial);
 			
 			auto mat = New!Material();
 			mat.SetShader(m_GrayShader.GetShader());
 			mat.SetTexture(m_Renderer.shadowMap, 4);
-			model.SetMaterial(1, i, mat);
+			model.SetMaterial(1, int_cast!int(i), mat);
 			
 			foreach(ref t; matInfo.textures){
         auto filename = rcstring(t.file);

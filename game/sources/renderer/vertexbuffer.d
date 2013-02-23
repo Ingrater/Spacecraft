@@ -5,6 +5,7 @@ import thBase.math3d.vecs;
 import renderer.opengl;
 
 import thBase.logging;
+import thBase.casts;
 import core.stdc.stdlib;
 import base.all;
 import renderer.internal;
@@ -481,7 +482,7 @@ public:
 				}
 			}
 			
-			m_UploadedIndexDataSize = BufferSize;
+			m_UploadedIndexDataSize = int_cast!int(BufferSize);
 			m_Renderer.addVertexBufferMemoryAmount(m_UploadedIndexDataSize);
 			
 			//Create index buffer

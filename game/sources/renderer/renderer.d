@@ -13,6 +13,7 @@ import thBase.container.queue;
 import thBase.container.hashmap;
 import thBase.container.vector;
 import thBase.logging;
+import thBase.casts;
 
 import std.traits;
 
@@ -694,14 +695,14 @@ public:
     size_t end = m_ShapeBuffer.GetVerticesInBuffer();
     if(end - start >= 3){
       int swap = 0;
-      uint indexStart = m_ShapeBuffer.GetNumberOfIndicies(0);
-      for(size_t i=0;i< end - start - 2;i++){
-        m_ShapeBuffer.AddIndexData(0,i + start);
-        m_ShapeBuffer.AddIndexData(0,i+1 + swap + start);
-        m_ShapeBuffer.AddIndexData(0,i+2 - swap + start);
+      uint indexStart = int_cast!uint(m_ShapeBuffer.GetNumberOfIndicies(0));
+      for(uint i=0;i< end - start - 2;i++){
+        m_ShapeBuffer.AddIndexData(0, int_cast!uint(i + start));
+        m_ShapeBuffer.AddIndexData(0, int_cast!uint(i+1 + swap + start));
+        m_ShapeBuffer.AddIndexData(0, int_cast!uint(i+2 - swap + start));
         swap = (swap + 1) % 2;
       }
-      uint indexEnd = m_ShapeBuffer.GetNumberOfIndicies(0);
+      uint indexEnd = int_cast!uint(m_ShapeBuffer.GetNumberOfIndicies(0));
 
       m_UpdateShapeBuffer = true;
 
@@ -1413,7 +1414,8 @@ public:
 		// Shader constant for light position
 		m_LightPosConstant = new ShaderConstantSimpleType!vec3();
 		RegisterShaderConstant(_T("LightPos"),m_LightPosConstant);
-		m_LightPosConstant.Set(vec3(1000,1000,1000));
+    auto lightPosValue = vec3(1000,1000,1000);
+		m_LightPosConstant.Set(lightPosValue);
 		
 		// Shader constant for light direction
 		m_LightDirConstant = new ShaderConstantSimpleType!vec3();
@@ -1424,12 +1426,14 @@ public:
 		// shader constant for ambient color
 		m_AmbientColorConstant = new ShaderConstantSimpleType!vec4();
 		RegisterShaderConstant(_T("AmbientColor"),m_AmbientColorConstant);
-		m_AmbientColorConstant.Set(vec4(0.3f,0.3f,0.3f,0.0f));
+    auto ambientColorValue = vec4(0.3f,0.3f,0.3f,0.0f);
+		m_AmbientColorConstant.Set(ambientColorValue);
 		
 		// shader constant for light color
 		m_LightColorConstant = new ShaderConstantSimpleType!vec4();
 		RegisterShaderConstant(_T("LightColor"),m_LightColorConstant);
-		m_LightColorConstant.Set(vec4(1.0f,1.0f,1.0f,1.0f));
+    auto lightColorValue = vec4(1.0f,1.0f,1.0f,1.0f);
+		m_LightColorConstant.Set(lightColorValue);
 		
 		// shader constant for light specular power
 		m_SpecularPowerConstant = new ShaderConstantSimpleType!float();
@@ -1439,7 +1443,8 @@ public:
 		// shader constant for shadow map offset
 		m_ShadowOffsetConstant = new ShaderConstantSimpleType!vec2();
 		RegisterShaderConstant(_T("ShadowOffset"),m_ShadowOffsetConstant);
-		m_ShadowOffsetConstant.Set(vec2(0.0001,0.0001));
+    auto shadowOffsetValue = vec2(0.0001,0.0001);
+		m_ShadowOffsetConstant.Set(shadowOffsetValue);
 		
 		// Shader constant for matrix used to reverse the light world transformation
 		m_LightMatrixConstant = new ShaderConstantSimpleType!mat4();
@@ -1453,7 +1458,7 @@ public:
 		// create main camera
 		Camera cam = New!CameraProjection(cast(float)this.GetWidth(),cast(float)this.GetHeight(),1.0f,1000.0f,45.0f);
     scope(exit) Delete(cam);
-		cam.SetFrom(vec4(100,100,100,1));
+		cam.SetFrom(100, 100, 100);
 		cam.SetTo(0,0,0);
 		cam.Recalc();
 		mat4 camMatrix = cam.GetCameraMatrix();
@@ -1633,7 +1638,7 @@ public:
 	private void CreateSpriteDrawCall(RenderGroup spriteGroup){
 		auto call = spriteGroup.AddRenderCall();
 		call.SetVertexBuffer(m_SpriteBuffer);
-		call.SetRange(m_LastSpriteVertex,m_SpriteBuffer.GetVerticesInBuffer()-m_LastSpriteVertex);
+		call.SetRange(m_LastSpriteVertex, int_cast!uint(m_SpriteBuffer.GetVerticesInBuffer()-m_LastSpriteVertex));
 		call.SetShader(m_SpriteShader.GetShader());
 		call.SetStateObject(m_SpriteState);
 		call.AddTexture(m_SpriteAtlases[m_LastSpriteAtlas].texture, 0);
@@ -1643,7 +1648,7 @@ public:
 	private void CreateAlphaSpriteDrawCall(RenderGroup spriteGroup){
 		auto call = spriteGroup.AddRenderCall();
 		call.SetVertexBuffer(m_AlphaSpriteBuffer);
-		call.SetRange(m_LastAlphaSpriteVertex,m_AlphaSpriteBuffer.GetVerticesInBuffer()-m_LastAlphaSpriteVertex);
+		call.SetRange(m_LastAlphaSpriteVertex, int_cast!uint(m_AlphaSpriteBuffer.GetVerticesInBuffer()-m_LastAlphaSpriteVertex));
 		call.SetShader(m_SpriteShader.GetShader());
 		call.SetStateObject(m_AlphaSpriteState);
 		call.AddTexture(m_SpriteAtlases[m_LastAlphaSpriteAtlas].texture, 0);
@@ -1719,7 +1724,8 @@ public:
 							m_ProjectionMatrix.Set(info.projMatrix);
 							m_FrameOrigin = info.origin;
 							vec4 lightDir = info.viewMatrix * vec4(m_LightDir,0.0f);
-							m_LightDirConstant.Set(vec3(lightDir));
+              auto lightDirValue = vec3(lightDir);
+							m_LightDirConstant.Set(lightDirValue);
 						}
 						break;
 					case ExtractType.TEXT:
@@ -1767,14 +1773,14 @@ public:
 							size_t end = m_ShapeBuffer.GetVerticesInBuffer();
 							if(end - start >= 3){
 								int swap = 0;
-								uint indexStart = m_ShapeBuffer.GetNumberOfIndicies(0);
+								uint indexStart = int_cast!uint(m_ShapeBuffer.GetNumberOfIndicies(0));
 								for(size_t i=0;i< end - start - 2;i++){
-									m_ShapeBuffer.AddIndexData(0,i + start);
-									m_ShapeBuffer.AddIndexData(0,i+1 + swap + start);
-									m_ShapeBuffer.AddIndexData(0,i+2 - swap + start);
+									m_ShapeBuffer.AddIndexData(0, int_cast!uint(i + start));
+									m_ShapeBuffer.AddIndexData(0, int_cast!uint(i+1 + swap + start));
+									m_ShapeBuffer.AddIndexData(0, int_cast!uint(i+2 - swap + start));
 									swap = (swap + 1) % 2;
 								}
-								uint indexEnd = m_ShapeBuffer.GetNumberOfIndicies(0);
+								uint indexEnd = int_cast!uint(m_ShapeBuffer.GetNumberOfIndicies(0));
 								
 								m_UpdateShapeBuffer = true;
 								
@@ -1812,7 +1818,7 @@ public:
 								if(spriteInfo.sprite.atlas != m_LastSpriteAtlas){
 									CreateSpriteDrawCall(spriteGroup);
 									
-									m_LastSpriteVertex = m_SpriteBuffer.GetVerticesInBuffer();
+									m_LastSpriteVertex = int_cast!uint(m_SpriteBuffer.GetVerticesInBuffer());
 									m_LastSpriteAtlas = spriteInfo.sprite.atlas;
 								}
 								
@@ -1847,7 +1853,7 @@ public:
 								if(spriteInfo.sprite.atlas != m_LastAlphaSpriteAtlas){
 									CreateAlphaSpriteDrawCall(alphaSpriteGroup);
 									
-									m_LastAlphaSpriteVertex = m_SpriteBuffer.GetVerticesInBuffer();
+									m_LastAlphaSpriteVertex = int_cast!uint(m_SpriteBuffer.GetVerticesInBuffer());
 									m_LastAlphaSpriteAtlas = spriteInfo.sprite.atlas;
 								}
 								
@@ -1889,7 +1895,7 @@ public:
 								if(ospriteInfo.sprite.atlas != m_LastSpriteAtlas){
 									CreateSpriteDrawCall(spriteGroup);
 									
-									m_LastSpriteVertex = m_SpriteBuffer.GetVerticesInBuffer();
+									m_LastSpriteVertex = int_cast!uint(m_SpriteBuffer.GetVerticesInBuffer());
 									m_LastSpriteAtlas = ospriteInfo.sprite.atlas;
 								}
 								
@@ -1930,7 +1936,7 @@ public:
 								if(ospriteInfo.sprite.atlas != m_LastAlphaSpriteAtlas){
 									CreateAlphaSpriteDrawCall(alphaSpriteGroup);
 									
-									m_LastAlphaSpriteVertex = m_SpriteBuffer.GetVerticesInBuffer();
+									m_LastAlphaSpriteVertex = int_cast!uint(m_SpriteBuffer.GetVerticesInBuffer());
 									m_LastAlphaSpriteAtlas = ospriteInfo.sprite.atlas;
 								}
 								
@@ -1978,7 +1984,7 @@ public:
 								if(fspriteInfo.sprite.atlas != m_LastSpriteAtlas){
 									CreateSpriteDrawCall(spriteGroup);
 									
-									m_LastSpriteVertex = m_SpriteBuffer.GetVerticesInBuffer();
+									m_LastSpriteVertex = int_cast!uint(m_SpriteBuffer.GetVerticesInBuffer());
 									m_LastSpriteAtlas = fspriteInfo.sprite.atlas;
 								}
 							}
@@ -1992,7 +1998,7 @@ public:
 								if(fspriteInfo.sprite.atlas != m_LastAlphaSpriteAtlas){
 									CreateAlphaSpriteDrawCall(alphaSpriteGroup);
 									
-									m_LastAlphaSpriteVertex = m_SpriteBuffer.GetVerticesInBuffer();
+									m_LastAlphaSpriteVertex = int_cast!uint(m_SpriteBuffer.GetVerticesInBuffer());
 									m_LastAlphaSpriteAtlas = fspriteInfo.sprite.atlas;
 								}
 							}							
@@ -2049,7 +2055,10 @@ public:
 			mat4 LightProjection = mat4.Ortho(shadowMin.x,shadowMax.x,
 											  shadowMin.y,shadowMax.y,
 											  shadowMin.z,shadowMax.z);
-			mat4 LightView = mat4.LookAtMatrix(vec4(camPos + m_LightDir),vec4(camPos),vec4(0.0f,1.0f,0.0f,0.0f));
+      auto lightFrom = vec4(camPos + m_LightDir);
+      auto lightTo = vec4(camPos);
+      auto lightUp = vec4(0.0f,1.0f,0.0f,0.0f);
+			mat4 LightView = mat4.LookAtMatrix(lightFrom, lightTo, lightUp);
 			shadowGroup.AddOverwrite(m_ViewMatrixConstant,LightView);
 			shadowGroup.AddOverwrite(m_ProjectionMatrixConstant,LightProjection);
 			
@@ -2358,13 +2367,13 @@ class DebugDrawRecorder : IDebugDrawRecorder
     void startRecording(Vector!DebugDrawLine data)
     {
       assert(data !is null);
-      m_debugBufferStart = data.length;
+      m_debugBufferStart = int_cast!uint(data.length);
     }
 
     void stopRecording(Vector!DebugDrawLine data)
     {
       assert(data !is null && m_debugBufferStart != uint.max, "recording has not been started yet");
-      uint debugBufferEnd = data.length;
+      uint debugBufferEnd = int_cast!uint(data.length);
       assert(debugBufferEnd > m_debugBufferStart, "invalid recording");
       uint numVertices = debugBufferEnd - m_debugBufferStart;
       m_recordedData.resize(0);
@@ -2378,7 +2387,7 @@ class DebugDrawRecorder : IDebugDrawRecorder
   public:
     this(shared(Renderer) renderer)
     {
-      m_recordedData = typeof(m_recordedData)();
+      m_recordedData = typeof(m_recordedData)(DefaultCtor());
       m_recordedData.construct();
       m_renderer = renderer;
     }

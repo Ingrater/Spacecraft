@@ -15,6 +15,7 @@ import renderer.rendercall;
 import thBase.constref;
 import thBase.enumbitfield;
 import thBase.logging;
+import thBase.casts;
 
 import renderer.exceptions;
 import thBase.container.vector;
@@ -505,7 +506,7 @@ public:
 			foreach(ref face; mesh.faces){
 				uint[3] Indices;
 				for(int c=0;c<3;c++)
-					Indices[c] = face.indices[c] + IndexOffset;
+					Indices[c] = int_cast!uint(face.indices[c] + IndexOffset);
 				vb.AddIndexData(0, Indices);
 			}
 			vb.Check();

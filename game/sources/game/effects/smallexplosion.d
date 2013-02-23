@@ -2,6 +2,7 @@ module game.effects.smallexplosion;
 
 import base.gameobject, base.renderproxy, base.renderer;
 import thBase.serialize.xmldeserializer;
+import thBase.casts;
 import game.gameobject;
 import base.net;
 import core.refcounted;
@@ -32,8 +33,8 @@ private:
 			info.position = (m_outer.m_Position.value - extractor.origin);
 			info.size = vec2(m_outer.m_Params.size.value, m_outer.m_Params.size.value);
 			uint spriteId = cast(uint)(m_outer.m_Age / m_outer.m_Params.playbackSpeed.value);
-			if(spriteId >= m_outer.m_Sprites.length)
-				spriteId = m_outer.m_Sprites.length-1;
+			if(spriteId >= int_cast!uint(m_outer.m_Sprites.length))
+				spriteId = int_cast!uint(m_outer.m_Sprites.length-1);
 			info.sprite = m_outer.m_Sprites[spriteId];
 			info.blending = ObjectInfoSprite.Blending.ADDITIVE;
 		}

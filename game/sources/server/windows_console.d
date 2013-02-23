@@ -1,6 +1,7 @@
 module server.windows_console;
 
 import thBase.logging;
+import thBase.casts;
 
 import std.uni;
 
@@ -113,7 +114,7 @@ version(Windows){
 	 * Writes the specified text to the console. Does not append a new line.
 	 */
 	public void write(const char[] message){
-		WriteConsoleA(conStdout, message.ptr, message.length, null, null);
+		WriteConsoleA(conStdout, message.ptr, int_cast!uint(message.length), null, null);
 	}
 	
 	/**
