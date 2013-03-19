@@ -405,11 +405,9 @@ public:
 	 */
 	bool Check(){
 		if(m_Data.size() == 0){
-			debug asm { int 3; }
 			return false;
 		}
 		if(m_Data.size() % (m_BytesPerVertex / float.sizeof) != 0){
-			debug asm { int 3; }
 			return false;
 		}
 		/*if(m_Data.size() > 131072*4){

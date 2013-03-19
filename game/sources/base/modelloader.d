@@ -13,7 +13,10 @@ import thBase.types;
 import thBase.casts;
 import modeltypes;
 
-extern(C) int D10modeltypes12__ModuleInfoZ;
+version(Win32)
+  extern(C) int D10modeltypes12__ModuleInfoZ;
+version(Win64)
+  extern(C) int _D10modeltypes12__ModuleInfoZ;
 
 class ModelLoader
 {

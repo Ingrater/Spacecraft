@@ -71,8 +71,11 @@ version(Posix)
 
 version(Windows)
 {
+      version(DigitalMars)
+      {
         pragma (lib, "ws2_32.lib");
         pragma (lib, "wsock32.lib");
+      }
 
         private import std.c.windows.windows, std.c.windows.winsock;
         private alias std.c.windows.winsock.timeval _ctimeval;

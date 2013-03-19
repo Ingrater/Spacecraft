@@ -8,6 +8,7 @@ import core.memory;
 import thBase.format;
 import thBase.string;
 import thBase.casts;
+import thBase.allocator;
 
 class ScriptContext : IScriptContext {
 private:

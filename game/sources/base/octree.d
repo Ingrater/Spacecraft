@@ -578,7 +578,7 @@ public:
 }
 
 unittest {
-	class TestObject : IGameObject {
+	static class TestObject : IGameObject {
 	private:
 		Position m_Position;
 	public:
@@ -635,7 +635,7 @@ unittest {
 		
 		override void postSpawn(){ }
 		override void onDeleteRequest(){ }
-		override IEvent constructEvent(EventId id){
+		override IEvent constructEvent(EventId id, IAllocator allocator){
 			assert(0);
 		}
 		

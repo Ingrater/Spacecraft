@@ -949,7 +949,6 @@ class BufferReader : ISerializer {
 	{
 		assert(pos + T.sizeof <= content_length, "BufferReader, peek: not enought bytes in the buffer!");
 		if(block_level > 0 && pos + T.sizeof > block_limits[block_level-1]){
-			asm { int 3; }
 			throw New!RCException(format(
 				"net: BufferReader, peek: attempt to read over block boundary! boundaries: %s, level: %s, pos: %s, tried to read %d bytes",
 				block_limits, block_level, pos, T.sizeof
@@ -1049,7 +1048,7 @@ class BufferReader : ISerializer {
 
 unittest {
 	ubyte[] test_buffer = cast(ubyte[]) x"01 08000000 03000000 00000000 ffffffff";
-	auto reader = New!BufferReader(test_buffer, test_buffer.length - 4);
+	auto reader = New!BufferReader(test_buffer, int_cast!uint(test_buffer.length - 4));
   scope(exit) Delete(reader);
 	
 	assert(reader.unconsumed == test_buffer[0..13]);

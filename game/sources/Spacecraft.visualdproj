@@ -733,13 +733,13 @@
   <cv2pdbOptions />
   <objfiles />
   <linkswitches />
-  <libfiles>kernel32.lib thBase64d.lib</libfiles>
+  <libfiles>kernel32.lib thBase64d.lib user32.lib</libfiles>
   <libpaths>$(SolutionDir)\..\..\phobos;$(SolutionDir)\..\..\thBase\lib</libpaths>
   <deffile />
   <resfile />
   <exefile>..\data\$(ProjectName).exe</exefile>
   <useStdLibPath>1</useStdLibPath>
-  <additionalOptions>-defaultlib=phobosnogc64d -debuglib=phobosnogc64d -op</additionalOptions>
+  <additionalOptions>-defaultlib=phobosnogc64d -debuglib=phobosnogc64d -op -L/LIBPATH:&quot;$(SolutionDir)\..\..\thBase\lib&quot; -L/LIBPATH:&quot;$(SolutionDir)\..\..\phobos&quot;</additionalOptions>
   <preBuildCommand />
   <postBuildCommand />
   <filesToClean>*.obj;*.cmd;*.build;*.json;*.dep</filesToClean>
@@ -1128,7 +1128,7 @@
   <quiet>0</quiet>
   <verbose>0</verbose>
   <vtls>0</vtls>
-  <symdebug>0</symdebug>
+  <symdebug>1</symdebug>
   <optimize>0</optimize>
   <cpu>0</cpu>
   <isX86_64>1</isX86_64>
@@ -1146,9 +1146,9 @@
   <useArrayBounds>0</useArrayBounds>
   <noboundscheck>0</noboundscheck>
   <useSwitchError>0</useSwitchError>
-  <useUnitTests>1</useUnitTests>
+  <useUnitTests>0</useUnitTests>
   <useInline>0</useInline>
-  <release>1</release>
+  <release>0</release>
   <preservePaths>0</preservePaths>
   <warnings>1</warnings>
   <infowarnings>1</infowarnings>
@@ -1159,10 +1159,10 @@
   <nofloat>0</nofloat>
   <Dversion>2</Dversion>
   <ignoreUnsupportedPragmas>0</ignoreUnsupportedPragmas>
-  <compiler>0</compiler>
+  <compiler>1</compiler>
   <otherDMD>0</otherDMD>
   <program>$(DMDInstallDir)windows\bin\dmd.exe</program>
-  <imppath />
+  <imppath>$(SolutionDir)\..\..\druntime\import;$(SolutionDir)\..\..\phobos;$(SolutionDir)\..\..\thBase\src;$(SolutionDir)\..\tools\ModelConverter\src</imppath>
   <fileImppath />
   <outdir>../$(ConfigurationName)</outdir>
   <objdir>$(OutDir)</objdir>
@@ -1181,7 +1181,7 @@
   <debuglevel>0</debuglevel>
   <debugids />
   <versionlevel>0</versionlevel>
-  <versionids />
+  <versionids>NOGCSAFE OPENGL_ERROR_CHECK</versionids>
   <dump_source>0</dump_source>
   <mapverbosity>0</mapverbosity>
   <createImplib>0</createImplib>
@@ -1190,7 +1190,7 @@
   <moduleDepsFile />
   <run>0</run>
   <runargs />
-  <runCv2pdb>0</runCv2pdb>
+  <runCv2pdb>1</runCv2pdb>
   <pathCv2pdb>$(VisualDInstallDir)cv2pdb\cv2pdb.exe</pathCv2pdb>
   <cv2pdbPre2043>0</cv2pdbPre2043>
   <cv2pdbNoDemangle>0</cv2pdbNoDemangle>
@@ -1199,12 +1199,12 @@
   <objfiles />
   <linkswitches />
   <libfiles />
-  <libpaths />
+  <libpaths>$(SolutionDir)\..\..\phobos;$(SolutionDir)\..\..\thBase\lib</libpaths>
   <deffile />
   <resfile />
   <exefile>..\data\$(ProjectName).exe</exefile>
   <useStdLibPath>1</useStdLibPath>
-  <additionalOptions />
+  <additionalOptions>-debuglib=phobosnogc64d_mingw -defaultlib=phobosnogc64d_mingw -Wl,-lthBase64d_mingw -v -nostdinc</additionalOptions>
   <preBuildCommand />
   <postBuildCommand />
   <filesToClean>*.obj;*.cmd;*.build;*.json;*.dep</filesToClean>
