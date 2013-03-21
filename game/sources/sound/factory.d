@@ -4,7 +4,6 @@ public import base.sound;
 import sound.system;
 import sound.openal;
 import sound.vorbisfile;
-import sound.alut;
 import base.utilsD2;
 import thBase.string;
 import thBase.logging;
@@ -12,27 +11,34 @@ import thBase.logging;
 class SoundSystemFactory : ISoundSystemFactory {
 	SoundSystem m_SoundSystem = null;
 	bool m_IsInit = false;
+  al.ALCdevice* m_device;
+  al.ALCcontext* m_context;
 	public:
 		this(){
 			al.LoadDll("OpenAL32.dll","./libopenal.so.1");
 			ov.LoadDll("libvorbisfile.dll","./libvorbisfile.so.3");
-			alut.LoadDll("alut.dll","./libalut.so.0");
 			
 			
-			if(!alut.Init(null,null)){
-				auto error = fromCString(alut.GetErrorString(alut.GetError()));
-				logError(error[]);
-				throw New!RCException(error);
-			}
+      m_device = al.cOpenDevice(null);
+      if (m_device == null) 
+        throw New!RCException(_T("Could not open default OpenAL device"));
+
+      m_context = al.cCreateContext(m_device, null);
+      if (m_context == null) 
+        throw New!RCException(_T("Could not create OpenAL context"));
+
+      if (al.cMakeContextCurrent(m_context) == false) 
+        throw New!RCException(_T("Could not activate OpenAL context"));
+			
 			m_IsInit = true;
-			logInfo("alut init");
+			logInfo("OpenAL init done");
 		}
 	
 		~this(){
       Delete(m_SoundSystem);
 			if(m_IsInit){
-				//logInfo("alut deinit");
-				alut.Exit();
+        al.cDestroyContext(m_context);
+        al.cCloseDevice(m_device);  
 			}
 		}
 	

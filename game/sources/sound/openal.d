@@ -26,6 +26,9 @@ class al {
 	alias int ALsizei;
 	alias char ALchar;
 	alias void ALvoid;
+
+  alias void ALCdevice;
+  alias void ALCcontext;
 	
 	enum : ALenum {
 		INVALID = -1,
@@ -173,6 +176,14 @@ class al {
 		alias void function( ALfloat value ) alDopplerVelocity;
 		alias void function( ALfloat value ) alSpeedOfSound;
 		alias void function( ALenum distanceModel ) alDistanceModel;
+
+    //alc functions
+    alias ALCdevice* function( const char *devicename ) alcOpenDevice;
+    alias ALboolean function( ALCdevice *device ) alcCloseDevice;
+    alias ALCcontext* function ( ALCdevice *device, const ALint* attrlist ) alcCreateContext;
+    alias ALboolean function( ALCcontext *context ) alcMakeContextCurrent;
+    alias ALCcontext* function() alcGetCurrentContext;
+    alias void function( ALCcontext *context ) alcDestroyContext;
 	}
 	
 	static string errorToString(ALenum error){
