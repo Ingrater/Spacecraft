@@ -9,7 +9,7 @@
 module renderer.freetype.ft;
 
 public import renderer.freetype.def;
-import base.sharedlib;
+import thBase.sharedlib;
 import base.utilsD2;
 
 private string dll_declare(string name){

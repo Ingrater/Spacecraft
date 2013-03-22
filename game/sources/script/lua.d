@@ -1,6 +1,6 @@
 module script.lua;
 
-import base.sharedlib;
+import thBase.sharedlib;
 
 import std.c.string;
 
@@ -19,7 +19,7 @@ private string dll_init(string name){
 class Lua {	
 	mixin SharedLib!();
 	
-	alias void *State;
+	alias void* State;
 	
 	alias double Number;
 	alias ptrdiff_t Integer;
@@ -72,6 +72,13 @@ class Lua {
 		SETPAUSE = 6,
 		SETSTEPMUL = 7
 	}
+
+  enum OP : int
+  {
+    EQ = 0,
+    LT = 1,
+    LE = 2
+  }
 	
 	struct Debug {
 	  int event;
@@ -102,13 +109,19 @@ class Lua {
 		LINE = (1 << HOOK.LINE),
 		COUNT = (1 << HOOK.COUNT)
 	}
-	
-	enum int REGISTRYINDEX	= -10000;
-	enum int ENVIRONINDEX	= -10001;
-	enum int GLOBALSINDEX	= -10002;
+
+
+  enum int I_MAXSTACK	=	1000000;
+  enum int I_FIRSTPSEUDOIDX	= (-I_MAXSTACK - 1000);
+	enum int REGISTRYINDEX = I_FIRSTPSEUDOIDX;
+
 	static int upvalueindex(int i){
-		return GLOBALSINDEX - i;
+		return REGISTRYINDEX - i;
 	}	
+
+  enum int RIDX_MAINTHREAD = 1;
+  enum int RIDX_GLOBALS	   = 2;
+  enum int RIDX_LAST       = RIDX_GLOBALS;
 	
 	extern(C){		
 		/*
@@ -144,15 +157,14 @@ class Lua {
 		alias int             function(State L, int idx) lua_type;
 		alias const(char)*    function(State L, int tp) lua_typename;
 
-		alias int             function(State L, int idx1, int idx2) lua_equal;
+		alias int             function(State L, int idx1, int idx2, OP op) lua_compare;
 		alias int             function(State L, int idx1, int idx2) lua_rawequal;
-		alias int             function(State L, int idx1, int idx2) lua_lessthan;
 
-		alias Number      function(State L, int idx) lua_tonumber;
-		alias Integer     function(State L, int idx) lua_tointeger;
+		alias Number      function(State L, int idx, int* isnum) lua_tonumberx;
+		alias Integer     function(State L, int idx, int* isint) lua_tointegerx;
 		alias int             function(State L, int idx) lua_toboolean;
 		alias const(char)*    function(State L, int idx, size_t *len) lua_tolstring;
-		alias size_t          function(State L, int idx) lua_objlen;
+		alias size_t          function(State L, int idx) lua_rawlen;
 		alias funcs.CFunction   function(State L, int idx) lua_tocfunction;
 		alias void*           function(State L, int idx) lua_touserdata;
 		alias State      function(State L, int idx) lua_tothread;
@@ -183,25 +195,23 @@ class Lua {
 		alias void   function(State L, int narr, int nrec) lua_createtable;
 		alias void * function(State L, size_t sz) lua_newuserdata;
 		alias int    function(State L, int objindex) lua_getmetatable;
-		alias void   function(State L, int idx) lua_getfenv;
 		
 		/*
 		** set functions (stack -> Lua)
 		*/
-		alias void   function(State L, int idx) lua_settable;
+    alias void   function(State L, const char *var) lua_setglobal;
+    alias void   function(State L, int idx) lua_settable;
 		alias void   function(State L, int idx, const(char)* k) lua_setfield;
 		alias void   function(State L, int idx) lua_rawset;
 		alias void   function(State L, int idx, int n) lua_rawseti;
 		alias int    function(State L, int objindex) lua_setmetatable;
-		alias int    function(State L, int idx) lua_setfenv;
 
 
 		/*
 		** `load' and `call' functions (load and run Lua code)
 		*/
-		alias void   function(State L, int nargs, int nresults) lua_call;
-		alias int    function(State L, int nargs, int nresults, int errfunc) lua_pcall;
-		alias int    function(State L, funcs.CFunction func, void *ud) lua_cpcall;
+		alias void   function(State L, int nargs, int nresults, int ctx, funcs.CFunction k) lua_callk;
+		alias int    function(State L, int nargs, int nresults, int errfunc, int ctx, funcs.CFunction k) lua_pcallk;
 		alias int    function(State L, funcs.Reader reader, void *dt, const(char)* chunkname) lua_load;
 
 		alias int  function(State L, funcs.Writer writer, void *data) lua_dump;
@@ -210,7 +220,7 @@ class Lua {
 		/*
 		** coroutine functions
 		*/
-		alias int   function(State L, int nresults) lua_yield;
+		alias int   function(State L, int nresults, int ctx, funcs.CFunction k) lua_yieldk;
 		alias int   function(State L, int narg) lua_resume;
 		alias int   function(State L) lua_status;
 		
@@ -246,7 +256,7 @@ class Lua {
 		/*
 		** auxiliary functions
 		*/
-		alias int function(State L, const(char)* filename) luaL_loadfile;
+		alias int function(State L, const(char)* filename, const(char)* mode) luaL_loadfilex;
 		alias int function(State L, const(char)* s) luaL_loadstring;
 
 		alias State function() luaL_newstate;
@@ -258,20 +268,32 @@ class Lua {
 	mixin( generateDllCode!(Lua)(&dll_declare) );
 	
 	//Lua macros
+  static void call(State L, int nargs, int nresults)
+  {
+    callk(L, nargs, nresults, 0, null);
+  }
+
+  static int pcall(State L, int nargs, int nresults, int msgh)
+  {
+    return pcallk(L, nargs, nresults, msgh, 0, null);
+  }
+
+  static int yield(State L, int nresults)
+  {
+    return yieldk(L, nresults, 0, null);
+  }
+
+  static int _loadfile(State L, const(char)* filename)
+  {
+    return _loadfilex(L, filename, null);
+  }
+
 	static void pop(State L, int n){
 		settop(L, -(n)-1);
 	}
 
 	static void newtable(State L){
 		createtable(L, 0, 0);
-	}
-	
-	static void setglobal(State L, const(char)* s){
-		setfield(L, GLOBALSINDEX, s);
-	}
-	
-	static void getglobal(State L, const(char)* s){
-		getfield(L, GLOBALSINDEX, s);
 	}
 	
 	static rcstring tostring(State L, int i){

@@ -6,7 +6,7 @@ import script.system;
 
 class ScriptSystemFactory : IScriptSystemFactory {
 	override void Init(){
-		Lua.LoadDll("lua5.1.dll","./liblua5.1.so.0");
+		Lua.LoadDll("Lua5.2.dll","./liblua5.2.so.0");
 	}
 	
 	override IScriptSystem NewScriptSystem(){

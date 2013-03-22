@@ -1,6 +1,6 @@
 module renderer.sdl.main;
 
-import base.sharedlib;
+import thBase.sharedlib;
 
 private string dll_declare(string name){
 	return "__gshared " ~ name ~ " " ~ name[4..name.length] ~ ";";

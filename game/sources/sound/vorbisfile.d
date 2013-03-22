@@ -1,6 +1,6 @@
 module sound.vorbisfile;
 
-import base.sharedlib;
+import thBase.sharedlib;
 import base.utilsD2;
 
 private string dll_declare(string name){

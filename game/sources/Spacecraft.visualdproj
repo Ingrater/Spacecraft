@@ -707,7 +707,7 @@
   <program>ErrorMessageDecoder.exe</program>
   <imppath>$(SolutionDir)\..\..\druntime\import;$(SolutionDir)\..\..\phobos;$(SolutionDir)\..\..\thBase\src;$(SolutionDir)\..\tools\ModelConverter\src</imppath>
   <fileImppath />
-  <outdir>..\$(ConfigurationName)</outdir>
+  <outdir>..\$(ConfigurationName)$(Platform)</outdir>
   <objdir>$(OutDir)</objdir>
   <objname />
   <libname />
@@ -745,7 +745,7 @@
   <libpaths>$(SolutionDir)\..\..\phobos;$(SolutionDir)\..\..\thBase\lib</libpaths>
   <deffile />
   <resfile />
-  <exefile>..\data\$(ProjectName).exe</exefile>
+  <exefile>..\data\bin64\$(ProjectName)64d.exe</exefile>
   <useStdLibPath>1</useStdLibPath>
   <additionalOptions>-defaultlib=phobosnogc64d -debuglib=phobosnogc64d -op -L/LIBPATH:&quot;$(SolutionDir)\..\..\thBase\lib&quot; -L/LIBPATH:&quot;$(SolutionDir)\..\..\phobos&quot;</additionalOptions>
   <preBuildCommand />
@@ -1215,7 +1215,7 @@
   <libpaths>$(SolutionDir)\..\..\phobos;$(SolutionDir)\..\..\thBase\lib</libpaths>
   <deffile />
   <resfile />
-  <exefile>..\data\$(ProjectName)64dGDC.exe</exefile>
+  <exefile>..\data\bin64\$(ProjectName)64dGDC.exe</exefile>
   <useStdLibPath>1</useStdLibPath>
   <additionalOptions>-debuglib=phobosnogc64d_mingw -defaultlib=phobosnogc64d_mingw -Wl,-lthBase64d_mingw -v -nostdinc</additionalOptions>
   <preBuildCommand />
@@ -1335,7 +1335,6 @@
    <File path="base\renderer.d" />
    <File path="base\renderproxy.d" />
    <File path="base\script.d" />
-   <File path="base\sharedlib.d" />
    <File path="base\socket.d" />
    <File path="base\sound.d" />
    <File path="base\utilsD2.d" />

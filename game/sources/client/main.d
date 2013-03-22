@@ -20,11 +20,11 @@ void client_main(){
   scope(exit) g_Env.reset(); //after leaving main the environment is invalid
 	
 	// The garbage collector is run manually by the client
-	core.memory.GC.disable();
+	/*core.memory.GC.disable();
 	scope(exit){
 		core.memory.GC.enable();
 		core.memory.GC.collect();
-	}
+	}*/
 	
 	// Print all messages on stdout
 	debug {

@@ -126,7 +126,7 @@ void server_main(){
 			game.octree.optimize();
 			
 			//run the GC
-			core.memory.GC.collect();
+			//core.memory.GC.collect();
 			
 			// Exit the game loop if we are schedule to do so
 			if (!continueGame)

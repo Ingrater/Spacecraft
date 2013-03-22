@@ -1,6 +1,6 @@
 module renderer.sdl.image;
 
-import base.sharedlib;
+import thBase.sharedlib;
 import renderer.sdl.main;
 
 private string dll_declare(string name){

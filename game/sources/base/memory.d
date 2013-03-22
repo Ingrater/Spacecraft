@@ -31,7 +31,7 @@ mixin template GrowingPool(T){
 		printf("Initial malloc");
 		if(!p)
 			throw new OutOfMemoryError(__FILE__,__LINE__);
-		GC.addRange(p,MEMORY_POOL_SIZE);
+		//GC.addRange(p,MEMORY_POOL_SIZE);
 		MemoryPool ~= MemoryRange(p,p+MEMORY_POOL_SIZE);
 	}
 	
@@ -39,7 +39,7 @@ mixin template GrowingPool(T){
 		try {
 		int count = 0;
 		foreach(ref range;MemoryPool){
-			GC.removeRange(range.start);
+			//GC.removeRange(range.start);
 			free(range.start);
 			count++;
 		}
@@ -61,7 +61,7 @@ mixin template GrowingPool(T){
 		printf("new malloc");
 		if(!p)
 			throw new OutOfMemoryError(__FILE__,__LINE__);
-		GC.addRange(p,MEMORY_POOL_SIZE);
+		//GC.addRange(p,MEMORY_POOL_SIZE);
 		
 		auto range = MemoryRange(p,p+MEMORY_POOL_SIZE);
 		range.current += sz;
@@ -125,7 +125,7 @@ mixin template SameSizePool(T,size_t startSize) {
 			memStart.end = memStart.start + memSize;
 			memset(memStart.start,0,memSize);
 			//writefln("new MemRange %x",memStart.start);
-			GC.addRange(memStart.start,memSize);
+			//GC.addRange(memStart.start,memSize);
 			stackStart = cast(byte**)malloc(startSize * (byte*).sizeof);
 			stackEnd = stackStart + startSize;
 			stackCur = stackStart;
@@ -147,7 +147,7 @@ mixin template SameSizePool(T,size_t startSize) {
 				numElems += (cur.end - cur.start) / ELEMENT_SIZE;
 				MemPool* next = cur.next;
 				//writefln("Freeing pool %x",cur.start);
-				GC.removeRange(cur.start);
+				//GC.removeRange(cur.start);
 				free(cur.start);
 
 				//writefln("delete MemPool %x",cur);
@@ -180,7 +180,7 @@ mixin template SameSizePool(T,size_t startSize) {
 					pool.start = cast(byte*)malloc(memSize);
 					memset(pool.start,0,memSize);
 					//writefln("new pool %x %d",pool.start,memSize);
-					GC.addRange(pool.start,memSize);
+					//GC.addRange(pool.start,memSize);
 					pool.end = pool.start + memSize;
 					
 					//we need room for memSize elements on the free stack so lets see

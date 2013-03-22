@@ -22,8 +22,7 @@ class ScriptError : RCException {
 
 abstract class IScriptSystem {
 protected:
-	void RegisterGlobalStart(string name);
-	void RegisterGlobalEnd();
+	void RegisterGlobalImpl(string name);
 	
 public:
 	/**
@@ -53,10 +52,9 @@ public:
 	void RegisterGlobal(F)(string name, F func) if(is(F == delegate))
 	{
 		IScriptContext c = context();
-		RegisterGlobalStart(name);
 		ScriptFunc!(F) *inst = cast(ScriptFunc!(F)*)c.newUserData((ScriptFunc!(F)).sizeof);
 		(*inst).init(c,func);
-		RegisterGlobalEnd();
+		RegisterGlobalImpl(name);
 	}
 	
 	/**
@@ -66,11 +64,10 @@ public:
 	ConfigVarsBinding* RegisterVariableScope(string name)
 	{
 		IScriptContext c = context();
-		RegisterGlobalStart(name);
 		ConfigVarsBinding* inst = cast(ConfigVarsBinding*)c.newUserData(ConfigVarsBinding.sizeof);
 		memset(inst,0,ConfigVarsBinding.sizeof);
 		(*inst).init(c);
-		RegisterGlobalEnd();
+		RegisterGlobalImpl(name);
 		return inst;
 	}
 

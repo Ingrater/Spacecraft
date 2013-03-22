@@ -98,8 +98,9 @@ public:
     uint size = cast(uint)T.sizeof * num;
     if(size % m_meshDataAllocator.alignment != 0)
     {
-      size += m_meshDataAllocator.alignment - (size & m_meshDataAllocator.alignment);
+      size += m_meshDataAllocator.alignment - (size & (m_meshDataAllocator.alignment * 2 - 1));
     }
+    assert(size % m_meshDataAllocator.alignment == 0);
     return size;
   }
 
@@ -163,7 +164,7 @@ public:
 
       void opOpAssign(string op, T)(T val)
       {
-        this.cur += cast(uint)val;
+        this.cur += int_cast!uint(val);
         assert(this.cur <= this.size, "Memory pool overflow");
       }
     }
@@ -260,8 +261,8 @@ public:
         if(PerVertexFlags & PerVertexData.TexCoord3)
           numTexcoords++;
 
-        meshDataSize += numVertices * numComponents * 3 * float.sizeof;
-        memstat.vertexData.size += numVertices * numComponents * 3 * float.sizeof;
+        meshDataSize += allocationSize!float(numVertices * 3) * numComponents;
+        memstat.vertexData.size += allocationSize!float(numVertices * 3) * numComponents;
 
         for(uint j=0; j<numTexcoords; j++)
         {
@@ -269,8 +270,8 @@ public:
           file.read(numUVComponents);
           if(loadWhat.IsSet(loadTexCoords[j]))
           {
-            meshDataSize += numVertices * numUVComponents * float.sizeof;
-            memstat.vertexData.size += numVertices * numUVComponents * float.sizeof;
+            meshDataSize += allocationSize!float(numVertices * 3) * numUVComponents;
+            memstat.vertexData.size += allocationSize!float(numVertices * 3) * numUVComponents;
           }
         }
 
@@ -299,8 +300,8 @@ public:
         meshDataSize += numNodes * NodeDrawData.sizeof;
         memstat.nodeData = MemoryPool(numNodes * NodeData.sizeof + numNodes * NodeDrawData.sizeof);
 
-        meshDataSize += numMeshReferences * uint.sizeof;
-        memstat.meshReferenceMemory = MemoryPool(numMeshReferences * uint.sizeof);
+        meshDataSize += allocationSize!uint(numMeshReferences);
+        memstat.meshReferenceMemory = MemoryPool(allocationSize!uint(numMeshReferences));
 
         meshDataSize += numNodeReferences * (NodeData*).sizeof;
         memstat.nodeReferenceMemory = MemoryPool(numNodeReferences * (NodeDrawData*).sizeof);

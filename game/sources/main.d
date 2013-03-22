@@ -7,6 +7,7 @@ import base.debughelper;
 import thBase.io;
 import thBase.conv;
 import thBase.file;
+import thBase.directory;
 import thBase.logging;
 
 version(ParticlePerformance)
@@ -174,6 +175,18 @@ int main(string[] args){
 					return -1;
 			}
 		}
+
+    //Set a additional dll directory so the correct dlls (x86 or x64) are found
+    version(Windows)
+    {
+      {
+        char[1024] workingDir;
+        size_t len = getWorkingDirectory(workingDir);
+        setDllDirectory(workingDir[0..len]);
+      }
+    }
+
+    setWorkingDirectory("..\\");
 		
 		// Clear the log file (truncate does not exist on Windows...)
     {
@@ -182,6 +195,11 @@ int main(string[] args){
 		
 		base.logger.init( (g_Env.isServer) ? "server.log" : "client.log" );
 		logMessage("starting up engine");
+    {
+      char[1024] workingDir;
+      size_t len = getWorkingDirectory(workingDir);
+      logMessage("Working directory is: %s", workingDir[0..len]);
+    }
 		
 		// Create the main timer
 		g_Env.mainTimer = cast(shared(Timer))New!Timer();
@@ -201,15 +219,15 @@ int main(string[] args){
 
       base.logger.hook(&append_to_console);
 
-      core.memory.GC.disable();
+      /*core.memory.GC.disable();
       scope(exit){
         core.memory.GC.enable();
         core.memory.GC.collect();
-      }
+      }*/
 
       while(true)
       {
-        core.memory.GC.collect();
+        //core.memory.GC.collect();
 
         particleSystem.update(1000.0f / 30.0f);
 

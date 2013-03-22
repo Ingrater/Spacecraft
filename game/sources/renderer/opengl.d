@@ -2,7 +2,7 @@ module renderer.opengl;
 
 import renderer.sdl.main;
 import std.traits;
-import base.sharedlib;
+import thBase.sharedlib;
 
 import base.utilsD2;
 import core.stdc.string : strlen;

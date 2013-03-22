@@ -41,12 +41,13 @@ private:
 protected:
 	override void* newUserData(size_t size){
 		void* mem = Lua.newuserdata(L,size);
-		GC.addRange(mem,size);
+		//GC.addRange(mem,size);
+    assert(cast(size_t)mem % size_t.sizeof == 0, "missaligned memory from lua");
 		return mem;
 	}
 	
 	override void deleteUserData(void *p){
-		GC.removeRange(p);
+		//GC.removeRange(p);
 	}
 	
 	override void createFunctionBinding(string name, ScriptFunction call, ScriptFunction destroy)
@@ -119,11 +120,17 @@ public:
 	}
 	
 	override int getInteger(int n){
-		return int_cast!int(Lua.tointeger(L,n));
+    int success = 0;
+		auto result = int_cast!int(Lua.tointegerx(L, n, &success));
+    assert(success != 0);
+    return result;
 	}
 	
 	override double getNumber(int n){
-		return Lua.tonumber(L,n);
+    int success = 0;
+		auto result = Lua.tonumberx(L, n, &success);
+    assert(success != 0);
+    return result;
 	}
 	
 	override rcstring getString(int n){
@@ -180,7 +187,7 @@ private:
 				}
 				break;
 			  case Lua.Types.NUMBER:
-				errorMessage ~= format("%f",Lua.tonumber(L,-1));
+				errorMessage ~= format("%f",Lua.tonumberx(L,-1, null));
 				break;
 			  case Lua.Types.STRING:
 				errorMessage ~= "\"" ~ Lua.tostring(L,-1) ~ "\"";
@@ -227,7 +234,7 @@ private:
     assert(Lua.type(c.L, -1) != Lua.Types.NONE && Lua.type(c.L, -1) != Lua.Types.NIL, "type does not exist in registry");
     if( Lua.getmetatable(c.L, index) == 0)
       return false;
-    return (Lua.equal(c.L, -1, -2) != 0);
+    return (Lua.compare(c.L, -1, -2, Lua.OP.EQ) != 0);
   }
 
   private bool isUserDataType(T)(int index)
@@ -236,12 +243,9 @@ private:
   }
 	
 protected:
-	override void RegisterGlobalStart(string name){
-		Lua.pushstring(c.L, toCString(name));
-	}
-
-	override void RegisterGlobalEnd(){
-		Lua.settable(c.L,Lua.GLOBALSINDEX);
+	override void RegisterGlobalImpl(string name){
+    mixin(stackCString("name", "cstr"));
+		Lua.setglobal(c.L, cstr.ptr);
 	}
 
 public:
@@ -315,7 +319,8 @@ public:
     scope(exit) Lua.settop(c.L, top);
 
 
-    int tableIndex = Lua.GLOBALSINDEX;
+    Lua.rawgeti(c.L, Lua.REGISTRYINDEX, Lua.RIDX_GLOBALS);
+    int tableIndex = Lua.gettop(c.L);
 
     while(scopeEndIndex > 0)
     {
