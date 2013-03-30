@@ -27,18 +27,11 @@ class RendererFactory : IRendererFactory {
       Delete(m_Renderer);
     }
 		void Init(int screenWidth, int screenHeight, bool fullScreen, bool vsync, bool noBorder, bool grabInput, int antiAliasing){			//Load dlls
-			version(X86){
-				ft.Load("freetype.dll","libfreetype.so.6");
+		  ft.Load("freetype.dll","libfreetype.so.6");
 				
-				SDL.LoadDll("SDL.dll","libSDL-1.2.so.0");
-				SDLImage.LoadDll("SDL_image.dll","libSDL_image-1.2.so.0");
-			}
-			version(X86_64){
-				ft.Load("freetype.dll","libfreetype.so.6");
+			SDL.LoadDll("SDL.dll","libSDL-1.2.so.0");
+			SDLImage.LoadDll("SDL_image.dll","libSDL_image-1.2.so.0");
 
-				SDL.LoadDll("SDL64.dll","libSDL-1.2.so.0");
-				SDLImage.LoadDll("SDL_image64.dll","libSDL_image-1.2.so.0");
-			}
 			
 			if(SDL.Init(SDL.INIT_VIDEO) != 0){
 				throw new Exception("Failed initialzing SDL");

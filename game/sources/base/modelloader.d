@@ -301,7 +301,7 @@ public:
         memstat.nodeData = MemoryPool(numNodes * NodeData.sizeof + numNodes * NodeDrawData.sizeof);
 
         meshDataSize += allocationSize!uint(numMeshReferences);
-        memstat.meshReferenceMemory = MemoryPool(allocationSize!uint(numMeshReferences));
+        memstat.meshReferenceMemory = MemoryPool(allocationSize!uint(1) * numMeshReferences);
 
         meshDataSize += numNodeReferences * (NodeData*).sizeof;
         memstat.nodeReferenceMemory = MemoryPool(numNodeReferences * (NodeDrawData*).sizeof);
