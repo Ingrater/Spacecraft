@@ -80,8 +80,8 @@ class ft {
 				FT_Get_Name_Index;
 		alias FT_Long		function( FT_Long a, FT_Long b, FT_Long c )
 				FT_MulDiv;
-		alias FT_Long		function( FT_Long a, FT_Long b )
-				FT_MulFix;
+		/*alias FT_Long		function( FT_Long a, FT_Long b )
+				FT_MulFix;*/
 		alias FT_Long		function( FT_Long a, FT_Long b )
 				FT_DivFix;
 		alias FT_Fixed		function( FT_Fixed a )

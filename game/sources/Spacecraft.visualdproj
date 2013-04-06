@@ -139,8 +139,8 @@
   <Dversion>2</Dversion>
   <ignoreUnsupportedPragmas>0</ignoreUnsupportedPragmas>
   <compiler>0</compiler>
-  <otherDMD>0</otherDMD>
-  <program>$(DMDInstallDir)windows\bin\ErrorMessageDecoder.exe</program>
+  <otherDMD>1</otherDMD>
+  <program>$(DMDInstallDir)windows\bin-nostd\dmd.exe</program>
   <imppath>$(SolutionDir)\..\..\druntime\import;$(SolutionDir)\..\..\phobos;$(SolutionDir)\..\..\thBase\src;$(SolutionDir)\..\tools\ModelConverter\src</imppath>
   <fileImppath />
   <outdir>..\$(ConfigurationName)</outdir>
@@ -181,7 +181,7 @@
   <libpaths>$(SolutionDir)\..\..\phobos;$(SolutionDir)\..\..\thBase\lib</libpaths>
   <deffile />
   <resfile />
-  <exefile>..\data\$(ProjectName).exe</exefile>
+  <exefile>..\data\bin32\$(ProjectName).exe</exefile>
   <useStdLibPath>1</useStdLibPath>
   <additionalOptions>-defaultlib=phobosnogc -debuglib=phobosnogc</additionalOptions>
   <preBuildCommand />

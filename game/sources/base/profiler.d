@@ -100,7 +100,7 @@ void DrawRecorded(IRenderer renderer)
     auto list = ProfilerList;
     foreach(Profiler p; list)
     {
-      if(p.m_nextToRecord < p.m_Recorded.length)
+      if(p.m_Recorded is null || p.m_nextToRecord < p.m_Recorded.length)
         return;
     }
     Zeitpunkt start = list[0].m_Recorded[0].start;

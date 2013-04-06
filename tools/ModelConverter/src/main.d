@@ -127,6 +127,7 @@ void ProgressModel(string path)
     auto textureFiles = scopedRef!(Hashmap!(const(char)[], uint, StringHashPolicy))(New!(Hashmap!(const(char)[], uint, StringHashPolicy))());
     auto materialTextures = scopedRef!(Vector!MaterialTextureInfo)(New!(Vector!MaterialTextureInfo)());
     auto textures = scopedRef!(Vector!(const(char)[]))(New!(Vector!(const(char)[]))());
+    auto materialNames = scopedRef!(Vector!(const(char)[]))(New!(Vector!(const(char)[]))());
     uint numTextureReferences;
 
     // Collect Textures
@@ -139,6 +140,7 @@ void ProgressModel(string path)
         //collect all textures from all materials
         for(size_t i=0; i<scene.mNumMaterials; i++)
         {
+          bool foundMatName = false;
           const(aiMaterial*) mat = scene.mMaterials[i];
           for(int j=0; j < mat.mNumProperties; j++)
           {
@@ -173,6 +175,17 @@ void ProgressModel(string path)
                 }
               }
             }
+            else if(prop.mKey.data[0..prop.mKey.length] == "?mat.name") 
+            {
+              const(char)[] materialName = prop.mData[4..prop.mDataLength-1];
+              materialNames ~= materialName;
+              foundMatName = true;
+            }
+          }
+          if(!foundMatName)
+          {
+            Warning("Couldn't find name for material %d using 'default'", i);
+            materialNames ~= "default";
           }
         }
       }
@@ -189,6 +202,13 @@ void ProgressModel(string path)
         texturePathMemory += filename.length;
       }
       outFile.write(texturePathMemory);
+
+      uint materialNameMemory = 0;
+      foreach(const(char)[] materialName; materialNames)
+      {
+        materialNameMemory += materialName.length;
+      }
+      outFile.write(materialNameMemory);
 
       outFile.write(scene.mNumMaterials);
       outFile.write(scene.mNumMeshes);
@@ -307,6 +327,7 @@ void ProgressModel(string path)
             }
           }
 
+          outFile.writeArray(materialNames[i]);
           outFile.write(cast(uint)materialTextures.length);
           foreach(ref MaterialTextureInfo info; materialTextures)
           {
