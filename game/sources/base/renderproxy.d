@@ -287,7 +287,8 @@ enum ExtractTypePublic : uint {
 	FIXED_SPRITE = 11,
   RCTEXT = 12,
   DEBUG_LINE = 13,
-  TEXT_WORLDSPACE = 14
+  DEBUG_LINE_2D = 14,
+  TEXT_WORLDSPACE = 15
 }
 
 enum HudTarget : uint {
@@ -393,4 +394,12 @@ struct ObjectInfoDebugLine
   ObjectInfo info;
   vec4 color;
   Position start, end;
+}
+
+struct ObjectInfoDebugLine2D
+{
+  enum ExtractTypePublic TYPE = ExtractTypePublic.DEBUG_LINE_2D;
+  ObjectInfo info;
+  vec4 color;
+  vec2 start, end;
 }

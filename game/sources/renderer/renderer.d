@@ -53,8 +53,37 @@ public import renderer.internal;
 
 private struct DebugDrawLine
 {
-  Position start, end;
+  enum Type
+  {
+    _2D,
+    _3D
+  }
+  Type type;
+  union {
+    struct {
+      Position start, end;
+    }
+    struct {
+      vec2 start2D, end2D;
+    }
+  }
   vec4 color;
+
+  this(Position start, Position end, vec4 color)
+  {
+    this.type = Type._3D;
+    this.start = start;
+    this.end = end;
+    this.color = color;
+  }
+
+  this(vec2 start, vec2 end, vec4 color)
+  {
+    this.type = Type._2D;
+    this.start2D = start;
+    this.end2D = end;
+    this.color = color;
+  }
 }
 
 /**
@@ -127,7 +156,9 @@ private:
 	RenderGroup m_DebugGroup;
 	StateObject m_DebugState;
 	VertexBuffer m_DebugBuffer;
+  VertexBuffer m_2DLineBuffer;
 	bool m_UpdateDebugBuffer = false;
+  bool m_update2DLineBuffer = false;
 	
 	StateObject m_SpriteState;
 	VertexBuffer m_SpriteBuffer;
@@ -471,13 +502,26 @@ public:
     {
       foreach(line; m_DebugDrawLines)
       {
-        auto obj = cast(ObjectInfoDebugLine*)extractor.CreateObjectInfo(ObjectInfoDebugLine.sizeof);
-        *obj = ObjectInfoDebugLine.init;
-        obj.info.type = ObjectInfoDebugLine.TYPE;
-        obj.start = line.start;
-        obj.end = line.end;
-        obj.color = line.color;
-        extractor.addObjectInfo(&(*obj).info);
+        if(line.type == DebugDrawLine.Type._3D)
+        {
+          auto obj = cast(ObjectInfoDebugLine*)extractor.CreateObjectInfo(ObjectInfoDebugLine.sizeof);
+          *obj = ObjectInfoDebugLine.init;
+          obj.info.type = ObjectInfoDebugLine.TYPE;
+          obj.start = line.start;
+          obj.end = line.end;
+          obj.color = line.color;
+          extractor.addObjectInfo(&(*obj).info);
+        }
+        else
+        {
+          auto obj = cast(ObjectInfoDebugLine2D*)extractor.CreateObjectInfo(ObjectInfoDebugLine2D.sizeof);
+          *obj = ObjectInfoDebugLine2D.init;
+          obj.info.type = ObjectInfoDebugLine2D.TYPE;
+          obj.start = line.start2D;
+          obj.end = line.end2D;
+          obj.color = line.color;
+          extractor.addObjectInfo(&(*obj).info);
+        }
       }
       m_DebugDrawLines.resize(0);
 
@@ -1029,6 +1073,15 @@ public:
 										 VertexBuffer.Primitive.LINES,
 										 VertexBuffer.IndexBufferSize.INDEX16,
 										 true);
+
+    VertexBuffer.DataChannels[2] Line2DBufferDataChannels;
+    Line2DBufferDataChannels[0] = VertexBuffer.DataChannels.POSITION_2;
+    Line2DBufferDataChannels[1] = VertexBuffer.DataChannels.COLOR;
+		m_2DLineBuffer = New!VertexBuffer(this,
+                                     DebugBufferDataChannels,
+                                     VertexBuffer.Primitive.LINES,
+                                     VertexBuffer.IndexBufferSize.INDEX16,
+                                     true);
 		
 		m_SpriteState = New!StateObject();
 		m_SpriteState.SetDepthTest(true);
@@ -1126,6 +1179,7 @@ public:
     Delete(m_SpriteBuffer); m_SpriteBuffer = null;
     Delete(m_SpriteState); m_SpriteState = null;
     Delete(m_DebugBuffer); m_DebugBuffer = null;
+    Delete(m_2DLineBuffer); m_2DLineBuffer = null;
     Delete(m_DebugState); m_DebugState = null;
     Delete(m_ScreenQuad); m_ScreenQuad = null;
     Delete(m_Hud3dShader); m_Hud3dShader = null;
@@ -1277,6 +1331,14 @@ public:
 					call.SetShader(m_LinesShader.GetShader());
 					call.SetStateObject(m_DebugState);
 				}
+
+        if(m_update2DLineBuffer)
+        {
+					RenderCall call = m_DebugGroup.AddRenderCall();
+					call.SetVertexBuffer(m_2DLineBuffer);
+					call.SetShader(m_ShapeShader.GetShader());
+					call.SetStateObject(m_DebugState);
+        }
 				
 				RenderSlice LastPostProcessing = null;
 				m_PostProcessingSwitch = false;
@@ -1305,6 +1367,11 @@ public:
 					m_VertexBufferManager.AddVertexBufferToUpdate(m_DebugBuffer);
 					m_UpdateDebugBuffer = false;
 				}
+        if(m_update2DLineBuffer)
+        {
+					m_VertexBufferManager.AddVertexBufferToUpdate(m_2DLineBuffer);
+					m_update2DLineBuffer = false;
+        }
 				if(m_UpdateShapeBuffer){
 					m_VertexBufferManager.AddVertexBufferToUpdate(m_ShapeBuffer);
 					m_UpdateShapeBuffer = false;
@@ -1613,21 +1680,6 @@ public:
       BaseMessage* bmsg = m_MessageQueue.tryGet!BaseMessage();
       if(bmsg is null)
         break;
-      if(bmsg.type == typeid(Msg_t!(Renderer, "drawBox")))
-      {
-        auto msg = m_MessageQueue.tryGet!(Msg_t!(Renderer, "drawBox"))();
-        assert(msg !is null);
-        scope(exit) m_MessageQueue.skip!(Msg_t!(Renderer, "drawBox"))();
-        msg.call(this);
-      }
-      else if(bmsg.type == typeid(Msg_t!(Renderer, "drawLine")))
-      {
-        auto msg = m_MessageQueue.tryGet!(Msg_t!(Renderer, "drawLine"))();
-        assert(msg !is null);
-        scope(exit) m_MessageQueue.skip!(Msg_t!(Renderer, "drawLine"))();
-        msg.call(this);
-      }
-      else
       {
         assert(0, "unkown post extract message");
       }
@@ -2031,6 +2083,12 @@ public:
               this.drawLine(debugLineInfo.start, debugLineInfo.end, debugLineInfo.color);
             }
             break;
+          case ExtractType.DEBUG_LINE_2D:
+            {
+              ObjectInfoDebugLine2D *debugLineInfo2D = cast(ObjectInfoDebugLine2D*)cur;
+              this.drawLine(debugLineInfo2D.start, debugLineInfo2D.end, debugLineInfo2D.color);
+            }
+            break;
 				}
 			}
 			
@@ -2258,6 +2316,16 @@ public:
 		m_DebugBuffer.AddVertexData(end - m_FrameOrigin);
 		m_DebugBuffer.AddVertexData(color);
 	}
+
+  override void drawLine(ref const(vec2) start, ref const(vec2) end, ref const(vec4) color){
+    m_update2DLineBuffer = true;
+
+    m_2DLineBuffer.AddVertexData(start);
+    m_2DLineBuffer.AddVertexData(color);
+
+    m_2DLineBuffer.AddVertexData(end);
+    m_2DLineBuffer.AddVertexData(color);
+  }
 	
 	override void drawLine(Position start, Position end, vec4 color) shared {
     auto self = cast(Renderer)this;
@@ -2266,6 +2334,14 @@ public:
       self.m_DebugDrawLines ~= DebugDrawLine(start, end, color);
     }
 	}
+
+  override void drawLine(vec2 start, vec2 end, vec4 color) shared {
+    auto self = cast(Renderer)this;
+    synchronized( m_DebugLineLock )
+    {
+      self.m_DebugDrawLines ~= DebugDrawLine(start, end, color);
+    }
+  }
 
   override IDebugDrawRecorder createDebugDrawRecorder() shared
   {

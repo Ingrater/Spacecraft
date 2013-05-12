@@ -21,7 +21,8 @@ enum ExtractType : uint {
 	FIXED_SPRITE = 11,
   RCTEXT = 12,
   DEBUG_LINE = 13,
-  TEXT_WORLDSPACE = 14
+  DEBUG_LINE_2D = 14,
+  TEXT_WORLDSPACE = 15
 }
 
 struct ObjectInfoModel {

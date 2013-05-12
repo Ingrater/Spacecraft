@@ -73,6 +73,8 @@ interface IRenderer : IEventListener{
 	
 	void drawLine(ref const Position start, ref const Position end, ref const vec4 color);
 	void drawLine(Position start, Position end, vec4 color = vec4(1.0f,0.0f,0.0f,1.0f)) shared;
+  void drawLine(ref const(vec2) start,ref const(vec2) end, ref const(vec4) color);
+  void drawLine(vec2 start, vec2 end, vec4 color = vec4(1.0f,1.0f,1.0f,1.0f)) shared;
 
   void DrawTextWorldspace(uint font, Position pos, vec4 color, const(char)[] fmt, ...) shared;
 	

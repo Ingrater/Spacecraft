@@ -4,6 +4,7 @@ import base.all;
 import thBase.container.stack;
 import core.sync.mutex;
 import base.memory;
+import thBase.container.hashmap;
 import thBase.container.vector;
 import thBase.format;
 import thBase.allocator;
@@ -131,6 +132,8 @@ void DrawRecorded(IRenderer renderer)
 
 class Profiler {
 private:
+  enum size_t CHART_LENGTH = 60 * 3;
+
 	struct Block {
 		Block* next = null;
 		Block* childs = null;
@@ -164,6 +167,7 @@ private:
   size_t m_nextToRecord;
 	Mutex m_Mutex;
   ChunkAllocator!(NoLockPolicy) m_blockAllocator;
+  Hashmap!(rcstring, Vector!double) m_charts;
 	
 	void freeBlock(Block* block){
 		if(block !is null){
@@ -220,6 +224,14 @@ private:
 		info.block.time = Zeitpunkt(g_Env.mainTimer) - info.zeitpunkt;
     info.block.start = info.zeitpunkt;
     assert(info.block.start.isValid());
+    synchronized(m_Mutex)
+    {
+      m_charts.ifExists(_T(info.block.name), (ref values){
+        if(values.length >= CHART_LENGTH)
+          values.removeAtIndex(0);
+        values ~= info.block.time;
+      });
+    }
     return info.block.time;
 	}
 
@@ -228,6 +240,30 @@ private:
     auto info = m_Infos.pop();
     info.block.time = time;
     info.block.start = info.zeitpunkt;
+  }
+
+  void addChart(rcstring blockName)
+  {
+    synchronized(m_Mutex)
+    {
+      if(!m_charts.exists(blockName))
+      {
+        auto values = New!(Vector!double)();
+        values.reserve(CHART_LENGTH);
+        m_charts[blockName] = values;
+      }
+    }
+  }
+
+  void removeChart(string blockName)
+  {
+    synchronized(m_Mutex)
+    {
+      m_charts.ifExists(_T(blockName), (ref values){ 
+        Delete(values); 
+        m_charts.remove(_T(blockName)); 
+      });
+    }
   }
 
   void startRecording(size_t numFrames)
@@ -296,6 +332,7 @@ private:
     size_t blockSize = Block.sizeof;
     size_t alignOffset = (Block.sizeof % Block.alignof == 0) ? 0 : Block.alignof - (Block.sizeof - Block.alignof);
     m_blockAllocator = New!(ChunkAllocator!(NoLockPolicy))(blockSize + alignOffset, 128, Block.alignof);
+    m_charts = New!(typeof(m_charts))();
 	}
 
   ~this()
@@ -322,6 +359,7 @@ private:
     Delete(m_Mutex);
     Delete(m_Infos);
     Delete(m_blockAllocator);
+    Delete(m_charts);
   }
 	
 	vec2 print(IRenderer renderer, vec2 pos){
@@ -370,6 +408,44 @@ private:
       }
     }
     return vec2(pos.x, pos.y + maxYOffset);
+  }
+
+  float drawCharts(IRenderer renderer, vec2 pos, float width, float chartHeight)
+  {
+    synchronized(m_Mutex)
+    {
+      float num = 0.0f;
+      float step = width / CHART_LENGTH;
+      foreach(ref blockName, ref values; m_charts)
+      {
+        renderer.DrawText(1, pos + vec2(0, num * chartHeight), "%s", blockName[]);
+        float textHeight = 11.0f;
+        float borderBottom = 3.0f;
+        vec2 bottomLeft = pos + vec2(0.0f, chartHeight - textHeight - borderBottom);
+        double maxTime = 1.0f;
+        foreach(value; values)
+        {
+          if(value > maxTime)
+            maxTime = value;
+        }
+        float heightScale = (chartHeight - textHeight - borderBottom) / maxTime;
+        for(double d = 1.0f; d <= maxTime; d+=1.0)
+        {
+          renderer.drawLine(bottomLeft + vec2(d * heightScale, 0.0f), bottomLeft + vec2(d * heightScale, width), vec4(0.5f, 0.5f, 0.5f, 0.5f));
+        }
+        renderer.drawLine(bottomLeft, pos + vec2(0.0f, textHeight));
+        renderer.drawLine(bottomLeft, bottomLeft + vec2(0.0f, width));
+        for(size_t i=0; i<values.length-1; i++)
+        {
+          auto from = vec2(i * step, values[i] * heightScale);
+          auto to = vec2((i+1) * step, values[i] * heightScale);
+          renderer.drawLine(from, to, vec4(0.0f, 1.0f, 0.0f, 1.0f));
+        }
+
+        num += 1.0f;
+      }
+      return num * chartHeight;
+    }
   }
 }
 
