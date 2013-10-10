@@ -286,7 +286,7 @@ class GameSimulation : IGameThread, IGame {
 	public:
 		this(){
 			m_Mutex = New!Mutex;
-			m_Octree = New!Octree(10000.0f,10.0f);
+			m_Octree = new Octree(10000.0f,10.0f); // crashes when using New!
       m_Sounds = New!(typeof(m_Sounds))();
 			m_GameObjectFactory = New!GameObjectFactory(this);
 			m_LastMeasurement = m_LastUpdate;

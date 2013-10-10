@@ -10,6 +10,11 @@ import thBase.file;
 import thBase.directory;
 import thBase.logging;
 
+debug
+{
+  static import thBase.asserthandler;
+}
+
 version(ParticlePerformance)
 {
 import game.effects.particle_oo_v4;
@@ -17,6 +22,7 @@ import game.effects.particle_oo_v4;
 
 
 int main(string[] args){
+  debug thBase.asserthandler.Init();
 	try {
 		// Parse command line arguments and store everything in g_Env
 		for(uint i = 1; i < args.length; i++){

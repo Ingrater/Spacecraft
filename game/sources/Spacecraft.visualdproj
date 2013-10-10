@@ -45,8 +45,8 @@
   <Dversion>2</Dversion>
   <ignoreUnsupportedPragmas>0</ignoreUnsupportedPragmas>
   <compiler>0</compiler>
-  <otherDMD>0</otherDMD>
-  <program>ErrorMessageDecoder.exe</program>
+  <otherDMD>1</otherDMD>
+  <program>$(DMDInstallDir)\windows\bin-nostd\dmd.exe</program>
   <imppath>$(SolutionDir)\..\..\druntime\import;$(SolutionDir)\..\..\phobos;$(SolutionDir)\..\..\thBase\src;$(SolutionDir)\..\tools\ModelConverter\src</imppath>
   <fileImppath />
   <outdir>..\$(ConfigurationName)</outdir>
@@ -87,7 +87,7 @@
   <libpaths>$(SolutionDir)\..\..\phobos;$(SolutionDir)\..\..\thBase\lib</libpaths>
   <deffile />
   <resfile />
-  <exefile>..\data\$(ProjectName).exe</exefile>
+  <exefile>..\data\bin32\$(ProjectName)d.exe</exefile>
   <useStdLibPath>1</useStdLibPath>
   <additionalOptions>-defaultlib=phobosnogcd -debuglib=phobosnogcd</additionalOptions>
   <preBuildCommand />
@@ -703,8 +703,8 @@
   <Dversion>2</Dversion>
   <ignoreUnsupportedPragmas>0</ignoreUnsupportedPragmas>
   <compiler>0</compiler>
-  <otherDMD>0</otherDMD>
-  <program>ErrorMessageDecoder.exe</program>
+  <otherDMD>1</otherDMD>
+  <program>$(DMDInstallDir)\windows\bin-nostd\dmd.exe</program>
   <imppath>$(SolutionDir)\..\..\druntime\import;$(SolutionDir)\..\..\phobos;$(SolutionDir)\..\..\thBase\src;$(SolutionDir)\..\tools\ModelConverter\src</imppath>
   <fileImppath />
   <outdir>..\$(ConfigurationName)$(Platform)</outdir>
@@ -745,8 +745,8 @@
   <libpaths>$(SolutionDir)\..\..\phobos;$(SolutionDir)\..\..\thBase\lib</libpaths>
   <deffile />
   <resfile />
-  <exefile>..\data\bin64\$(ProjectName)64d.exe</exefile>
-  <useStdLibPath>1</useStdLibPath>
+  <exefile>..\data\bin64\$(ProjectName)d.exe</exefile>
+  <useStdLibPath>0</useStdLibPath>
   <additionalOptions>-defaultlib=phobosnogc64d -debuglib=phobosnogc64d -op -L/LIBPATH:&quot;$(SolutionDir)\..\..\thBase\lib&quot; -L/LIBPATH:&quot;$(SolutionDir)\..\..\phobos&quot;</additionalOptions>
   <preBuildCommand />
   <postBuildCommand />
@@ -764,7 +764,7 @@
   <quiet>0</quiet>
   <verbose>0</verbose>
   <vtls>0</vtls>
-  <symdebug>0</symdebug>
+  <symdebug>1</symdebug>
   <optimize>1</optimize>
   <cpu>0</cpu>
   <isX86_64>1</isX86_64>
@@ -797,8 +797,8 @@
   <Dversion>2</Dversion>
   <ignoreUnsupportedPragmas>0</ignoreUnsupportedPragmas>
   <compiler>0</compiler>
-  <otherDMD>0</otherDMD>
-  <program>$(DMDInstallDir)windows\bin\ErrorMessageDecoder.exe</program>
+  <otherDMD>1</otherDMD>
+  <program>$(DMDInstallDir)\windows\bin-nostd\dmd.exe</program>
   <imppath>$(SolutionDir)\..\..\druntime\import;$(SolutionDir)\..\..\phobos;$(SolutionDir)\..\..\thBase\src;$(SolutionDir)\..\tools\ModelConverter\src</imppath>
   <fileImppath />
   <outdir>..\$(ConfigurationName)</outdir>
@@ -835,13 +835,13 @@
   <cv2pdbOptions />
   <objfiles />
   <linkswitches />
-  <libfiles>thBase.lib</libfiles>
+  <libfiles>kernel32.lib thBase64.lib user32.lib</libfiles>
   <libpaths>$(SolutionDir)\..\..\phobos;$(SolutionDir)\..\..\thBase\lib</libpaths>
   <deffile />
   <resfile />
-  <exefile>..\data\$(ProjectName).exe</exefile>
+  <exefile>..\data\bin64\$(ProjectName).exe</exefile>
   <useStdLibPath>1</useStdLibPath>
-  <additionalOptions>-defaultlib=phobosnogc64 -debuglib=phobosnogc64</additionalOptions>
+  <additionalOptions>-defaultlib=phobosnogc64 -debuglib=phobosnogc64 -L/LIBPATH:&quot;$(SolutionDir)\..\..\thBase\lib&quot; -L/LIBPATH:&quot;$(SolutionDir)\..\..\phobos&quot;</additionalOptions>
   <preBuildCommand />
   <postBuildCommand />
   <filesToClean>*.obj;*.cmd;*.build;*.json;*.dep</filesToClean>

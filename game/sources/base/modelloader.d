@@ -321,6 +321,10 @@ public:
       {
         meshDataSize += 512 * size_t.sizeof; //room for size tracking inside allocator in debug
       }
+      else
+      {
+        meshDataSize += 32; // TODO: workaround fix me
+      }
 
       m_meshDataAllocator = New!(typeof(m_meshDataAllocator))(meshDataSize, StdAllocator.globalInstance);
     }

@@ -410,7 +410,7 @@ private:
     return vec2(pos.x, pos.y + maxYOffset);
   }
 
-  float drawCharts(IRenderer renderer, vec2 pos, float width, float chartHeight)
+  float drawCharts(shared(IRenderer) renderer, vec2 pos, float width, float chartHeight)
   {
     synchronized(m_Mutex)
     {

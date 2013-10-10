@@ -1680,10 +1680,8 @@ public:
       BaseMessage* bmsg = m_MessageQueue.tryGet!BaseMessage();
       if(bmsg is null)
         break;
-      {
-        assert(0, "unkown post extract message");
-      }
-      numMessages++;
+        
+      assert(0, "unkown post extract message");
     }				
 	}
 	
