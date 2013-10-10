@@ -630,6 +630,7 @@ public:
           uint nameLength;
           file.read(nameLength);
           auto name = nodeNames[curNodeNamePos..(curNodeNamePos+nameLength)];
+          curNodeNamePos += nameLength;
           file.read(name);
           node.data.name = cast(string)name;
           file.read(node.transform.f[]);

@@ -18,6 +18,7 @@ import core.stdc.stdlib;
 
 rcstring g_workDir;
 bool g_debug = false;
+bool g_includeMissingTextures = false;
 
 static ~this()
 {
@@ -156,7 +157,7 @@ void ProgressModel(string path)
               texturePath = g_workDir ~ texturePath;
               if(textureFilename != "$texture.png")
               {
-                if(!thBase.file.exists(texturePath[]))
+                if(!g_includeMissingTextures && !thBase.file.exists(texturePath[]))
                 {
                   Warning("Couldn't find file '%s' at '%s' ignoring...", textureFilename, texturePath[]);
                 }
@@ -580,6 +581,10 @@ int main(string[] args)
     else if(args[i] == "--debug")
     {
       g_debug = true;
+    }
+    else if(args[i] == "--includeMissingTextures")
+    {
+      g_includeMissingTextures = true;
     }
     else if(args[i].endsWith(".dae", CaseSensitive.no))
     {
