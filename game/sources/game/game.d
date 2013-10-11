@@ -126,6 +126,7 @@ class GameSimulation : IGameThread, IGame {
 								m_ExitGame = true;
 								break;
 							case Keys.w: //W
+                core.stdc.stdio.printf("W is pressed = %d\n", pressed);
 								m_Controller.moveForward(pressed);
 								break;
 							case Keys.s: //S
@@ -444,6 +445,7 @@ class GameSimulation : IGameThread, IGame {
 			
 			SmartPtr!IRenderProxy cameraProxy = g_Env.renderer.CreateRenderProxy();
 			m_FreeCamera = New!FreeCam(cameraProxy);
+      m_FreeCamera.update(1.0f);
 			m_Camera = m_FreeCamera;
 			m_Controller = m_FreeCamera;
 			g_Env.renderer.camera = m_FreeCamera;

@@ -35,6 +35,7 @@ public:
 		m_Rotation = Quaternion(vec3(1,0,0),15.0f);
 		m_Velocity = vec3(0.0f,0.0f,0.0f);
 		m_Rotate = 0.0f;
+    m_ViewMatrix = mat4.Identity();
 	}
 
   ~this()
