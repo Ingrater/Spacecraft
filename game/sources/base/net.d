@@ -313,6 +313,7 @@ mixin template MessageCode(){
 		toServer = new CToServer();
 		m_ClientMsgs = new ClientMsgs();
 		m_ServerMsgs = new ServerMsgs();
+    m_MessageDeinitHelper = MessageDeinitHelper(this);
 	}
 
   private void DoDeinitMessaging()

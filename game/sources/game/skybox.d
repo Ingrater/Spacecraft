@@ -12,7 +12,7 @@ public:
 	}
 	
 	override IRenderProxy renderProxy(){
-		return m_RenderProxy;
+		return m_RenderProxy.ptr; //BUG in 2.063.2
 	}	
 }
 

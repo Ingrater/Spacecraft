@@ -23,7 +23,7 @@ class Scheibe : IGameObject {
 	
 	IRenderProxy renderProxy() {
 		if(m_Enabled)
-			return m_RenderProxy;
+			return m_RenderProxy.ptr; //BUG in 2.063.2
 		else
 			return null;
 	}
