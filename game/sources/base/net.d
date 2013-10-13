@@ -273,8 +273,10 @@ mixin template MessageCode(){
 
     ~this()
     {
-      assert(m_outer !is null, "Messaging has not been initialized");
-      m_outer.DoDeinitMessaging();
+      //BUG 11246
+      //assert(m_outer !is null, "Messaging has not been initialized");
+      if(m_outer !is null)
+        m_outer.DoDeinitMessaging();
       debug m_outer = null;
     }
   }
@@ -311,7 +313,6 @@ mixin template MessageCode(){
 		toServer = new CToServer();
 		m_ClientMsgs = new ClientMsgs();
 		m_ServerMsgs = new ServerMsgs();
-    m_MessageDeinitHelper = MessageDeinitHelper(this);
 	}
 
   private void DoDeinitMessaging()
@@ -597,7 +598,7 @@ class BufferWriter : ISerializer {
 		} else static if ( is(T == rcstring) ) {
 			assert(pos + uint.sizeof + val.length <= buffer.length, "BufferWriter, push: no space left in the buffer!");
 			push!uint(int_cast!uint(val.length));
-			buffer[pos .. pos + val.length] = cast(void[])(val[]);
+			buffer[pos .. pos + val.length] = (cast(void[])(val[]))[];
 			debug(net) base.logger.test("net: %5d > %s %10s: %s (length: %d)", pos, replicate("|", block_level), T.stringof, val, val.length);
 			pos += val.length;
 		} else {
@@ -849,12 +850,18 @@ class BufferReader : ISerializer {
 				return false;
 			
 			shift!ubyte();
-			float[T.f.length] newValues;
-			foreach(ref elem; newValues)
-				elem = shift!float();
+
+      // BUG 11245
+			//float[T.f.length] newValues;
+			//foreach(ref elem; newValues)
+				//elem = shift!float();
+
+      T newValue;
+      foreach(ref elem; newValue.f)
+        elem = shift!float();
 			
-			if (value.f != newValues){
-				value.f[] = newValues[];
+			if (value.f != newValue.f){
+				value.f[] = newValue.f[];
 				return true;
 			}
 			

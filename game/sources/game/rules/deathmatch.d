@@ -101,7 +101,7 @@ class ServerRules : IServerRules {
 		vec3 spawnAreaMin, spawnAreaMax;
 		Quaternion spawnOrientation;
 		
-		const float spawnFreeRadius = 20;
+		enum float spawnFreeRadius = 20;
 		
 		byte defaultTeam = 0;
 		

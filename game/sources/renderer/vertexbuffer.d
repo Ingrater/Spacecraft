@@ -706,10 +706,10 @@ public:
 	void GetMinMax(ref vec4 pMin, ref vec4 pMax){
 		uint stride = m_BytesPerVertex / float.sizeof;
 		float[] position = new float[3];
-		pMin.f[0..3] = cast(const(float[]))m_Data[0..3];
-		pMax.f[0..3] = cast(const(float[]))m_Data[0..3];
+		pMin.f[0..3] = (cast(const(float[]))m_Data[0..3])[];
+		pMax.f[0..3] = (cast(const(float[]))m_Data[0..3])[];
 		for(size_t i=1;i<m_NumberOfVertices;i++){
-			position[0..3] = cast(const(float[]))m_Data[(i*stride)..(i*stride+3)];
+			position[0..3] = (cast(const(float[]))m_Data[(i*stride)..(i*stride+3)])[];
 			pMin.x = (position[0] < pMin.x) ? position[0] : pMin.x;
 			pMin.y = (position[1] < pMin.y) ? position[1] : pMin.y;
 			pMin.z = (position[2] < pMin.z) ? position[2] : pMin.z;

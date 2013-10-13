@@ -35,11 +35,11 @@ class Player : HitableGameObject, ISerializeable, IControllable {
 		netvar!vec3 m_RotAcceleration;
 		
 		netvar!float m_Temperature;
-		const float m_TemperatureCost = 1.5;
-		const float m_TemperatureMax = 100;
-		const float m_TemperatureCooldown = 15;
+		enum float m_TemperatureCost = 1.5;
+		enum float m_TemperatureMax = 100;
+		enum float m_TemperatureCooldown = 15;
 		// Timeout applied to the MG usage when the MG overheats (timeout in ms)
-		const float m_TemperatureUsageOverheat = 2 * 1_000;
+		enum float m_TemperatureUsageOverheat = 2 * 1_000;
 	}
 	
 	uint clientId() const {
@@ -67,31 +67,31 @@ class Player : HitableGameObject, ISerializeable, IControllable {
 	// Stuff only kept on the server
 	private {
 		// Rotation accleration in degree per second sqare
-		const float m_RotationThrust = 15;
+		enum float m_RotationThrust = 15;
 		// Factor by which the rotation velocity is reduced in percent per second
 		// (1 is 100%)
-		const float m_RotationDampening = 4.00;
+		enum float m_RotationDampening = 4.00;
 		// Movement aceleration in meters per second sqare
-		const float m_MovementAcl = 30;
+		enum float m_MovementAcl = 30;
 		// If the player is not accelerating he will slowly break with this
 		// deceleration (meter per second sqare)
-		const float m_BreakAcl = 10;
+		enum float m_BreakAcl = 10;
 		
 		// The amount of drift velocity that is removed on each cycle. Drift
 		// velocity is the velocity not aiming into the acceleration direction.
-		const float m_DriftDampening = 0.5;
+		enum float m_DriftDampening = 0.5;
 		
 		Turret!(MgProjectile) m_Turret;
 		// Used by the HUD to calculate the aiming help
 		netvar!float m_WeaponVelocity;
 		
 		netvar!float m_BoostFactor;
-		const float m_BoostFull = 4.0;
+		enum float m_BoostFull = 4.0;
 		// Linear dropoff in units per second
-		const float m_BoostDropoff = 0.5;
+		enum float m_BoostDropoff = 0.5;
 		
 		netvar!float m_BoostUsage;
-		const float m_BoostCooldown = 20 * 1_000;
+		enum float m_BoostCooldown = 20 * 1_000;
 	}
 	
 	/**

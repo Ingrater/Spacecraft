@@ -2383,8 +2383,10 @@ public:
 	
 	override void RegisterCVars(ConfigVarsBinding* CVarStorage) shared {
 		auto self = cast(Renderer)this;
-		foreach(m;__traits(allMembers,typeof(m_CVars))){
-			CVarStorage.registerVariable(m,mixin("self.m_CVars." ~ m));
+		foreach(m;__traits(allMembers,typeof(m_CVars)))
+    {
+      static if(m.length < 2 || m[0..2] != "__")
+			  CVarStorage.registerVariable(m,mixin("self.m_CVars." ~ m));
 		}
 	}
 	

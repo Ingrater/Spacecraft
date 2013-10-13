@@ -72,6 +72,7 @@ class GameSimulation : IGameThread, IGame {
 				}
 				
 				override void OnKeyboard(ubyte device, bool pressed, uint key, ushort unicode, ubyte scancode, uint mod) {
+          //core.stdc.stdio.printf("W is pressed 1 = %d\n", pressed);
 					if(m_ConsoleOn){
 						if(pressed){
 							switch(key){
@@ -126,7 +127,7 @@ class GameSimulation : IGameThread, IGame {
 								m_ExitGame = true;
 								break;
 							case Keys.w: //W
-                core.stdc.stdio.printf("W is pressed = %d\n", pressed);
+                //core.stdc.stdio.printf("W is pressed = %d\n", pressed);
 								m_Controller.moveForward(pressed);
 								break;
 							case Keys.s: //S
@@ -1017,8 +1018,10 @@ class GameSimulation : IGameThread, IGame {
 		
 		void RegisterCVars(){
 			m_CVarsStorage = m_ScriptSystem.RegisterVariableScope("cvars");
-			foreach(m;__traits(allMembers,typeof(m_CVars))){
-				m_CVarsStorage.registerVariable(m,__traits(getMember,this.m_CVars,m));
+			foreach(m;__traits(allMembers, typeof(m_CVars)))
+      {
+        static if(m.length < 2 || m[0..2] != "__")
+				  m_CVarsStorage.registerVariable(m, __traits(getMember, this.m_CVars, m));
 			}
 			if (g_Env.renderer)
 				g_Env.renderer.RegisterCVars(m_CVarsStorage);

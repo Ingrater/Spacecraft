@@ -84,6 +84,7 @@ class GameObjectFactory : IGameObject, IGameObjectFactory {
 			foreach(T;ObjectList){
 				m_Creators[staticIndexOf!(T,ObjectList)] = &Make!(T);
 			}
+      m_MessageDeinitHelper = MessageDeinitHelper(this);
 			InitMessaging();
       assert(toClient !is null);
 			
