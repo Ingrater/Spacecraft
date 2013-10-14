@@ -2,6 +2,7 @@ module game.freecam;
 
 import game.gameobject, game.game;
 import std.math;
+import core.stdc.math;
 
 class FreeCam : IGameObject, IControllable {
 private:
@@ -103,9 +104,9 @@ public:
 		}
 		else {
 			m_RotateAroundCenterPos += m_RotateAroundCenterSpeed * timeDiff;
-			vec3 pos = vec3(sin(m_RotateAroundCenterPos) * m_RotateAroundCenter,
+			vec3 pos = vec3(sinf(m_RotateAroundCenterPos) * m_RotateAroundCenter,
 							m_RotateAroundCenterOffset,
-							cos(m_RotateAroundCenterPos) * m_RotateAroundCenter);
+							cosf(m_RotateAroundCenterPos) * m_RotateAroundCenter);
 			m_Position = Position(pos);
       auto tempPos = vec4(-pos);
       auto tempUp = vec4(0,1,0,1);

@@ -126,7 +126,7 @@ class GameSimulation : IGameThread, IGame {
 								m_ExitGame = true;
 								break;
 							case Keys.w: //W
-                core.stdc.stdio.printf("W is pressed = %d\n", pressed);
+                //core.stdc.stdio.printf("W is pressed = %d\n", pressed);
 								m_Controller.moveForward(pressed);
 								break;
 							case Keys.s: //S

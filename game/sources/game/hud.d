@@ -1,7 +1,8 @@
 module game.hud;
 
 import base.renderproxy, base.all, game.player, game.game, game.rules.base;
-import core.memory, std.math;
+import core.memory;
+import core.stdc.math;
 import game.gameobject;
 //import renderer.renderproxys: CameraProxy;
 
@@ -241,7 +242,7 @@ public:
 			
 			void drawArrow(float distFromScreenCenter, vec4 color, vec2[] vertecies){
 				// Translate and rotate the vertecies
-				auto s = sin(angle), c = cos(angle);
+				auto s = sinf(angle), c = cosf(angle);
 				foreach(ref v; vertecies){
 					v.x = v.x + distFromScreenCenter;
 					auto x = v.x * c - v.y * s;
