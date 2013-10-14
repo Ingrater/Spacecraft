@@ -303,7 +303,7 @@ public:
       m_InputBuffer.resize(0);
       foreach(char c; m_CommandHistory[m_selectedLastCommand][])
       {
-        m_InputBuffer ~= c;
+        m_InputBuffer ~= cast(dchar)c;
       }
     }
   }
@@ -330,7 +330,7 @@ public:
       m_InputBuffer.resize(0);
       foreach(char c; m_CommandHistory[m_selectedLastCommand][])
       {
-        m_InputBuffer ~= c;
+        m_InputBuffer ~= cast(dchar)c;
       }
     }
   }
@@ -354,7 +354,7 @@ public:
       m_InputBuffer.resize(0);
       foreach(char c; m_autocompleteBuffer[m_selectedAutocomplete][])
       {
-        m_InputBuffer ~= c;
+        m_InputBuffer ~= cast(dchar)c;
       }
       m_numAutocompletes = 0;
     }
