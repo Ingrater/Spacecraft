@@ -372,7 +372,7 @@ interface IInputListener {
 	
 	final void OnKeyboard(ubyte device, bool pressed, uint key, ushort unicode, ubyte scancode, uint mod) shared {
 		//send(getTid(),MsgOnKeyboard(device,pressed,key,unicode,scancode,mod));
-    core.stdc.stdio.printf("enqueing %d\n", pressed);
+    //core.stdc.stdio.printf("enqueing %d\n", pressed);
     this.ringBuffer.enqueue(MsgOnKeyboard(device, pressed, key, unicode, scancode, mod));
 	}
 	
@@ -419,7 +419,7 @@ interface IInputListener {
          case InputEvent.Keyboard:
            {
              auto msg = cast(MsgOnKeyboard*)im;
-             core.stdc.stdio.printf("getting %d\n", msg.pressed);
+             //core.stdc.stdio.printf("getting %d\n", msg.pressed);
              this.OnKeyboard(msg.device,msg.pressed,msg.key,msg.unicode,msg.scancode,msg.mod);
              this.ringBuffer.skip!MsgOnKeyboard();
            }

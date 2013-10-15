@@ -4,7 +4,8 @@ import game.gameobject, game.rules.base, base.all, base.renderer;
 import game.effects.bigexplosion, game.objectfactory, game.turret;
 import game.effects.muzzleflash;
 static import client.resources, server.resources;
-import std.math;
+import std.math : PI, PI_2, copysign;
+import core.stdc.math;
 import thBase.container.vector;
 import game.game;
 
@@ -320,12 +321,12 @@ class TurretBase(ProjectileClass) : HitableGameObject, ISerializeable {
 		baseAngle = baseAngle  / PI * 180;
 		cannonAngle = cannonAngle / PI * 180;
 	
-		if (abs(baseAngle) < m_TurretBaseRotVelocity) {
+		if (fabs(baseAngle) < m_TurretBaseRotVelocity) {
 			angle = baseAngle;
 			baseRest = 0;
 		} else {
 			angle = copysign(m_TurretBaseRotVelocity, baseAngle);
-			baseRest = abs(baseAngle) - m_TurretBaseRotVelocity;
+			baseRest = fabs(baseAngle) - m_TurretBaseRotVelocity;
 		}
 		
 		// Workaround because the orientation method does not respect the rotation
@@ -336,12 +337,12 @@ class TurretBase(ProjectileClass) : HitableGameObject, ISerializeable {
 		rotate(upVector, angle * dt_sec);
 	
 		float angleDiff = cannonAngle - m_CannonAngleDeg.value;
-		if (abs(angleDiff) < m_TurretCannonRotVelocity) {
+		if (fabs(angleDiff) < m_TurretCannonRotVelocity) {
 			angle = angleDiff;
 			cannonRest = 0;
 		} else {
 			angle = copysign(m_TurretCannonRotVelocity, angleDiff);
-			cannonRest = abs(angleDiff) - m_TurretCannonRotVelocity;
+			cannonRest = fabs(angleDiff) - m_TurretCannonRotVelocity;
 		}
 		m_CannonAngleDeg = m_CannonAngleDeg.value + angle * dt_sec;
 	

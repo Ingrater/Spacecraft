@@ -340,7 +340,7 @@ class Player : HitableGameObject, ISerializeable, IControllable {
 		void drawHorizon(float radius, vec3 centerOffset, vec4 color){
 			vec3 point_a, point_b;
 			for(float a = -PI; a < PI; a += PI / 6){
-				point_b = centerOffset + (horizonRight * cos(a) + horizonLook * sin(a)) * radius;
+				point_b = centerOffset + (horizonRight * cosf(a) + horizonLook * sinf(a)) * radius;
 				if (!isNaN(point_a.x))
 					renderer.drawLine(position + point_a, position + point_b, color);
 				point_a = point_b;
