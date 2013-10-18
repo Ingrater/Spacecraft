@@ -341,6 +341,11 @@ struct netvar(T) {
 	T value;
 	alias value this;
 	bool changed = true;
+
+  this(T value)
+  {
+    this.value = value;
+  }
 	
 	void opAssign(T newVal){
 		if (newVal != value) {
