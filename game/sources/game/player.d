@@ -525,7 +525,7 @@ class Player : HitableGameObject, ISerializeable, IControllable {
 	override IRenderProxy renderProxy() {
     if(m_CollMode)
     {
-      return m_RenderProxy.ptr; //BUG in 2.063.2
+      return m_RenderProxy;
     }
 		if(m_Dead){
 			if(m_Game.eventSink.clientId == m_ClientId)

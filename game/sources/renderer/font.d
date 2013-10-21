@@ -20,7 +20,7 @@ import renderer.internal;
  */
 class Font {
 public:
-	struct FontGlyph {		
+	static struct FontGlyph {		
 		int m_Width;
 		int m_Height;
 		int m_Top;
@@ -87,29 +87,30 @@ private:
 		}
 		
 		m_FontTexture = m_Renderer.CreateTexture2D(m_Name ~ " - font texture", ImageCompression.AUTO);
-		m_FontTexture.CreateEmpty(size,size,ImageFormat.LUMINANCE_ALPHA8,Texture2D.Options.NEAREST | Texture2D.Options.CLAMP_S | Texture2D.Options.CLAMP_T);
+		m_FontTexture.CreateEmpty(size, size, ImageFormat.LUMINANCE_ALPHA8, 
+                              Texture2D.Options.NEAREST | Texture2D.Options.CLAMP_S | Texture2D.Options.CLAMP_T);
 		ImageData2D ImageData = m_FontTexture.GetImageData();
 		
 		x=y=0;
-		foreach(ref g;m_Glyphs.GetRange()){
-			if((x + g.m_Width + 1) > size){
+		foreach(ref g2;m_Glyphs.GetRange()){
+			if((x + g2.m_Width + 1) > size){
 			 	y+=MaxHeight;
 			  	x=0;
 			}
-			if(g.m_Data !is null){
-				ImageData.Insert(g.m_Data,x,y + MaxHeight - g.m_Top + MinY);
-        Delete(g.m_Data);
-        g.m_Data = null;
+			if(g2.m_Data !is null){
+				ImageData.Insert(g2.m_Data, x, y + MaxHeight - g2.m_Top + MinY);
+        Delete(g2.m_Data);
+        g2.m_Data = null;
 			}
 			float fStep = 1.0f / cast(float)size;
-			g.m_MinTexY = cast(float)y * fStep;// + fStep / 2.0f;
-			g.m_MinTexX = cast(float)(x) * fStep;// + fStep / 2.0f;
-			x+=g.m_Width;
-			g.m_MaxTexY = cast(float)(y+MaxHeight) * fStep;// + fStep / 2.0f;
-			g.m_MaxTexX = cast(float)(x) * fStep;// + fStep / 2.0f;
+			g2.m_MinTexY = cast(float)y * fStep;// + fStep / 2.0f;
+			g2.m_MinTexX = cast(float)(x) * fStep;// + fStep / 2.0f;
+			x+=g2.m_Width;
+			g2.m_MaxTexY = cast(float)(y + MaxHeight) * fStep;// + fStep / 2.0f;
+			g2.m_MaxTexX = cast(float)(x) * fStep;// + fStep / 2.0f;
 			x++;
-			g.m_fWidth = cast(float)(g.m_Width + g.m_Right);
-			g.m_RealWidth = cast(float)g.m_Width;
+			g2.m_fWidth = cast(float)(g2.m_Width + g2.m_Right);
+			g2.m_RealWidth = cast(float)g2.m_Width;
 		}
 		
 		m_FontTexture.Reupload();	
@@ -372,8 +373,9 @@ public:
 			c = 0;
 		
 		//Building the chars
-		foreach(size_t i,dchar c;pCharsToLoad){
-			BuildChar(face,c,i);
+		foreach(size_t i,dchar c;pCharsToLoad)
+    {
+			BuildChar(face, c, i);
 			m_CharAsignment[c - m_StartIndex] = i;
 		}
 		

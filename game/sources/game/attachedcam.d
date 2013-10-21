@@ -23,7 +23,7 @@ class AttachedCamera : IGameObject {
 	}
 	
 	IRenderProxy renderProxy() {
-		return m_RenderProxy.ptr; //BUG in 2.063.2
+		return m_RenderProxy;
 	}
 	
 	IGameObject father() const {

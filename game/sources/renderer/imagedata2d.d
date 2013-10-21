@@ -319,7 +319,10 @@ public:
 
     auto dstData = m_Data[mipmap][];
 		
-		const(ubyte[]) srcData = pSrc.GetData()[mipmap][];
+    // BUG 11311
+		//const(ubyte[]) srcData = pSrc.GetData()[mipmap][];
+    auto tmp = pSrc.GetData();
+    const(ubyte[]) srcData = tmp[mipmap][];
 		size_t sizeOfSrcRow = pSrc.m_Width * sizeOfPixel;
 		for(size_t y=0;y<pSrc.m_Height;y++){
 			size_t dstIndex = (pY + y) * sizeOfRow + pX * sizeOfPixel;
