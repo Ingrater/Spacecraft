@@ -17,6 +17,7 @@ import thBase.casts;
 
 import std.traits;
 
+import base.all;
 import base.eventlistener;
 import base.renderer;
 import base.messages;
@@ -1078,7 +1079,7 @@ public:
     Line2DBufferDataChannels[0] = VertexBuffer.DataChannels.POSITION_2;
     Line2DBufferDataChannels[1] = VertexBuffer.DataChannels.COLOR;
 		m_2DLineBuffer = New!VertexBuffer(this,
-                                     DebugBufferDataChannels,
+                                     Line2DBufferDataChannels,
                                      VertexBuffer.Primitive.LINES,
                                      VertexBuffer.IndexBufferSize.INDEX16,
                                      true);
@@ -1165,6 +1166,10 @@ public:
 		m_HudMaterial.SetTexture(m_HudRendertarget.GetColorTexture(0),0);
 		
 		base.profiler.Init("Renderer");
+    //base.profiler.GetProfiler().addChart(_T("opengl"));
+    base.profiler.GetProfiler().addChart(_T("extraction"));
+    base.profiler.GetProfiler().addChart(_T("reading"));
+    base.profiler.GetProfiler().addChart(_T("wait for buffer"));
 	}
 	
 	override void Deinit(){
@@ -1292,9 +1297,13 @@ public:
 					if(m_CVars.profile > 0.0 && m_CVars.profile < 2.0){
 						base.profiler.Print(this);
 					}
-          else if(m_CVars.profile >= 2.0)
+          else if(m_CVars.profile >= 2.0 && m_CVars.profile < 3.0)
           {
             base.profiler.DrawRecorded(this);
+          }
+          else if(m_CVars.profile >= 3.0)
+          {
+            base.profiler.DrawCharts(this);
           }
 					
 					if(queryNeeded && m_CVars.r_info > 1.0){
@@ -1448,6 +1457,7 @@ public:
 						m_ShapeBuffer.AddIndexBuffer();
 						m_SpriteBuffer.FreeLocalData();
 						m_AlphaSpriteBuffer.FreeLocalData();
+            m_2DLineBuffer.FreeLocalData();
 					}
 				}
 			}
@@ -1706,7 +1716,9 @@ public:
 	}
 	
 	private void ReadExtractedData(){
+    double bufferWaitTime = 0.0;
 		while(true){
+      auto preBuffer = Zeitpunkt(g_Env.mainTimer);
 			auto buffer = GetExtractorBuffer!(RendererExtractor)(m_Extractor);
 			
 			//if we did not get any extracted data, we might have a deadlock
@@ -1715,8 +1727,13 @@ public:
         if(!m_Extractor.isRunning)
           break;
 				ProgressLoadingMessages();
+        bufferWaitTime += Zeitpunkt(g_Env.mainTimer) - preBuffer;
 				continue;
 			}
+      bufferWaitTime += Zeitpunkt(g_Env.mainTimer) - preBuffer;
+      {
+        auto manualProfile = base.profiler.ProfileManual("wait for buffer", bufferWaitTime);
+      }
 
       auto profile = base.profiler.Profile("reading");
 			
@@ -2305,7 +2322,7 @@ public:
     }
 	}
 	
-	override void drawLine(ref const Position start, ref const Position end, ref const vec4 color){
+	override void drawLine(Position start, Position end, vec4 color){
 		m_UpdateDebugBuffer = true;
 		
 		m_DebugBuffer.AddVertexData(start - m_FrameOrigin);
@@ -2315,7 +2332,7 @@ public:
 		m_DebugBuffer.AddVertexData(color);
 	}
 
-  override void drawLine(ref const(vec2) start, ref const(vec2) end, ref const(vec4) color){
+  override void drawLine(vec2 start, vec2 end, vec4 color){
     m_update2DLineBuffer = true;
 
     m_2DLineBuffer.AddVertexData(start);

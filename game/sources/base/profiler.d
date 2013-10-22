@@ -130,6 +130,19 @@ void DrawRecorded(IRenderer renderer)
   }
 }
 
+void DrawCharts(IRenderer renderer)
+{
+	assert(CreationMutex !is null);
+	synchronized(CreationMutex){
+		vec2 pos = vec2(45.0f, 200.0f);
+		auto list = ProfilerList;
+		foreach(Profiler p;list){
+      p.drawCharts(renderer, pos, 250.0f, 100.0f);
+      pos.x += 300.0f;
+		}
+	}	
+}
+
 class Profiler {
 private:
   enum size_t CHART_LENGTH = 60 * 3;
@@ -240,9 +253,17 @@ private:
     auto info = m_Infos.pop();
     info.block.time = time;
     info.block.start = info.zeitpunkt;
+    synchronized(m_Mutex)
+    {
+      m_charts.ifExists(_T(info.block.name), (ref values){
+        if(values.length >= CHART_LENGTH)
+          values.removeAtIndex(0);
+        values ~= info.block.time;
+      });
+    }
   }
 
-  void addChart(rcstring blockName)
+  public void addChart(rcstring blockName)
   {
     synchronized(m_Mutex)
     {
@@ -333,6 +354,8 @@ private:
     size_t alignOffset = (Block.sizeof % Block.alignof == 0) ? 0 : Block.alignof - (Block.sizeof - Block.alignof);
     m_blockAllocator = New!(ChunkAllocator!(NoLockPolicy))(blockSize + alignOffset, 128, Block.alignof);
     m_charts = New!(typeof(m_charts))();
+
+    addChart(rcstring(name));
 	}
 
   ~this()
@@ -355,6 +378,11 @@ private:
       }
       Delete(m_Recorded);
       m_Recorded = [];
+    }
+    foreach(ref val; m_charts.values)
+    {
+      Delete(val);
+      val = null;
     }
     Delete(m_Mutex);
     Delete(m_Infos);
@@ -410,41 +438,52 @@ private:
     return vec2(pos.x, pos.y + maxYOffset);
   }
 
-  float drawCharts(shared(IRenderer) renderer, vec2 pos, float width, float chartHeight)
+  vec2 drawCharts(IRenderer renderer, vec2 pos, float width, float chartHeight)
   {
     synchronized(m_Mutex)
     {
-      float num = 0.0f;
+      float windowHeight = cast(float)renderer.GetHeight();
+      float startY = pos.y;
       float step = width / CHART_LENGTH;
       foreach(ref blockName, ref values; m_charts)
       {
-        renderer.DrawText(1, pos + vec2(0, num * chartHeight), "%s", blockName[]);
-        float textHeight = 11.0f;
+        renderer.DrawText(1, pos, "%s", blockName[]);
+        float textHeight = 12.0f;
         float borderBottom = 3.0f;
-        vec2 bottomLeft = pos + vec2(0.0f, chartHeight - textHeight - borderBottom);
-        double maxTime = 1.0f;
+        vec2 bottomLeft = pos + vec2(0.0f, chartHeight - borderBottom);
+        double maxTime = 20.0f; // 20 ms
         foreach(value; values)
         {
           if(value > maxTime)
             maxTime = value;
         }
-        float heightScale = (chartHeight - textHeight - borderBottom) / maxTime;
-        for(double d = 1.0f; d <= maxTime; d+=1.0)
+        renderer.DrawText(1, pos + vec2(-35.0f, 6.0f), "%.1f ms", maxTime);
+        renderer.drawLine(pos + vec2(0.0f, textHeight), pos + vec2(width, textHeight), vec4(0.8f, 0.8f, 0.8f, 0.2f));
+        float heightScale = -(chartHeight - textHeight - borderBottom) / maxTime;
+        /*for(double d = 1.0f; d <= maxTime; d+=1.0)
         {
           renderer.drawLine(bottomLeft + vec2(d * heightScale, 0.0f), bottomLeft + vec2(d * heightScale, width), vec4(0.5f, 0.5f, 0.5f, 0.5f));
-        }
+        }*/
         renderer.drawLine(bottomLeft, pos + vec2(0.0f, textHeight));
-        renderer.drawLine(bottomLeft, bottomLeft + vec2(0.0f, width));
-        for(size_t i=0; i<values.length-1; i++)
+        renderer.drawLine(bottomLeft, bottomLeft + vec2(width, 0.0f));
+        if(values.length > 1)
         {
-          auto from = vec2(i * step, values[i] * heightScale);
-          auto to = vec2((i+1) * step, values[i] * heightScale);
-          renderer.drawLine(from, to, vec4(0.0f, 1.0f, 0.0f, 1.0f));
+          for(size_t i=0; i<values.length-1; i++)
+          {
+            auto from = bottomLeft + vec2(i * step, values[i] * heightScale);
+            auto to = bottomLeft + vec2((i+1) * step, values[i+1] * heightScale);
+            renderer.drawLine(from, to, vec4(0.0f, 1.0f, 0.0f, 1.0f));
+          }
         }
 
-        num += 1.0f;
+        pos.y += chartHeight;
+        if(pos.y + chartHeight > windowHeight)
+        {
+          pos.y = startY;
+          pos.x += width + 50.0f;
+        }
       }
-      return num * chartHeight;
+      return pos;
     }
   }
 }

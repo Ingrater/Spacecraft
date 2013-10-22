@@ -71,14 +71,15 @@ public:
 	override void extractImpl(){
 		auto profile = base.profiler.Profile("dirtcloud");
 		{
-			auto profile2 = base.profiler.Profile("sort");
+      // TODO insertionSort has very unstable runtimes, use quicksort
+			/*auto profile2 = base.profiler.Profile("sort");
 			m_Particles.insertionSort(
 				(ref const(Particle) lh, ref const(Particle) rh){
 					vec3 dist1 = (lh.position - extractor.origin);
 					vec3 dist2 = (rh.position - extractor.origin);
 					return (dist1.dot(dist1) < dist2.dot(dist2));
 				}
-			);
+			);*/
 		}
 		m_CurParticle = m_Particles.GetRange();
 		auto alive = m_Particles.length;

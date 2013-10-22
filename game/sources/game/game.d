@@ -754,6 +754,18 @@ class GameSimulation : IGameThread, IGame {
     {
       //initialize the profiler
       base.profiler.Init("game");
+      base.profiler.GetProfiler().addChart(_T("mutexed"));
+      base.profiler.GetProfiler().addChart(_T("Octree update"));
+      base.profiler.GetProfiler().addChart(_T("producing"));
+      base.profiler.GetProfiler().addChart(_T("game objects"));
+      base.profiler.GetProfiler().addChart(_T("global game objects"));
+      base.profiler.GetProfiler().addChart(_T("debug geom"));
+      base.profiler.GetProfiler().addChart(_T("renderables"));
+      base.profiler.GetProfiler().addChart(_T("dirtcloud"));
+      //base.profiler.GetProfiler().addChart(_T("sort"));
+      base.profiler.GetProfiler().addChart(_T("respawn"));
+      base.profiler.GetProfiler().addChart(_T("Wait for render buffer"));
+      //base.profiler.GetProfiler().addChart(_T("net mutexed"));
 
       //Initialize the extractor
       if(g_Env.viewModel || !g_Env.isServer)
