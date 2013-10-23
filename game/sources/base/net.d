@@ -273,8 +273,7 @@ mixin template MessageCode(){
 
     ~this()
     {
-      //BUG 11246
-      //assert(m_outer !is null, "Messaging has not been initialized");
+      assert(m_outer !is null, "Messaging has not been initialized");
       if(m_outer !is null)
         m_outer.DoDeinitMessaging();
       debug m_outer = null;
@@ -857,17 +856,12 @@ class BufferReader : ISerializer {
 			
 			shift!ubyte();
 
-      // BUG 11245
-			//float[T.f.length] newValues;
-			//foreach(ref elem; newValues)
-				//elem = shift!float();
-
-      T newValue;
-      foreach(ref elem; newValue.f)
-        elem = shift!float();
+			float[T.f.length] newValues;
+			foreach(ref elem; newValues)
+				elem = shift!float();
 			
-			if (value.f != newValue.f){
-				value.f[] = newValue.f[];
+			if (value.f != newValues){
+				value.f[] = newValues[];
 				return true;
 			}
 			

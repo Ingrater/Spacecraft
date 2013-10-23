@@ -227,10 +227,7 @@ public:
       void* data = null;
       if(m_Data.GetData().length > 0)
       {
-        // BUG 11311
-        // data = m_Data.GetData[0].ptr;
-        auto temp = m_Data.GetData();
-        data = temp[0].ptr;
+        data = m_Data.GetData[0].ptr;
       }
 			
 			gl.TexImage2D(gl.TEXTURE_2D, 0, m_Data.GetFormat(), m_Data.GetWidth(), m_Data.GetHeight(), 0, m_Data.GetBaseFormat(), m_Data.GetComponent(), data);
