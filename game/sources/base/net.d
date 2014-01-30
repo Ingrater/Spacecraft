@@ -96,7 +96,7 @@ int NumberOfMessages(C)(){
 	return result;
 }
 
-string GenerateMsg(H,C,string prefix,int startId)(){
+string GenerateMsg(C,string prefix,int startId)(){
 	string result = "";
 	int eventId = startId;
 	foreach(funcName;__traits(allMembers,C)){
@@ -139,14 +139,15 @@ string GenerateMsg(H,C,string prefix,int startId)(){
 				
 				
 				//Generate the message type
+        result ~= "#line " ~ toString(__LINE__+1) ~ " \"" ~ __FILE__ ~ "\"\n";
 				result ~= "static class " ~ prefix ~"Msg" ~ toString(eventId) ~ " : IEvent { \n";
-				result ~= H.stringof ~ "." ~ C.stringof ~ " m_Ref;\n";
+				result ~= "C." ~ C.stringof ~ " m_Ref;\n";
 				foreach(int i,parameter_t;ParameterTypeTuple!(func_t)){
 					result ~= parameter_t.stringof ~ " arg" ~ toString(i) ~ ";\n";
 				}
 				//Generate constructor
         result ~= "#line " ~ toString(__LINE__+1) ~ " \"" ~ __FILE__ ~ "\"\n";
-				result ~= "this(" ~ H.stringof ~ "." ~ C.stringof ~ " pref){m_Ref = pref;}\n";
+				result ~= "this(C." ~ C.stringof ~ " pref){m_Ref = pref;}\n";
         result ~= "#line " ~ toString(__LINE__+1) ~ " \"" ~ __FILE__ ~ "\"\n";
 				result ~= "this(";
 				foreach(int i,parameter_t;ParameterTypeTuple!(func_t)){
@@ -183,7 +184,7 @@ string GenerateMsg(H,C,string prefix,int startId)(){
 
         //Generate toString method
         result ~= "override string description(){";
-        result ~= "return \"" ~ H.stringof ~ "." ~ C.stringof ~ "." ~ funcName ~"\"; }";
+        result ~= "return \"C." ~ C.stringof ~ "." ~ funcName ~"\"; }";
 				
 				result ~= "}\n";
 			}
@@ -293,13 +294,13 @@ mixin template MessageCode(){
   private MessageDeinitHelper m_MessageDeinitHelper;
 	
 	private class CToClient {
-		//output!(GenerateMsg!(C,C.ClientMsgs,"Client",0)()) blup;
-		mixin(GenerateMsg!(C,C.ClientMsgs,"Client",0)());
+		//output!(GenerateMsg!(C.ClientMsgs,"Client",0)()) blup;
+		mixin(GenerateMsg!(C.ClientMsgs,"Client",0)());
 	}
 	
 	private class CToServer {
 		//output!(GenerateMsg!(C,C.ServerMsgs,"Server",NumberOfMessages!(C.ClientMsgs)())()) blup;
-		mixin(GenerateMsg!(C,C.ServerMsgs,"Server",NumberOfMessages!(C.ClientMsgs)()));
+		mixin(GenerateMsg!(C.ServerMsgs,"Server",NumberOfMessages!(C.ClientMsgs)()));
 	}
 	
 	public override IEvent constructEvent(EventId eventId, IAllocator allocator){
