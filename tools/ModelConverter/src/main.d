@@ -12,6 +12,7 @@ import thBase.math;
 import thBase.math3d.all;
 import thBase.math3d.mats;
 import thBase.math3d.vecs;
+import thBase.asserthandler;
 import assimp.assimp;
 import modeltypes;
 import core.stdc.stdlib;
@@ -563,6 +564,7 @@ void ProgressModel(string path)
 
 int main(string[] args)
 {
+  thBase.asserthandler.Init();
   Assimp.Load("assimp.dll","");
   auto models = scopedRef!(Stack!string)(NoArgs());
   for(size_t i=1; i<args.length; i++)
