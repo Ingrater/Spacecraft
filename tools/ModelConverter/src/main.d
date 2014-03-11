@@ -564,7 +564,7 @@ void ProgressModel(string path)
 int main(string[] args)
 {
   Assimp.Load("assimp.dll","");
-  auto models = scopedRef!(Stack!string)(New!(Stack!string)());
+  auto models = scopedRef!(Stack!string)(NoArgs());
   for(size_t i=1; i<args.length; i++)
   {
     if(args[i] == "--workdir")
