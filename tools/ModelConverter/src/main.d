@@ -120,15 +120,15 @@ void ProgressModel(string path)
     rcstring outputFilename = path[0..$-4];
     outputFilename ~= ".thModel";
 
-    auto outFile = scopedRef!Chunkfile(New!Chunkfile(outputFilename, Chunkfile.Operation.Write, g_debug ? Chunkfile.DebugMode.On : Chunkfile.DebugMode.Off ));
+    auto outFile = scopedRef!Chunkfile(outputFilename, Chunkfile.Operation.Write, g_debug ? Chunkfile.DebugMode.On : Chunkfile.DebugMode.Off);
 
     outFile.startWriting("thModel", ModelFormatVersion.max);
     scope(exit) outFile.endWriting();
 
-    auto textureFiles = scopedRef!(Hashmap!(const(char)[], uint, StringHashPolicy))(New!(Hashmap!(const(char)[], uint, StringHashPolicy))());
-    auto materialTextures = scopedRef!(Vector!MaterialTextureInfo)(New!(Vector!MaterialTextureInfo)());
-    auto textures = scopedRef!(Vector!(const(char)[]))(New!(Vector!(const(char)[]))());
-    auto materialNames = scopedRef!(Vector!(const(char)[]))(New!(Vector!(const(char)[]))());
+    auto textureFiles = scopedRef!(Hashmap!(const(char)[], uint, StringHashPolicy))(NoArgs());
+    auto materialTextures = scopedRef!(Vector!MaterialTextureInfo)(NoArgs());
+    auto textures = scopedRef!(Vector!(const(char)[]))(NoArgs());
+    auto materialNames = scopedRef!(Vector!(const(char)[]))(NoArgs());
     uint numTextureReferences;
 
     // Collect Textures
@@ -186,7 +186,7 @@ void ProgressModel(string path)
           if(!foundMatName)
           {
             Warning("Couldn't find name for material %d using 'default'", i);
-            materialNames ~= "default";
+            materialNames~= cast(const(char[]))"default";
           }
         }
       }
@@ -501,7 +501,7 @@ void ProgressModel(string path)
         writefln("nodes %d kb",size/1024);
       }
 
-      auto nodeLookup = scopedRef!(Hashmap!(void*, uint))(New!(Hashmap!(void*, uint))());
+      auto nodeLookup = scopedRef!(Hashmap!(void*, uint))(NoArgs());
       uint nextNodeId = 0;
 
       uint countNodes(const(aiNode*) node)
