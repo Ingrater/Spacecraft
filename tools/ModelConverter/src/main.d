@@ -20,6 +20,7 @@ import core.stdc.stdlib;
 rcstring g_workDir;
 bool g_debug = false;
 bool g_includeMissingTextures = false;
+bool g_duplicateTexcoords = false;
 
 static ~this()
 {
@@ -105,11 +106,16 @@ void ProgressModel(string path)
                                               aiPostProcessSteps.CalcTangentSpace |
                                               aiPostProcessSteps.Triangulate |
                                               aiPostProcessSteps.JoinIdenticalVertices |
-                                              aiPostProcessSteps.FlipUVs);// |
+                                              aiPostProcessSteps.FlipUVs //|
+                                              //aiPostProcessSteps.OptimizeMeshes |
+                                              //aiPostProcessSteps.OptimizeGraph |
+                                              //aiPostProcessSteps.RemoveRedundantMaterials
+                                              );// |
     //aiPostProcessSteps.MakeLeftHanded); // |
     //aiPostProcessSteps.PreTransformVertices );
 		if(scene is null){
-			Error("Couldn't load model from file '%s'", path);
+      auto error = Assimp.GetErrorString();
+			Error("Couldn't load model from file '%s' error: %s", path, error[0..strlen(error)]);
 		}
 
     scope(exit)
@@ -126,10 +132,10 @@ void ProgressModel(string path)
     outFile.startWriting("thModel", ModelFormatVersion.max);
     scope(exit) outFile.endWriting();
 
-    auto textureFiles = scopedRef!(Hashmap!(const(char)[], uint, StringHashPolicy))(NoArgs());
-    auto materialTextures = scopedRef!(Vector!MaterialTextureInfo)(NoArgs());
-    auto textures = scopedRef!(Vector!(const(char)[]))(NoArgs());
-    auto materialNames = scopedRef!(Vector!(const(char)[]))(NoArgs());
+    auto textureFiles = scopedRef!(Hashmap!(const(char)[], uint, StringHashPolicy))(defaultCtor);
+    auto materialTextures = scopedRef!(Vector!MaterialTextureInfo)(defaultCtor);
+    auto textures = scopedRef!(Vector!(const(char)[]))(defaultCtor);
+    auto materialNames = scopedRef!(Vector!(const(char)[]))(defaultCtor);
     uint numTextureReferences;
 
     // Collect Textures
@@ -227,7 +233,7 @@ void ProgressModel(string path)
           PerVertexFlags |= PerVertexData.Bitangent;
         if(aimesh.mTextureCoords[0] !is null)
           PerVertexFlags |= PerVertexData.TexCoord0;
-        if(aimesh.mTextureCoords[1] !is null)
+        if(aimesh.mTextureCoords[1] !is null || (g_duplicateTexcoords && aimesh.mTextureCoords[0] !is null))
           PerVertexFlags |= PerVertexData.TexCoord1;
         if(aimesh.mTextureCoords[2] !is null)
           PerVertexFlags |= PerVertexData.TexCoord2;
@@ -239,6 +245,13 @@ void ProgressModel(string path)
           if(aimesh.mTextureCoords[j] !is null)
           {
             ubyte numUVComponents = cast(ubyte)aimesh.mNumUVComponents[j];
+            if(numUVComponents == 0)
+              numUVComponents = 2;
+            outFile.write(numUVComponents);
+          }
+          else if(j == 1 && g_duplicateTexcoords && aimesh.mTextureCoords[0] !is null)
+          {
+            ubyte numUVComponents = cast(ubyte)aimesh.mNumUVComponents[0];
             if(numUVComponents == 0)
               numUVComponents = 2;
             outFile.write(numUVComponents);
@@ -443,23 +456,29 @@ void ProgressModel(string path)
           static assert(AI_MAX_NUMBER_OF_TEXTURECOORDS >= 4);
           while(numTexCoords < 4 && aimesh.mTextureCoords[numTexCoords] !is null)
             numTexCoords++;
+          if(aimesh.mTextureCoords[1] is null && g_duplicateTexcoords && aimesh.mTextureCoords[0] !is null)
+            numTexCoords++;
 
           outFile.write(numTexCoords);
+          writefln("%d texture channels", numTexCoords);
           for(ubyte j=0; j<numTexCoords; j++)
           {
-            ubyte numUVComponents = cast(ubyte)aimesh.mNumUVComponents[j];
+            auto cur = j;
+            if(j == 1 && g_duplicateTexcoords && aimesh.mTextureCoords[0] !is null && aimesh.mTextureCoords[1] is null)
+              cur = 0;
+            ubyte numUVComponents = cast(ubyte)aimesh.mNumUVComponents[cur];
             if(numUVComponents == 0)
               numUVComponents = 2;
             outFile.write(numUVComponents);
             if(numUVComponents == 3)
             {
-              outFile.write((cast(const(float*))aimesh.mTextureCoords[j])[0..aimesh.mNumVertices*3]);
+              outFile.write((cast(const(float*))aimesh.mTextureCoords[cur])[0..aimesh.mNumVertices*3]);
             }
             else
             {
               for(size_t k=0; k<aimesh.mNumVertices; k++)
               {
-                outFile.write((cast(const(float*))&aimesh.mTextureCoords[j][k].x)[0..numUVComponents]);
+                outFile.write((cast(const(float*))&aimesh.mTextureCoords[cur][k].x)[0..numUVComponents]);
               }
             }
           }
@@ -502,7 +521,7 @@ void ProgressModel(string path)
         writefln("nodes %d kb",size/1024);
       }
 
-      auto nodeLookup = scopedRef!(Hashmap!(void*, uint))(NoArgs());
+      auto nodeLookup = scopedRef!(Hashmap!(void*, uint))(defaultCtor);
       uint nextNodeId = 0;
 
       uint countNodes(const(aiNode*) node)
@@ -533,6 +552,10 @@ void ProgressModel(string path)
 
         outFile.writeArray(node.mName.data[0..node.mName.length]);
         auto transform = Convert(node.mTransformation);
+        if(node == scene.mRootNode)
+        {
+          transform = transform * mat4.Identity.Right2Left();
+        }
         outFile.write(transform.f[]);
         if(node.mParent is null)
           outFile.write(uint.max);
@@ -566,7 +589,8 @@ int main(string[] args)
 {
   thBase.asserthandler.Init();
   Assimp.Load("assimp.dll","");
-  auto models = scopedRef!(Stack!string)(NoArgs());
+  writefln("Running assimpl %d.%d", Assimp.GetVersionMajor(), Assimp.GetVersionMinor());
+  auto models = scopedRef!(Stack!string)(defaultCtor);
   for(size_t i=1; i<args.length; i++)
   {
     if(args[i] == "--workdir")
@@ -587,6 +611,10 @@ int main(string[] args)
     else if(args[i] == "--includeMissingTextures")
     {
       g_includeMissingTextures = true;
+    }
+    else if(args[i] == "--duplicateTexcoords")
+    {
+      g_duplicateTexcoords = true;
     }
     else if(args[i].endsWith(".dae", CaseSensitive.no))
     {

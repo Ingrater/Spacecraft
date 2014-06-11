@@ -45,8 +45,8 @@
   <Dversion>2</Dversion>
   <ignoreUnsupportedPragmas>0</ignoreUnsupportedPragmas>
   <compiler>0</compiler>
-  <otherDMD>0</otherDMD>
-  <program>$(DMDInstallDir)windows\bin\dmd.exe</program>
+  <otherDMD>1</otherDMD>
+  <program>$(DMDInstallDir)windows\bin-nostd\dmd.exe</program>
   <imppath>$(ProjectDir)\..\..\..\..\druntime\import;$(ProjectDir)\..\..\..\..\phobos;$(ProjectDir)\..\..\..\..\thBase\src</imppath>
   <fileImppath />
   <outdir>..\$(ConfigurationName)</outdir>
@@ -89,7 +89,8 @@
   <resfile />
   <exefile>$(SolutionDir)\bin\ModelConverterD.exe</exefile>
   <useStdLibPath>1</useStdLibPath>
-  <additionalOptions>-defaultlib=phobosnogcd -debuglib=phobosnogcd gcstub.obj</additionalOptions>
+  <cRuntime>2</cRuntime>
+  <additionalOptions>-defaultlib=phobosnogcd -debuglib=phobosnogcd gcstub.obj -L/LA</additionalOptions>
   <preBuildCommand />
   <postBuildCommand />
   <filesToClean>*.obj;*.cmd;*.build;*.json;*.dep</filesToClean>
@@ -183,6 +184,7 @@
   <resfile />
   <exefile>$(OutDir)\$(ProjectName).exe</exefile>
   <useStdLibPath>1</useStdLibPath>
+  <cRuntime>1</cRuntime>
   <additionalOptions />
   <preBuildCommand />
   <postBuildCommand />
